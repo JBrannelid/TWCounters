@@ -1,10 +1,10 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  base: '/', // Detta är viktigt för GitHub Pages
+  base: '/',  // Kontrollera att det här är rätt basväg
+  publicDir: 'public',  // Säkerställ att Vite hittar public-mappen
   plugins: [react()],
   resolve: {
     alias: [
@@ -16,6 +16,7 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: true,
     rollupOptions: {
+      input: path.resolve(__dirname, 'public', 'index.html'), // Se till att index.html anges korrekt här
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
@@ -28,4 +29,4 @@ export default defineConfig({
     port: 3000,
     open: true
   }
-})
+});

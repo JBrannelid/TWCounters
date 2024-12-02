@@ -1,46 +1,35 @@
-const CACHE_NAME = 'swgoh-cache-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/assets/index.css',
-  '/assets/index.js'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request).then((fetchResponse) => {
-        if (fetchResponse && fetchResponse.status === 200) {
-          const responseClone = fetchResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
+self.addEventListener("install", event => {
+    event.waitUntil(
+      caches.open("swgoh-cache-v1").then(cache => {
+        return cache.addAll([
+          "/", // Hemsidans startpunkt
+          "/index.html", // Indexfilen
+          "/dist/main.js", // Byggd main.js fil
+          "/dist/styles.css", // Byggd styles.css fil
+        ]).catch(error => {
+          console.error('Error caching files:', error);
+        });
+      })
+    );
+  });
+  
+  self.addEventListener("fetch", event => {
+    if (event.request.method === "GET") { // Cacha endast GET-begärningar
+      event.respondWith(
+        caches.match(event.request).then(response => {
+          // Om vi hittar en cachead version, returnera den, annars gör en ny fetch
+          return response || fetch(event.request).then(fetchResponse => {
+            // Lägg till den hämtade resursen i cachen för framtida användning
+            return caches.open("swgoh-cache-v1").then(cache => {
+              cache.put(event.request, fetchResponse.clone());
+              return fetchResponse;
+            });
           });
-        }
-        return fetchResponse;
-      });
-    })
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
+        }).catch(error => {
+          console.error('Error handling fetch:', error);
+          return new Response('Network error occurred', { status: 408 }); // Returnera ett felmeddelande om nätverksproblem
         })
       );
-    })
-  );
-});
+    }
+  });
+  
