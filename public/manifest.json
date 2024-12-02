@@ -1,9 +1,9 @@
 {
-    "name": "SWGOH TW Counter",
-    "short_name": "TW Counter",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#0A0D14",
-    "theme_color": "#0A0D14",
-    "description": "Star Wars Galaxy of Heroes Territory Wars Counter Tool"
-  }
+  "name": "SWGOH TW Counter",
+  "short_name": "TW Counter",
+  "description": "A tool to find the best counters for SWGOH Territory Wars.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0D14",
+  "theme_color": "#0A0D14"
+}
