@@ -1,35 +1,56 @@
-self.addEventListener("install", event => {
-    event.waitUntil(
-      caches.open("swgoh-cache-v1").then(cache => {
-        return cache.addAll([
-          "/", // Hemsidans startpunkt
-          "/index.html", // Indexfilen
-          "/dist/main.js", // Byggd main.js fil
-          "/dist/styles.css", // Byggd styles.css fil
-        ]).catch(error => {
-          console.error('Error caching files:', error);
+const CACHE_NAME = 'swgoh-cache-v1';
+const ALLOWED_SCHEMES = ['http:', 'https:'];
+
+// Add assets to cache during installation
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/manifest.json'
+      ]);
+    })
+  );
+});
+
+// Handle fetch events
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  
+  // Skip non-GET requests and chrome-extension URLs
+  if (event.request.method !== 'GET' || 
+      !ALLOWED_SCHEMES.includes(url.protocol)) {
+    return;
+  }
+
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Return cached response if found
+        if (response) {
+          return response;
+        }
+
+        // Otherwise fetch from network
+        return fetch(event.request).then(response => {
+          // Don't cache if not successful
+          if (!response || response.status !== 200) {
+            return response;
+          }
+
+          // Clone response before caching
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+
+          return response;
         });
       })
-    );
-  });
-  
-  self.addEventListener("fetch", event => {
-    if (event.request.method === "GET") { // Cacha endast GET-begärningar
-      event.respondWith(
-        caches.match(event.request).then(response => {
-          // Om vi hittar en cachead version, returnera den, annars gör en ny fetch
-          return response || fetch(event.request).then(fetchResponse => {
-            // Lägg till den hämtade resursen i cachen för framtida användning
-            return caches.open("swgoh-cache-v1").then(cache => {
-              cache.put(event.request, fetchResponse.clone());
-              return fetchResponse;
-            });
-          });
-        }).catch(error => {
-          console.error('Error handling fetch:', error);
-          return new Response('Network error occurred', { status: 408 }); // Returnera ett felmeddelande om nätverksproblem
-        })
-      );
-    }
-  });
-  
+      .catch(() => new Response('Network error occurred', { 
+        status: 408,
+        headers: { 'Content-Type': 'text/plain' }
+      }))
+  );
+});
