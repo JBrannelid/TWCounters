@@ -2,8 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  base: '/', 
+  base: '/', // Detta är viktigt för GitHub Pages
   plugins: [react()],
   resolve: {
     alias: [
@@ -24,9 +25,6 @@ export default defineConfig({
     }
   },
   server: {
-    headers: {
-      'Content-Type': 'application/javascript',
-    },
     port: 3000,
     open: true
   }
