@@ -30,13 +30,10 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
         return;
       }
   
-      // För produktion
-      const response = await fetch(form.getAttribute('action') || window.location.href, {
+      // För produktion - använd fetch med rätt endpoint
+      const response = await fetch(window.location.origin + '/.netlify/functions/submission-created', {
         method: 'POST',
-        headers: { 
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams(formData as any).toString(),
+        body: formData,
       });
   
       if (response.ok) {
@@ -46,8 +43,6 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
           setFormStatus('idle');
         }, 3000);
       } else {
-        const errorDetail = await response.text();
-        console.error('Form submission error:', errorDetail);
         throw new Error('Form submission failed');
       }
     } catch (error) {
@@ -114,14 +109,14 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
 
                   {/* Netlify Form */}
                   <form
-                    name="contact"
-                    method="POST"
-                    action="/contact"  // Lägg till denna rad
-                    data-netlify="true"
-                    data-netlify-honeypot="bot-field"
-                    onSubmit={handleFormSubmit}
-                    className="space-y-4"
-                  >
+                      name="contact"
+                      method="POST"
+                      data-netlify="true"
+                      data-netlify-honeypot="bot-field"
+                      netlify-honeypot="bot-field"
+                      onSubmit={handleFormSubmit}
+                      className="space-y-4"
+                    >
                     <input type="hidden" name="form-name" value="contact" />
                     <div className="hidden">
                       <input name="bot-field" />

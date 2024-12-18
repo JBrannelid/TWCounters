@@ -8,7 +8,7 @@
   status = 200
 
 [[redirects]]
-  from = "/contact"
+  from = "/.netlify/functions/submission-created"
   to = "/.netlify/functions/submission-created"
   status = 200
   force = true
