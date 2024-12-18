@@ -30,17 +30,21 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
         return;
       }
   
-      // För produktion - använd enkel POST till root
+      // För produktion
       const response = await fetch('/', {
         method: 'POST',
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(formData as any).toString()
+        headers: { 
+          "Content-Type": "application/x-www-form-urlencoded" 
+        },
+        body: new URLSearchParams({
+          'form-name': 'contact',
+          ...Object.fromEntries(formData)
+        }).toString()
       });
   
       if (response.ok) {
         setFormStatus('sent');
         form.reset();
-        // Visa bekräftelsemeddelande
         setTimeout(() => {
           setFormStatus('idle');
         }, 3000);
@@ -111,16 +115,15 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
 
                   {/* Netlify Form */}
                   <form
-                      name="contact"
-                      method="POST"
-                      data-netlify="true"
-                      data-netlify-honeypot="bot-field"
-                      netlify-honeypot="bot-field"
-                      onSubmit={handleFormSubmit}
-                      className="space-y-4"
-                    >
+                    name="contact"
+                    method="POST"
+                    data-netlify="true"
+                    data-netlify-honeypot="bot-field"
+                    onSubmit={handleFormSubmit}
+                    className="space-y-4"
+                  >
                     <input type="hidden" name="form-name" value="contact" />
-                    <div className="hidden">
+                    <div hidden>
                       <input name="bot-field" />
                     </div>
 
