@@ -31,11 +31,10 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
       }
   
       // För produktion
-      const response = await fetch('/', {
+      const response = await fetch(form.getAttribute('action') || window.location.href, {
         method: 'POST',
         headers: { 
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Accept": "application/json"
+          "Content-Type": "application/x-www-form-urlencoded"
         },
         body: new URLSearchParams(formData as any).toString(),
       });
@@ -43,11 +42,12 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
       if (response.ok) {
         setFormStatus('sent');
         form.reset();
-        // Visa bekräftelsemeddelande
         setTimeout(() => {
           setFormStatus('idle');
-        }, 3000); // Återställ efter 3 sekunder
+        }, 3000);
       } else {
+        const errorDetail = await response.text();
+        console.error('Form submission error:', errorDetail);
         throw new Error('Form submission failed');
       }
     } catch (error) {
@@ -116,6 +116,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                   <form
                     name="contact"
                     method="POST"
+                    action="/contact"  // Lägg till denna rad
                     data-netlify="true"
                     data-netlify-honeypot="bot-field"
                     onSubmit={handleFormSubmit}
