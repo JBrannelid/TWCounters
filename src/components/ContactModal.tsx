@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, X, Heart, Coffee, Globe, Database } from 'lucide-react';
+import { X, Heart, Coffee, Database } from 'lucide-react';
+import { useState } from 'react';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -7,6 +8,44 @@ interface ContactModalProps {
 }
 
 export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
+  // State för att hantera skickad status och felmeddelanden
+  const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+
+  // Hantera formulärinlämning
+  const handleFormSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+  
+    // Sätt status till "sending" för att visa laddningsindikator
+    setFormStatus('sending');
+    setErrorMessage(''); // Rensa tidigare felmeddelanden
+  
+    // Simulera en POST-begäran (du kan byta ut detta med riktig formulärlogik eller backend)
+    try {
+      const response = await fetch('/', {
+        method: 'POST',
+        body: new FormData(event.target as HTMLFormElement),
+      });
+  
+      if (response.ok) {
+        // Om allt gick bra, sätt status till 'sent' och visa bekräftelsemeddelande
+        setFormStatus('sent');
+      } else {
+        throw new Error('Something went wrong, please try again.');
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        // Om felet är en instans av Error, hantera det här
+        setFormStatus('error');
+        setErrorMessage(error.message);
+      } else {
+        // Om felet inte är en instans av Error, sätt ett generiskt felmeddelande
+        setFormStatus('error');
+        setErrorMessage('Something went wrong, please try again.');
+      }
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -32,7 +71,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 overflow-auto max-h-[500px]"> {/* max height and scrollable content */}
               {/* Mission Statement */}
               <div className="flex items-start gap-4">
                 <Heart className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
@@ -49,40 +88,83 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </p>
               </div>
 
-              {/* Contact Info */}
-              <div className="flex items-start gap-4">
-                <Mail className="w-6 h-6 text-purple-400 flex-shrink-0 mt-1" />
-                <div>
-                  <p className="text-white/80 mb-2">
-                    Questions, suggestions, or feedback? I'd love to hear from you! Contact me at:
-                  </p>
-                  <a
-                    href="mailto:jbrannelid@gmail.com"
-                    className="text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    jbrannelid@gmail.com
-                  </a>
-                </div>
-              </div>
+              {/* Form Content */}
+              <div>
+                <p className="text-white/80 mb-2">Have any questions or suggestions? Feel free to drop a message:</p>
 
-              {/* Support Options */}
-              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                <a
-                  href="https://www.buymeacoffee.com/jbrannelid"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-[#FFDD00] text-black hover:bg-[#FFDD00]/90 transition-all"
+                {/* Netlify Form */}
+                <form
+                  name="contact"
+                  method="POST"
+                  data-netlify="true"
+                  onSubmit={handleFormSubmit}
+                  className="space-y-4"
                 >
-                  <Coffee className="w-5 h-5" />
-                  Support the Project
-                </a>
+                  <input type="hidden" name="form-name" value="contact" />
+                  <div className="flex flex-col space-y-2">
+                    <label htmlFor="name" className="text-white/80">Your Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      required
+                      className="p-2 bg-transparent border border-white/30 text-white rounded-lg"
+                      placeholder="Your Name"
+                    />
+                  </div>
+
+                  <div className="flex flex-col space-y-2">
+                    <label htmlFor="email" className="text-white/80">Your Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      id="email"
+                      required
+                      className="p-2 bg-transparent border border-white/30 text-white rounded-lg"
+                      placeholder="Your Email"
+                    />
+                  </div>
+
+                  <div className="flex flex-col space-y-2">
+                    <label htmlFor="message" className="text-white/80">Your Message</label>
+                    <textarea
+                      name="message"
+                      id="message"
+                      required
+                      className="p-2 bg-transparent border border-white/30 text-white rounded-lg"
+                      placeholder="Your Message"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="px-6 py-3 mt-4 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all"
+                    disabled={formStatus === 'sending'}
+                  >
+                    {formStatus === 'sending' ? 'Sending...' : 'Send Message'}
+                  </button>
+                </form>
+
+                {/* Bekräftelse och felmeddelanden */}
+                {formStatus === 'sent' && (
+                  <p className="mt-4 text-green-500">Tack för ditt meddelande! Vi återkommer snart.</p>
+                )}
+                {formStatus === 'error' && (
+                  <p className="mt-4 text-red-500">{errorMessage}</p>
+                )}
               </div>
             </div>
-
             {/* Footer */}
-            <div className="p-4 bg-white/5 flex items-center justify-center gap-2">
-              <Globe className="w-4 h-4 text-white/40" />
-              <span className="text-sm text-white/40">Made with love for the SWGOH community</span>
+            <div className="p-2 bg-white/5 flex items-center justify-center gap-1">
+              <a
+                href="https://www.buymeacoffee.com/jbrannelid"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-[#FFDD00] text-black hover:bg-[#FFDD00]/90 transition-all text-sm"
+              >
+                <Coffee className="w-4 h-4" />
+                <span className="hidden sm:block">Support the Project</span>
+              </a>
             </div>
           </motion.div>
         </div>

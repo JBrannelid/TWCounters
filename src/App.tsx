@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Squad, Fleet, Counter, Filters, FilterKey } from '@/types';
 import { Header } from '@/components/Header';
 import { SearchPanel } from '@/components/SearchPanel';
@@ -18,6 +18,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { SearchBar } from '@/components/SearchBar';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { ensureFirebaseInitialized } from '@/lib/firebase';
 
 // I App.tsx
 const App: React.FC = () => {
@@ -128,9 +129,15 @@ function AppContent() {
 
   // Load initial data
   useEffect(() => {
-    const loadData = async () => {
+    const initializeApp = async () => {
       setIsLoading(true);
+      setError(null);
+      
       try {
+        // Vänta på Firebase-initialisering
+        await ensureFirebaseInitialized();
+        
+        // Hämta all data parallellt
         const { squads, fleets, counters } = await FirebaseService.syncAllData();
         
         setSquads(squads);
@@ -138,13 +145,14 @@ function AppContent() {
         setCounters(counters);
         setHasUnsavedChanges(false);
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('Failed to initialize app:', error);
+        setError('Failed to load application data. Please try again.');
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadData();
+    initializeApp();
   }, []);
 
   // Filter the units based on current filters
@@ -152,22 +160,24 @@ function AppContent() {
   const filteredFleets = activeView === 'fleets' ? filterUnits(fleets, filters) as Fleet[] : [];
 
   // Get counters for a specific unit
-  const getCountersForUnit = (unitId: string, type: 'squad' | 'fleet'): Counter[] => {
+  const getCountersForUnit = useCallback((unitId: string, type: 'squad' | 'fleet'): Counter[] => {
+    if (!counters || !unitId) return [];
+    
     return counters.filter(counter => {
       if (type === 'squad') {
-        const isTargetSquad = counter.targetSquad.id === unitId;
-        const isCounterSquad = counter.counterSquad.id === unitId;
+        const isTargetSquad = counter?.targetSquad?.id === unitId;
+        const isCounterSquad = counter?.counterSquad?.id === unitId;
         return isTargetSquad || isCounterSquad;
       } else {
-        const isTargetFleet = counter.targetSquad.id === unitId;
-        const isCounterFleet = counter.counterSquad.id === unitId;
+        const isTargetFleet = counter?.targetSquad?.id === unitId;
+        const isCounterFleet = counter?.counterSquad?.id === unitId;
         const isTargetCapitalShip = 'capitalShip' in counter.targetSquad && 
           counter.targetSquad.capitalShip?.id === unitId;
         
         return isTargetFleet || isCounterFleet || isTargetCapitalShip;
       }
     });
-  };
+  }, [counters]);
 
   // Save data when it changes
   useEffect(() => {
@@ -283,15 +293,40 @@ function AppContent() {
       }
     },
 
+
     onDeleteSquad: async (id: string) => {
+      if (!isOnline) {
+        setError('Cannot delete while offline');
+        return;
+      }
+  
       try {
+        // Först ta bort alla relaterade counters
+        const relatedCounters = counters.filter(c => 
+          (c?.targetSquad?.id === id || c?.counterSquad?.id === id) && c?.id
+        );
+        
+        // Ta bort counters först
+        await Promise.all(
+          relatedCounters.map(counter => 
+            FirebaseService.deleteCounter(counter.id)
+          )
+        );
+  
+        // Sedan ta bort squad
         await FirebaseService.deleteSquad(id);
+  
+        // Uppdatera local state
+        setCounters(prev => 
+          prev.filter(c => 
+            c?.targetSquad?.id !== id && c?.counterSquad?.id !== id
+          )
+        );
         setSquads(prev => prev.filter(s => s.id !== id));
-        setCounters(prev => prev.filter(c => 
-          c.targetSquad.id !== id && c.counterSquad.id !== id
-        ));
+        
       } catch (error) {
         console.error('Error deleting squad:', error);
+        setError('Failed to delete squad and its counters');
       }
     },
 
@@ -313,14 +348,43 @@ function AppContent() {
     },
 
     onDeleteFleet: async (id: string) => {
+      if (!isOnline) {
+        setError('Cannot delete while offline');
+        return;
+      }
+  
       try {
+        // Först ta bort alla relaterade counters
+        const relatedCounters = counters.filter(c => 
+          (c?.targetSquad?.id === id || 
+           c?.counterSquad?.id === id || 
+           (c?.targetSquad && 'capitalShip' in c.targetSquad && c.targetSquad.capitalShip?.id === id)) && 
+           c?.id
+        );
+        
+        // Ta bort counters först
+        await Promise.all(
+          relatedCounters.map(counter => 
+            FirebaseService.deleteCounter(counter.id)
+          )
+        );
+  
+        // Sedan ta bort fleet
         await FirebaseService.deleteFleet(id);
+  
+        // Uppdatera local state
+        setCounters(prev => 
+          prev.filter(c => 
+            c?.targetSquad?.id !== id && 
+            c?.counterSquad?.id !== id &&
+            !('capitalShip' in c?.targetSquad && c.targetSquad.capitalShip?.id === id)
+          )
+        );
         setFleets(prev => prev.filter(f => f.id !== id));
-        setCounters(prev => prev.filter(c => 
-          c.targetSquad.id !== id && c.counterSquad.id !== id
-        ));
+        
       } catch (error) {
         console.error('Error deleting fleet:', error);
+        setError('Failed to delete fleet and its counters');
       }
     },
 
@@ -381,7 +445,10 @@ function AppContent() {
   if (firebaseLoading || authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-space-black flex items-center justify-center">
-        <LoadingIndicator size="lg" />
+        <div className="flex flex-col items-center gap-4">
+          <LoadingIndicator size="lg" />
+          <p className="text-white/60">Loading application data...</p>
+        </div>
       </div>
     );
   }
@@ -390,7 +457,23 @@ function AppContent() {
   if (error) {
     return (
       <div className="min-h-screen bg-space-black flex items-center justify-center">
-        <div className="text-red-400 text-xl">Error: {error}</div>
+        <div className="p-6 bg-red-500/10 rounded-lg border border-red-500/20 max-w-md w-full text-center">
+          <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h3 className="text-xl font-medium text-red-400 mb-2">
+            Application Error
+          </h3>
+          <p className="text-sm text-red-400/80 mb-6">
+            {error}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2 px-6 py-3 rounded-lg 
+                     bg-red-500/20 text-red-400 hover:bg-red-500/30 mx-auto"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry Loading
+          </button>
+        </div>
       </div>
     );
   }

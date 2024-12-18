@@ -34,7 +34,6 @@ export const Header: React.FC<HeaderProps> = ({
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FFDD00] hover:bg-[#FFDD00]/90 text-black transition-all"
               >
                 <Coffee className="w-5 h-5" />
-                Buy Me a Coffee
               </a>
 
               <button
