@@ -19,34 +19,35 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
     setErrorMessage('');
   
     try {
-      const formData = new FormData(event.currentTarget);
+      const form = event.target as HTMLFormElement;
+      const formData = new FormData(form);
   
-      // I utvecklingsmiljö, simulera framgångsrikt skickande
+      // För utvecklingsmiljö
       if (process.env.NODE_ENV === 'development') {
-        // Simulera en kort fördröjning
         await new Promise(resolve => setTimeout(resolve, 1000));
         setFormStatus('sent');
-        (event.target as HTMLFormElement).reset();
+        form.reset();
         return;
       }
   
-      // I produktionsmiljö, skicka till Netlify
-      const response = await fetch('/', {
+      // För produktion
+      const response = await fetch(form.action || window.location.pathname, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData as any).toString()
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(formData as any).toString(),
       });
   
       if (response.ok) {
         setFormStatus('sent');
-        (event.target as HTMLFormElement).reset();
+        form.reset();
       } else {
-        throw new Error('Network response was not ok');
+        const errorData = await response.text();
+        throw new Error(errorData || 'Form submission failed');
       }
     } catch (error) {
       console.error('Submission error:', error);
       setFormStatus('error');
-      setErrorMessage('Failed to send message. Please try again.');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to send message. Please try again.');
     }
   };
   
@@ -56,6 +57,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
         <input type="text" name="name" />
         <input type="email" name="email" />
         <textarea name="message"></textarea>
+        <input name="bot-field" />
       </form>
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -103,15 +105,19 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
 
                 {/* Netlify Form */}
                 <form
-                  name="contact"
-                  method="POST"
-                  data-netlify="true"
-                  data-netlify-honeypot="bot-field"
-                  onSubmit={handleFormSubmit}
-                  className="space-y-4"
-                >
-                  <input type="hidden" name="form-name" value="contact" />
-                  <div className="flex flex-col space-y-2">
+                    name="contact"
+                    method="POST"
+                    action="/success" // Lägg till detta
+                    data-netlify="true"
+                    data-netlify-honeypot="bot-field"
+                    onSubmit={handleFormSubmit}
+                    className="space-y-4"
+                  >
+                    <input type="hidden" name="form-name" value="contact" />
+                    <div className="hidden">
+                      <input name="bot-field" />
+                    </div>
+                    <div className="flex flex-col space-y-2">
                     <label htmlFor="name" className="text-white/80">Your Name</label>
                     <input
                       type="text"
