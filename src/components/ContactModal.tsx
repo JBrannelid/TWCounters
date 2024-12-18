@@ -30,15 +30,17 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
         return;
       }
   
-      // För produktion - använd fetch med rätt endpoint
-      const response = await fetch(window.location.origin + '/.netlify/functions/submission-created', {
+      // För produktion - använd enkel POST till root
+      const response = await fetch('/', {
         method: 'POST',
-        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(formData as any).toString()
       });
   
       if (response.ok) {
         setFormStatus('sent');
         form.reset();
+        // Visa bekräftelsemeddelande
         setTimeout(() => {
           setFormStatus('idle');
         }, 3000);
