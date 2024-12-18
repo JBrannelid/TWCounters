@@ -7,9 +7,6 @@
   to = "/index.html"
   status = 200
 
-[[plugins]]
-  package = "@netlify/plugin-form-handling"
-
 [forms]
   [[forms]]
     name = "contact"
