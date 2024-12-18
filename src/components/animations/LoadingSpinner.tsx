@@ -1,3 +1,5 @@
+/*
+
 import { motion } from 'framer-motion';
 
 interface LoadingSpinnerProps {
@@ -35,3 +37,5 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     </div>
   );
 };
+
+*/  

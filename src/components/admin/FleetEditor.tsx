@@ -9,7 +9,7 @@ import { normalizeId } from '@/lib/imageMapping';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UnitSelector } from '../UnitSelector';
 import { useFirebase } from '@/contexts/FirebaseContext';
-import { LoadingIndicator } from '../ui/LoadingIndicator';
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 interface EditModalProps {

@@ -442,16 +442,18 @@ function AppContent() {
   };
 
   // Combined loading state
-  if (firebaseLoading || authLoading || isLoading) {
-    return (
-      <div className="min-h-screen bg-space-black flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <LoadingIndicator size="lg" />
-          <p className="text-white/60">Loading application data...</p>
-        </div>
-      </div>
-    );
-  }
+// I App.tsx
+// Under combined loading state
+if (firebaseLoading || authLoading || isLoading) {
+  return (
+    <div className="min-h-screen bg-space-black flex items-center justify-center">
+      <LoadingIndicator 
+        size="lg"
+        message="Loading application data..."
+      />
+    </div>
+  );
+}
 
   // Error handling
   if (error) {

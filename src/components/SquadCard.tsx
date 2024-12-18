@@ -28,12 +28,14 @@ export const SquadCard = memo<SquadCardProps>(({
   onViewDetails,
   isFiltered = false
 }) => {
-  console.log('Rendering SquadCard:', {
-    name: squad.name,
-    characters: squad.characters,
-    leader: squad.leader,
-    counters: counters.length
-  });
+  // Validate required props
+  if (!squad || !squad.characters || !Array.isArray(squad.characters)) {
+    console.error('Invalid squad data:', squad);
+    return null;
+  }
+
+  // Safely handle counters
+  const safeCounters = Array.isArray(counters) ? counters : [];
 
   return (
     <ErrorBoundary 
@@ -132,9 +134,10 @@ export const SquadCard = memo<SquadCardProps>(({
                 </div>
               ))}
             </div>
+
             {/* Counters Section */}
             <AnimatePresence>
-              {isSelected && counters.length > 0 && (
+              {isSelected && safeCounters.length > 0 && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
@@ -143,86 +146,78 @@ export const SquadCard = memo<SquadCardProps>(({
                   className="mt-6 space-y-4 overflow-hidden"
                 >
                   <h4 className="text-lg font-medium text-white">Counters</h4>
-                  {counters.map((counter) => (
-                    <div
-                      key={counter.id}
-                      className="p-4 bg-white/5 rounded-lg space-y-4"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded-full text-xs
-                            ${counter.counterType === 'hard'
-                              ? 'bg-green-500/20 text-green-400'
-                              : counter.counterType === 'soft'
-                              ? 'bg-yellow-500/20 text-yellow-400'
-                              : 'bg-red-500/20 text-red-400'
-                            }`}
-                          >
-                            {counter.counterType.charAt(0).toUpperCase() + counter.counterType.slice(1)}
-                          </span>
-                          
-                          {counter.twOmicronRequired && (
-                            <span className="px-2 py-1 rounded-full text-xs bg-purple-500/20 text-purple-400">
-                              TW Omni
+                  {safeCounters.map((counter) => {
+                    // Validate counter data
+                    if (!counter || !counter.counterSquad) return null;
+
+                    return (
+                      <div
+                        key={counter.id}
+                        className="p-4 bg-white/5 rounded-lg space-y-4"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 rounded-full text-xs
+                              ${counter.counterType === 'hard'
+                                ? 'bg-green-500/20 text-green-400'
+                                : counter.counterType === 'soft'
+                                ? 'bg-yellow-500/20 text-yellow-400'
+                                : 'bg-red-500/20 text-red-400'
+                              }`}
+                            >
+                              {counter.counterType.charAt(0).toUpperCase() + counter.counterType.slice(1)}
                             </span>
+                            
+                            {counter.twOmicronRequired && (
+                              <span className="px-2 py-1 rounded-full text-xs bg-purple-500/20 text-purple-400">
+                                TW Omni
+                              </span>
+                            )}
+                            
+                            {counter.video_url && <VideoIndicator videoUrl={counter.video_url} />}
+                          </div>
+                          {isAdmin && onDeleteCounter && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteCounter(counter.id);
+                              }}
+                              className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           )}
-                          
-                          {counter.video_url && <VideoIndicator videoUrl={counter.video_url} />}
                         </div>
-                        {isAdmin && onDeleteCounter && (
-                          <button
-                            onClick={() => onDeleteCounter(counter.id)}
-                            className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+
+                        <p className="mt-2 text-white/70">{counter.description}</p>
+
+                        {/* Counter Squad Preview */}
+                        {'characters' in counter.counterSquad && (
+                          <div className="flex items-center gap-2">
+                            {counter.counterSquad.leader && (
+                              <UnitImage
+                                id={counter.counterSquad.leader.id}
+                                name={counter.counterSquad.leader.name}
+                                type="squad-leader"
+                                size="sm"
+                                className="border-2 border-blue-400"
+                              />
+                            )}
+                            {counter.counterSquad.characters.map((char) => (
+                              <UnitImage
+                                key={char.id}
+                                id={char.id}
+                                name={char.name}
+                                type="squad-member"
+                                size="sm"
+                                className="border-2 border-white/20"
+                              />
+                            ))}
+                          </div>
                         )}
                       </div>
-
-                      <p className="mt-2 text-white/70">{counter.description}</p>
-
-                      {/* Mod Requirements - i samma stil som fleet exemplet */}
-                      {counter.requirements?.length > 0 && (
-                        <div className="mt-3">
-                          <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                            <h4 className="text-sm font-medium text-blue-400 mb-1">Mod Requirements</h4>
-                            {counter.requirements
-                              .filter(req => req.type === 'mods')
-                              .map((req, index) => (
-                                <div key={index} className="text-sm text-white/70">
-                                  {req.description}
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Counter Squad Preview */}
-                      {'characters' in counter.counterSquad && (
-                        <div className="flex items-center gap-2">
-                          {counter.counterSquad.leader && (
-                            <UnitImage
-                              id={counter.counterSquad.leader.id}
-                              name={counter.counterSquad.leader.name}
-                              type="squad-leader"
-                              size="sm"
-                              className="border-2 border-blue-400"
-                            />
-                          )}
-                          {counter.counterSquad.characters.map((char) => (
-                            <UnitImage
-                              key={char.id}
-                              id={char.id}
-                              name={char.name}
-                              type="squad-member"
-                              size="sm"
-                              className="border-2 border-white/20"
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>

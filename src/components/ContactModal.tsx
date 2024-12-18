@@ -13,41 +13,50 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Hantera formulärinlämning
-  const handleFormSubmit = async (event: React.FormEvent) => {
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-  
-    // Sätt status till "sending" för att visa laddningsindikator
     setFormStatus('sending');
-    setErrorMessage(''); // Rensa tidigare felmeddelanden
+    setErrorMessage('');
   
-    // Simulera en POST-begäran (du kan byta ut detta med riktig formulärlogik eller backend)
     try {
+      const formData = new FormData(event.currentTarget);
+  
+      // I utvecklingsmiljö, simulera framgångsrikt skickande
+      if (process.env.NODE_ENV === 'development') {
+        // Simulera en kort fördröjning
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setFormStatus('sent');
+        (event.target as HTMLFormElement).reset();
+        return;
+      }
+  
+      // I produktionsmiljö, skicka till Netlify
       const response = await fetch('/', {
         method: 'POST',
-        body: new FormData(event.target as HTMLFormElement),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formData as any).toString()
       });
   
       if (response.ok) {
-        // Om allt gick bra, sätt status till 'sent' och visa bekräftelsemeddelande
         setFormStatus('sent');
+        (event.target as HTMLFormElement).reset();
       } else {
-        throw new Error('Something went wrong, please try again.');
+        throw new Error('Network response was not ok');
       }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        // Om felet är en instans av Error, hantera det här
-        setFormStatus('error');
-        setErrorMessage(error.message);
-      } else {
-        // Om felet inte är en instans av Error, sätt ett generiskt felmeddelande
-        setFormStatus('error');
-        setErrorMessage('Something went wrong, please try again.');
-      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      setFormStatus('error');
+      setErrorMessage('Failed to send message. Please try again.');
     }
   };
-
+  
   return (
     <AnimatePresence>
+      <form name="contact" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+        <input type="text" name="name" />
+        <input type="email" name="email" />
+        <textarea name="message"></textarea>
+      </form>
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <motion.div
@@ -97,6 +106,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                   name="contact"
                   method="POST"
                   data-netlify="true"
+                  data-netlify-honeypot="bot-field"
                   onSubmit={handleFormSubmit}
                   className="space-y-4"
                 >
@@ -147,13 +157,14 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
 
                 {/* Bekräftelse och felmeddelanden */}
                 {formStatus === 'sent' && (
-                  <p className="mt-4 text-green-500">Tack för ditt meddelande! Vi återkommer snart.</p>
+                  <p className="mt-4 text-green-500">Thank you for your message! We will get back to you soon.</p>
                 )}
                 {formStatus === 'error' && (
                   <p className="mt-4 text-red-500">{errorMessage}</p>
                 )}
               </div>
             </div>
+
             {/* Footer */}
             <div className="p-2 bg-white/5 flex items-center justify-center gap-1">
               <a

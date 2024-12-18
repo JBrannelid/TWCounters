@@ -11,7 +11,7 @@ import { UnitSelector } from '../UnitSelector';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { useFirebase } from '@/contexts/FirebaseContext';
-import { LoadingIndicator } from '../ui/LoadingIndicator';
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 
 interface EditModalProps {
   squad: Squad;

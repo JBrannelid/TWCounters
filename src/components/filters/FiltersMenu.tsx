@@ -18,6 +18,7 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
   onFilterChange
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'searchTerm') return false;
@@ -93,6 +94,7 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
         trap.deactivate();
       };
     }
+    return;
   }, [isOpen]);
 
   const resetFilters = () => {
@@ -110,25 +112,19 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
       className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 ${!isOpen && 'pointer-events-none'}`}
+      onClick={onClose}
     >
       <motion.div
         ref={menuRef}
-        initial={{ x: '100%', opacity: 0 }}
-        animate={{ 
-          x: isOpen ? 0 : '100%',
-          opacity: isOpen ? 1 : 0
-        }}
-        transition={{ 
-          type: "spring",
-          stiffness: 300,
-          damping: 30
-        }}
-        className="fixed inset-y-0 right-0 w-full max-w-md bg-gradient-to-br 
-                 from-space-darker/90 to-space-dark/90 backdrop-blur-xl
-                 border-l border-white/10 shadow-2xl rounded-l-2xl
-                 overflow-hidden z-50"
+        initial={{ x: '100%' }}
+        animate={{ x: isOpen ? 0 : '100%' }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="fixed inset-y-0 right-0 w-full max-w-md flex flex-col bg-gradient-to-br 
+                 from-space-darker/90 to-space-dark/90 backdrop-blur-xl border-l 
+                 border-white/10 shadow-2xl rounded-l-2xl overflow-hidden z-50"
+        onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Header Section */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-2">
             <Filter className={`w-5 h-5 ${hasActiveFilters ? 'text-blue-400' : 'text-white/60'}`} />
@@ -145,12 +141,17 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
           </motion.button>
         </div>
 
-        {/* Filter Content */}
-        <div className="h-[calc(100vh-80px)] overflow-y-auto custom-scrollbar">
+        {/* Scrollable Content */}
+        <div ref={contentRef} className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-6 space-y-8">
             {/* Filter Categories */}
             {filterCategories.map((category) => (
-              <div key={category.title} className="space-y-4">
+              <motion.div
+                key={category.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4"
+              >
                 <h3 className="text-sm font-medium text-white/60">{category.title}</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {category.options.map((option) => (
@@ -174,11 +175,15 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                     </motion.button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ))}
 
             {/* Toggle Options */}
-            <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-4"
+            >
               <h3 className="text-sm font-medium text-white/60">Additional Options</h3>
               {toggleOptions.map((option) => (
                 <motion.label
@@ -204,13 +209,12 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                   </div>
                 </motion.label>
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
 
-        {/* Reset Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/10 
-                      bg-space-darker/90 backdrop-blur-xl">
+        {/* Footer Section - Fixed at Bottom */}
+        <div className="p-6 border-t border-white/10 bg-space-darker/90 backdrop-blur-xl">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
