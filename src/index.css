@@ -1,4 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Titillium+Web:wght@300;400;600;700&display=swap');
+/* Font definitions */
+@layer base {
+  @font-face {
+    font-family: 'Orbitron';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+  }
+
+  @font-face {
+    font-family: 'Titillium Web';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap');
+  }
+}
 
 @tailwind base;
 @tailwind components;
@@ -10,12 +27,25 @@
   --color-space-dark: #1A1E27;
 }
 
+/* Media query för skärmar mindre än 640px */
+@media (max-width: 640px) {
+  .hero-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
 /* Base styles */
 html, body {
   @apply bg-space-black min-h-screen text-white;
   background-image: url('/patterns/space.svg');
   background-attachment: fixed;
-  font-family: 'Titillium Web', sans-serif;
+  font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
+}
+
+/* Font classes */
+.font-orbitron {
+  font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
 }
 
 /* Glass effect base styles */

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 export type ImageType = 'character' | 'squad-leader' | 'squad-member' | 'ship' | 'capital-ship';
 
-// Add new image cache
+// Behåll image cache
 const imageCache: Record<string, string> = {};
 
 interface UnitImageProps {
@@ -79,6 +79,8 @@ export const UnitImage = memo<UnitImageProps>(({
     return () => { isMounted = false; };
   }, [id, type]);
 
+  // Skapa sizes string baserat på komponentens storlek
+
   return (
     <div className={cn(
       'relative',
@@ -93,9 +95,10 @@ export const UnitImage = memo<UnitImageProps>(({
           'w-full h-full',
           'object-cover rounded-full',
           'transition-opacity duration-300',
-          isLoading ? 'opacity-0' : 'opacity-100',
+          isLoading ? 'opacity-0 blur-md' : 'opacity-100',
           hasError ? 'grayscale opacity-50' : ''
         )}
+        loading="lazy"
         onLoad={onLoad}
         onError={() => {
           setHasError(true);

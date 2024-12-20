@@ -58,16 +58,24 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
         
         try {
           await ensureFirebaseInitialized();
+          
+          const firestoreTimeout = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Firestore connection timeout')), 10000);
+          });
+          
+          await Promise.race([
+            FirebaseService.syncAllData(),
+            firestoreTimeout
+          ]);
+          
+          setIsInitialized(true);
         } catch (error) {
-          throw new Error('Firebase failed to initialize');
+          console.error('Firebase initialization error:', error);
+          setError(error instanceof Error ? error.message : 'Failed to initialize Firebase');
         }
-        
-        await FirebaseService.syncAllData();
-        
-        setIsInitialized(true);
       } catch (err) {
-        console.error('Firebase initialization error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to initialize Firebase');
+        console.error('Error in initialize:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
       } finally {
         setIsLoading(false);
       }

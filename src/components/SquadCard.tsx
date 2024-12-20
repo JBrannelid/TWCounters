@@ -1,6 +1,6 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, Users, Trash2, Info } from 'lucide-react';
+import { Users, Trash2 } from 'lucide-react';
 import { Squad, Counter } from '@/types';
 import { GlassCard } from './ui/GlassCard';
 import { UnitImage } from './ui/UnitImage';
@@ -25,9 +25,12 @@ export const SquadCard = memo<SquadCardProps>(({
   counters,
   isAdmin,
   onDeleteCounter,
-  onViewDetails,
   isFiltered = false
 }) => {
+  const [] = useState(false);
+  // Log data to console
+  console.log('Full squad data:', squad);
+
   // Validate required props
   if (!squad || !squad.characters || !Array.isArray(squad.characters)) {
     console.error('Invalid squad data:', squad);
@@ -78,18 +81,27 @@ export const SquadCard = memo<SquadCardProps>(({
                     </span>
                   )}
                 </div>
-              </div>
+              </div>   
+              {/* Visa metadata i Icon Tooltip */}
+              {/* 
               <div className="flex items-center gap-2">
                 {onViewDetails && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onViewDetails();
-                    }}
-                    className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg"
-                  >
-                    <Info className="w-4 h-4" />
-                  </button>
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMetadata(true);
+                      }}
+                      className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg"
+                    >
+                      <Info className="w-4 h-4" />
+                    </button>
+                    <MetadataView 
+                      isOpen={showMetadata}
+                      onClose={() => setShowMetadata(false)}
+                      data={squad}
+                    />
+                  </>
                 )}
                 <button
                   className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg"
@@ -100,7 +112,7 @@ export const SquadCard = memo<SquadCardProps>(({
                     <ChevronDown className="w-4 h-4" />
                   )}
                 </button>
-              </div>
+              </div> */}
             </div>
 
             {/* Squad Members */}

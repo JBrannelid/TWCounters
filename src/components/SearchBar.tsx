@@ -104,12 +104,14 @@ export const SearchBar = memo<SearchBarProps>(({
                     src={imageUrls[item.leader.id] || '/placeholder.png'}
                     alt={item.leader.name}
                     className="w-8 h-8 rounded-full object-cover"
+                    loading="lazy" // Implementera lazy loading
                   />
                 ) : 'capitalShip' in item && item.capitalShip ? (
                   <img
                     src={imageUrls[item.capitalShip.id] || '/placeholder.png'}
                     alt={item.capitalShip.name}
                     className="w-8 h-8 rounded-full object-cover"
+                    loading="lazy" // Implementera lazy loading
                   />
                 ) : null}
                 <div>

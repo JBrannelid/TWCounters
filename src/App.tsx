@@ -19,44 +19,55 @@ import { SearchBar } from '@/components/SearchBar';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { ensureFirebaseInitialized } from '@/lib/firebase';
+import { Helmet } from 'react-helmet';
 
 // I App.tsx
 const App: React.FC = () => {
+  const currentView = 'Squads';
+
   return (
-    <ErrorBoundary 
-      fallback={
-        <div className="min-h-screen bg-space-darker flex items-center justify-center">
-          <div className="p-6 bg-red-500/10 rounded-lg border border-red-500/20 max-w-md w-full text-center">
-            <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-red-400 mb-2">
-              Application Error
-            </h3>
-            <p className="text-sm text-red-400/80 mb-6">
-              We apologize, but something went wrong with the application. 
-              Please try refreshing the page.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg 
-                       bg-red-500/20 text-red-400 hover:bg-red-500/30 mx-auto"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Reload Application
-            </button>
+    <>
+      <Helmet>
+        <title>{`SWGOH TW Counters - ${currentView}`}</title>
+        <meta name="description" content={`View ${currentView} counters for SWGOH Territory Wars`} />
+        <meta property="og:title" content={`SWGOH TW Counters - ${currentView}`} />
+        <meta property="og:description" content={`View ${currentView} counters for SWGOH Territory Wars`} />
+      </Helmet>
+      <ErrorBoundary 
+        fallback={
+          <div className="min-h-screen bg-space-darker flex items-center justify-center">
+            <div className="p-6 bg-red-500/10 rounded-lg border border-red-500/20 max-w-md w-full text-center">
+              <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-red-400 mb-2">
+                Application Error
+              </h3>
+              <p className="text-sm text-red-400/80 mb-6">
+                We apologize, but something went wrong with the application. 
+                Please try refreshing the page.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 px-6 py-3 rounded-lg 
+                         bg-red-500/20 text-red-400 hover:bg-red-500/30 mx-auto"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Reload Application
+              </button>
+            </div>
           </div>
-        </div>
-      }
-    >
-      <FirebaseProvider>
-        <AuthProvider>
-          <ThemeProvider>
-            <CounterProvider>
-              <AppContent />
-            </CounterProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </FirebaseProvider>
-    </ErrorBoundary>
+        }
+      >
+        <FirebaseProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              <CounterProvider>
+                <AppContent />
+              </CounterProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </FirebaseProvider>
+      </ErrorBoundary>
+    </>
   );
 }
 

@@ -9,6 +9,7 @@ import {
   writeBatch,
   getDoc,
   serverTimestamp,
+  Timestamp,
 } from 'firebase/firestore';
 import { Squad, Fleet, Counter, ChangeRecord } from '@/types';
 import { squadValidators } from '@/lib/validators';
@@ -161,25 +162,36 @@ export class FirebaseService {
           if (!validation.isValid) {
             throw new Error(validation.error || 'Invalid squad data');
           }
-
+  
           const userId = await this.getCurrentUserId();
           const isUpdate = await this.documentExists('squads', squad.id);
-          const timestamp = serverTimestamp();
-          
+          const now = Date.now(); // Använd millisekundstidsstämpel
+  
+          // Om det är en ny squad, sätt createdAt till nuvarande tid
           const normalizedSquad = {
             ...squad,
-            lastUpdated: timestamp,
-            createdAt: isUpdate ? undefined : timestamp,
-            updatedBy: userId
+            lastUpdated: now, // Använd nuvarande tidpunkt för lastUpdated
+            createdAt: isUpdate ? squad.createdAt : now, // Sätt createdAt till nu om det är en ny post
+            updatedBy: userId,
+            type: 'squad' // Säkerställ att type alltid är satt
           };
-
+  
+          // Om createdAt är undefined (vilket skulle kunna hända för en uppdatering), ta bort den från dataobjektet
+          if (normalizedSquad.createdAt === undefined) {
+            delete normalizedSquad.createdAt;
+          }
+  
           const docRef = doc(db, 'squads', squad.id);
-          await setDoc(docRef, this.cleanDataForFirestore(normalizedSquad));
+          // Här kan vi använda merge för att uppdatera dokumentet utan att skriva över hela dokumentet
+          await setDoc(docRef, normalizedSquad, { merge: true });
+  
+          // Logga för att verifiera data
+          console.log('Saving squad with timestamps:', normalizedSquad);
         },
         'Failed to save squad'
       );
     });
-  }
+  }  
   
   private static validateFleetData(fleet: Fleet): boolean {
     const hasValidShips = fleet.startingLineup?.every(ship => 
@@ -208,20 +220,24 @@ export class FirebaseService {
           if (!this.validateFleetData(fleet)) {
             throw new Error('Invalid fleet data structure');
           }
-
+  
           const userId = await this.getCurrentUserId();
           const isUpdate = await this.documentExists('fleets', fleet.id);
-          const timestamp = serverTimestamp();
+          const now = Date.now(); // Använd timestamp i millisekunder
           
           const normalizedFleet = {
             ...fleet,
-            lastUpdated: timestamp,
-            createdAt: isUpdate ? undefined : timestamp,
-            updatedBy: userId
+            lastUpdated: now,
+            createdAt: isUpdate ? (fleet.createdAt || now) : now,
+            updatedBy: userId,
+            type: 'fleet'
           };
-
+  
           const docRef = doc(db, 'fleets', fleet.id);
-          await setDoc(docRef, this.cleanDataForFirestore(normalizedFleet));
+          await setDoc(docRef, normalizedFleet, { merge: true });
+  
+          // Logga för att verifiera data
+          console.log('Saving fleet with timestamps:', normalizedFleet);
         },
         'Failed to save fleet'
       );
@@ -350,32 +366,96 @@ static async deleteCounter(counterId: string): Promise<void> {
 }
 
   // Fetch operations
-static async getSquads(): Promise<Squad[]> {
-  try {
-    const querySnapshot = await getDocs(collection(db, 'squads'));
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as Squad[];
-  } catch (error) {
-    console.error('Error getting squads:', error);
-    throw new Error('Failed to get squads');
+  static async getFleets(): Promise<Fleet[]> {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'fleets'));
+      return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log('Raw fleet data before processing:', data);
+        
+        // Säker hantering av timestamps
+        let processedData: Partial<Fleet> = {
+          ...data,
+          id: doc.id,
+        };
+  
+        // Försök konvertera timestamps om de finns
+        try {
+          if (data.createdAt) {
+            if (data.createdAt instanceof Timestamp) { // Om det är ett Firestore Timestamp
+              processedData.createdAt = data.createdAt.toDate().toISOString();
+            } else if (typeof data.createdAt === 'number') { // Om det är en millisekundstidsstämpel
+              processedData.createdAt = new Date(data.createdAt).toISOString();
+            }
+          }
+  
+          if (data.lastUpdated) {
+            if (data.lastUpdated instanceof Timestamp) { // Om det är ett Firestore Timestamp
+              processedData.lastUpdated = data.lastUpdated.toDate().toISOString();
+            } else if (typeof data.lastUpdated === 'number') { // Om det är en millisekundstidsstämpel
+              processedData.lastUpdated = new Date(data.lastUpdated).toISOString();
+            }
+          }
+        } catch (timestampError) {
+          console.warn('Error processing timestamps:', timestampError);
+        }
+  
+        console.log('Processed fleet data:', processedData);
+        return processedData as Fleet;
+      });
+    } catch (error) {
+      console.error('Error getting fleets:', error);
+      throw new Error('Failed to get fleets');
+    }
   }
-}
-
-
-static async getFleets(): Promise<Fleet[]> {
-  try {
-    const querySnapshot = await getDocs(collection(db, 'fleets'));
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as Fleet[];
-  } catch (error) {
-    console.error('Error getting fleets:', error);
-    throw new Error('Failed to get fleets');
+  
+  static async getSquads(): Promise<Squad[]> {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'squads'));
+      if (querySnapshot.empty) {
+        console.warn('No squads found');
+        return [];
+      }
+  
+      return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log('Raw squad data before processing:', data);
+  
+        // Säker hantering av timestamps
+        let processedData: Partial<Squad> = {
+          ...data,
+          id: doc.id,
+        };
+  
+        // Försök konvertera timestamps om de finns
+        try {
+          if (data.createdAt) {
+            if (data.createdAt instanceof Timestamp) { // Om det är ett Firestore Timestamp
+              processedData.createdAt = data.createdAt.toDate().toISOString();
+            } else if (typeof data.createdAt === 'number') { // Om det är en millisekundstidsstämpel
+              processedData.createdAt = new Date(data.createdAt).toISOString();
+            }
+          }
+  
+          if (data.lastUpdated) {
+            if (data.lastUpdated instanceof Timestamp) { // Om det är ett Firestore Timestamp
+              processedData.lastUpdated = data.lastUpdated.toDate().toISOString();
+            } else if (typeof data.lastUpdated === 'number') { // Om det är en millisekundstidsstämpel
+              processedData.lastUpdated = new Date(data.lastUpdated).toISOString();
+            }
+          }
+        } catch (timestampError) {
+          console.warn('Error processing timestamps:', timestampError);
+        }
+  
+        console.log('Processed squad data:', processedData);
+        return processedData as Squad;
+      });
+    } catch (error) {
+      console.error('Error getting squads:', error);
+      throw new Error('Failed to get squads');
+    }
   }
-}
 
 static async getCounters(): Promise<Counter[]> {
   try {

@@ -1,0 +1,1 @@
+export function getDefaultHeaders(nonce: string): { [key: string]: string };

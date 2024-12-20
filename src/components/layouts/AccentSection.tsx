@@ -25,14 +25,14 @@ export const AccentSection: React.FC<AccentSectionProps> = ({
       )}
       {...motionProps}
     >
-      <div className={cn(
-        "bg-space-gradient bg-dots-pattern bg-dots",
-        "backdrop-blur-md",
-        withBorder && "border-b border-white/10",
-        "px-4 py-6"
-      )}>
+        <div className={cn(
+          "bg-space-gradient bg-dots-pattern bg-dots",
+          "backdrop-blur-md",
+          withBorder && "border-b border-white/10",
+          "px-4 py-6 sm:px-6 sm:py-8"
+        )}>
         {/* Subtle glow effect */}
-        <div className="absolute inset-0 bg-glow-pattern opacity-30" />
+        <div className="absolute inset-0 bg-glow-pattern opacity-30 sm:opacity-50" />
         
         {/* Main content */}
         <div className="relative z-10 container mx-auto">

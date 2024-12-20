@@ -1,6 +1,6 @@
-import { memo } from 'react';
+import { memo, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, Ship, Trash2, Info, Plus } from 'lucide-react';
+import { Ship, Trash2, Plus } from 'lucide-react';
 import { Fleet, Counter } from '@/types';
 import { GlassCard } from './ui/GlassCard';
 import { UnitImage } from './ui/UnitImage';
@@ -26,16 +26,13 @@ export const FleetCard = memo<FleetCardProps>(({
   counters,
   isAdmin,
   onDeleteCounter,
-  onViewDetails,
   isFiltered = false,
   onAddCounter
 }) => {
-  console.log('Rendering FleetCard:', {
-    name: fleet.name,
-    startingLineup: fleet.startingLineup,
-    capitalShip: fleet.capitalShip,
-    counters: counters.length
-  });
+  const [] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+// Log data to console
+console.log('Full fleet data:', fleet);
 
   // Filtrera counters för denna fleet
   const fleetCounters = counters.filter(counter => {
@@ -92,17 +89,26 @@ export const FleetCard = memo<FleetCardProps>(({
                 </span>
               </div>
             </div>
+              {/* Visa metadata i Icon Tooltip*/}
+              {/*
             <div className="flex items-center gap-2">
               {onViewDetails && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onViewDetails();
-                  }}
-                  className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg"
-                >
-                  <Info className="w-4 h-4" />
-                </button>
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMetadata(true);
+                    }}
+                    className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                  <MetadataView 
+                    isOpen={showMetadata}
+                    onClose={() => setShowMetadata(false)}
+                    data={fleet}
+                  />
+                </>
               )}
               <button
                 onClick={(e) => {
@@ -118,7 +124,7 @@ export const FleetCard = memo<FleetCardProps>(({
                   <ChevronDown className="w-4 h-4" />
                 )}
               </button>
-            </div>
+            </div>  */}
           </div>
 
           {/* Fleet Formation */}
@@ -183,6 +189,7 @@ export const FleetCard = memo<FleetCardProps>(({
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 className="mt-6 space-y-4 overflow-hidden"
+                ref={contentRef}
               >
                 <h4 className="text-lg font-medium text-white">Counters</h4>
                 {fleetCounters.map((counter) => (
