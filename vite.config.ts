@@ -56,7 +56,15 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       strictPort: true,
-      headers: getSecurityHeaders(nonce),
+      headers: {
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Cross-Origin-Resource-Policy': 'same-origin',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': "camera=(), microphone=(), geolocation=()",
+        'X-XSS-Protection': '1; mode=block',
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+      },
       https: isProduction ? {
         key: process.env.HTTPS_KEY,
         cert: process.env.HTTPS_CERT

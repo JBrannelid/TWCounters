@@ -122,8 +122,3 @@ export const createScriptElement = (src: string, nonce: string): HTMLScriptEleme
   script.nonce = nonce;
   return script;
 };
-
-const getSecurityHeaders = (nonce: string) => ({
-  'Content-Security-Policy': "default-src *; script-src *; style-src *; img-src *; connect-src *;",
-  // ... andra headers ...
-});
