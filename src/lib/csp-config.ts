@@ -10,9 +10,16 @@ export const generateCSPString = (nonce: string): string => {
       "'self'",
       "'unsafe-eval'",
       "'unsafe-inline'",
+      "https://cdnjs.cloudflare.com",
+      "https://*.firebaseio.com",
       "http://localhost:5173",
       "ws://localhost:5173"
     ],
+    'style-src': [
+  "'self'",
+  "'unsafe-inline'",
+  "https://fonts.googleapis.com"
+],
     'connect-src': [
       "'self'",
       "ws://localhost:5173",
@@ -54,6 +61,7 @@ export const generateCSPString = (nonce: string): string => {
       "https://*.googleapis.com",
       "https://*.google.com",
       "https://firebasestorage.googleapis.com",
+      "https://*.googleusercontent.com",
       "https://*.cloudflare.com"
     ],
     'font-src': [
