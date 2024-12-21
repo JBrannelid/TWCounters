@@ -108,3 +108,24 @@ img.error-image {
     @apply bg-white/10 text-white hover:bg-white/20;
   }
 }
+
+.hero-section {
+  padding: 1rem; /* Base mobile-first styles */
+}
+
+/* Tablet and desktop styles */
+@media (min-width: 640px) {
+  .hero-section {
+    padding: 2rem;
+  }
+}
+
+/* Ensure content is visible on mobile */
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+html {
+  height: -webkit-fill-available;
+}

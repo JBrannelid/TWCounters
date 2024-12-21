@@ -10,16 +10,9 @@ export const generateCSPString = (nonce: string): string => {
       "'self'",
       "'unsafe-eval'",
       "'unsafe-inline'",
-      "https://cdnjs.cloudflare.com",
-      "https://*.firebaseio.com",
       "http://localhost:5173",
       "ws://localhost:5173"
     ],
-    'style-src': [
-  "'self'",
-  "'unsafe-inline'",
-  "https://fonts.googleapis.com"
-],
     'connect-src': [
       "'self'",
       "ws://localhost:5173",
@@ -29,20 +22,13 @@ export const generateCSPString = (nonce: string): string => {
       "https://*.firebaseio.com",
       "https://firestore.googleapis.com",
       "https://identitytoolkit.googleapis.com",
-      "https://securetoken.googleapis.com",
-      "https://fonts.gstatic.com",
-      "https://*.firebaseio.com",
-      "https://firebasestorage.googleapis.com",
+      "https://securetoken.googleapis.com"
     ]
   } : {
     'script-src': [
       "'strict-dynamic'",
-      "'unsafe-eval'",
-      "'unsafe-inline'",
       `'nonce-${nonce}'`,
-      "'self'",
-      "https://cdnjs.cloudflare.com",
-      "https://*.firebaseio.com"
+      "'self'"
     ],
     'connect-src': [
       "'self'",
@@ -57,24 +43,18 @@ export const generateCSPString = (nonce: string): string => {
 
   const baseDirectives = {
     'default-src': ["'self'"],
-    'script-src': [
-      "'self'",
-      "'unsafe-inline'",
-      "'unsafe-eval'",
-      "https://cdnjs.cloudflare.com",
-      "https://*.firebaseio.com"
-    ],
     'style-src': [
       "'self'",
-      "'unsafe-inline'",
-      "https://fonts.googleapis.com"
+      "'unsafe-inline'"
     ],
     'img-src': [
       "'self'",
       "data:",
       "blob:",
+      "https://*.googleapis.com",
+      "https://*.google.com",
       "https://firebasestorage.googleapis.com",
-      "https://*.googleusercontent.com"
+      "https://*.cloudflare.com"
     ],
     'font-src': [
       "'self'",

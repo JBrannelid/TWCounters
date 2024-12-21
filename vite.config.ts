@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
   const nonce = randomBytes(16).toString('base64');
 
   const config: UserConfig = {
-    base: isProduction ? '' : '',
+    base: '',
     plugins: [
       react(),
       {
@@ -56,15 +56,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       strictPort: true,
-      headers: {
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
-        'Cross-Origin-Resource-Policy': 'same-origin',
-        'Referrer-Policy': 'strict-origin-when-cross-origin',
-        'Permissions-Policy': "camera=(), microphone=(), geolocation=()",
-        'X-XSS-Protection': '1; mode=block',
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
-      },
+      headers: getSecurityHeaders(nonce),
       https: isProduction ? {
         key: process.env.HTTPS_KEY,
         cert: process.env.HTTPS_CERT
@@ -74,7 +66,7 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       sourcemap: isProduction ? false : true,
       minify: 'esbuild',
-      target: 'esnext',
+      target: 'es2020',
       rollupOptions: {
         output: {
           manualChunks: (id: string) => {
