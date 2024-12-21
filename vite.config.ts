@@ -11,6 +11,7 @@ const getSecurityHeaders = (nonce: string) => ({
   'X-Frame-Options': 'DENY',
   'Cross-Origin-Resource-Policy': 'same-origin',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Cache-Control': 'public, max-age=31536000',
   'Permissions-Policy': "camera=(), microphone=(), geolocation=()",
   'X-XSS-Protection': '1; mode=block',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
@@ -61,10 +62,11 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: isProduction ? false : true,
+      sourcemap: false,
       minify: 'esbuild',
       target: 'es2020',
       assetsDir: 'assets',
+      cssCodeSplit: false,
       rollupOptions: {
         output: {
           manualChunks: (id: string) => {
@@ -102,11 +104,10 @@ export default defineConfig(({ mode }) => {
           }
         }
       },
-      chunkSizeWarningLimit: 1000,
-      cssCodeSplit: true,
-      modulePreload: {
-        polyfill: true
-      }
+      chunkSizeWarningLimit: 1000
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom']
     },
     preview: {
       port: 5173,
