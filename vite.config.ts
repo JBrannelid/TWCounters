@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
   const nonce = randomBytes(16).toString('base64');
 
   const config: UserConfig = {
-    base: '',
+    base: isProduction ? '' : '',
     plugins: [
       react(),
       {

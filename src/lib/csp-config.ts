@@ -29,11 +29,16 @@ export const generateCSPString = (nonce: string): string => {
       "https://*.firebaseio.com",
       "https://firestore.googleapis.com",
       "https://identitytoolkit.googleapis.com",
-      "https://securetoken.googleapis.com"
+      "https://securetoken.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://*.firebaseio.com",
+      "https://firebasestorage.googleapis.com",
     ]
   } : {
     'script-src': [
       "'strict-dynamic'",
+      "'unsafe-eval'",
+      "'unsafe-inline'",
       `'nonce-${nonce}'`,
       "'self'"
     ],
