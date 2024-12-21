@@ -40,7 +40,9 @@ export const generateCSPString = (nonce: string): string => {
       "'unsafe-eval'",
       "'unsafe-inline'",
       `'nonce-${nonce}'`,
-      "'self'"
+      "'self'",
+      "https://cdnjs.cloudflare.com",
+      "https://*.firebaseio.com"
     ],
     'connect-src': [
       "'self'",

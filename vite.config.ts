@@ -66,7 +66,7 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       sourcemap: isProduction ? false : true,
       minify: 'esbuild',
-      target: 'es2020',
+      target: 'esnext',
       rollupOptions: {
         output: {
           manualChunks: (id: string) => {
