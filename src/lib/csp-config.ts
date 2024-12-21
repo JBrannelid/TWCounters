@@ -57,19 +57,24 @@ export const generateCSPString = (nonce: string): string => {
 
   const baseDirectives = {
     'default-src': ["'self'"],
+    'script-src': [
+      "'self'",
+      "'unsafe-inline'",
+      "'unsafe-eval'",
+      "https://cdnjs.cloudflare.com",
+      "https://*.firebaseio.com"
+    ],
     'style-src': [
       "'self'",
-      "'unsafe-inline'"
+      "'unsafe-inline'",
+      "https://fonts.googleapis.com"
     ],
     'img-src': [
       "'self'",
       "data:",
       "blob:",
-      "https://*.googleapis.com",
-      "https://*.google.com",
       "https://firebasestorage.googleapis.com",
-      "https://*.googleusercontent.com",
-      "https://*.cloudflare.com"
+      "https://*.googleusercontent.com"
     ],
     'font-src': [
       "'self'",
