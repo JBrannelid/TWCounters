@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
   const nonce = randomBytes(16).toString('base64');
 
   const config: UserConfig = {
-    base: '',
+    base: '/',
     plugins: [
       react(),
       {
@@ -57,16 +57,14 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       headers: getSecurityHeaders(nonce),
-      https: isProduction ? {
-        key: process.env.HTTPS_KEY,
-        cert: process.env.HTTPS_CERT
-      } : undefined,
+      host: true,
     },
     build: {
       outDir: 'dist',
       sourcemap: isProduction ? false : true,
       minify: 'esbuild',
       target: 'es2020',
+      assetsDir: 'assets',
       rollupOptions: {
         output: {
           manualChunks: (id: string) => {
@@ -80,10 +78,35 @@ export default defineConfig(({ mode }) => {
               return 'utils';
             }
             return null;
+          },
+          entryFileNames: 'assets/[name]-[hash].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: (assetInfo) => {
+            if (!assetInfo.name) {
+              return 'assets/[name]-[hash][extname]';
+            }
+
+            const info = assetInfo.name.split('.');
+            const ext = info[info.length - 1];
+
+            if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+              return `assets/images/[name]-[hash][extname]`;
+            }
+            if (/ttf|otf|eot|woff2?/i.test(ext)) {
+              return `assets/fonts/[name]-[hash][extname]`;
+            }
+            if (ext === 'css') {
+              return `assets/css/[name]-[hash][extname]`;
+            }
+            return `assets/[name]-[hash][extname]`;
           }
         }
       },
-      chunkSizeWarningLimit: 1000
+      chunkSizeWarningLimit: 1000,
+      cssCodeSplit: true,
+      modulePreload: {
+        polyfill: true
+      }
     },
     preview: {
       port: 5173,

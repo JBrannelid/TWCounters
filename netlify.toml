@@ -7,10 +7,16 @@
   to = "/index.html"
   status = 200
 
-[[forms]]
-  name = "contact"
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Content-Type = "text/css"
 
-# netlify.toml
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+
 [[headers]]
   for = "/*"
   [headers.values]

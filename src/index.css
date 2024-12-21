@@ -1,9 +1,31 @@
-/* Font definitions */
 @import './styles/fonts.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --color-space-black: #0A0D14;
+  --color-space-darker: #12151C;
+  --color-space-dark: #1A1E27;
+}
+
+/* Base styles */
+html {
+  height: 100%;
+  height: -webkit-fill-available;
+}
+
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  @apply bg-space-black text-white font-titillium;
+  background-image: url('/patterns/space.svg');
+  background-attachment: fixed;
+  overscroll-behavior-y: none;
+}
 
 #root {
   min-height: 100vh;
@@ -11,60 +33,27 @@
   flex-direction: column;
 }
 
-:root {
-  --color-space-black: #0A0D14;
-  --color-space-darker: #12151C;
-  --color-space-dark: #1A1E27;
-}
-/* Media query för skärmar mindre än 640px */
+/* Mobile optimizations */
 @media (max-width: 640px) {
-  .hero-section {
-    padding: 1rem;
-    min-height: auto;
-  }
-  
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-}
-
-/* Base styles */
-html, body {
-  @apply bg-space-black min-h-screen text-white;
-  background-image: url('/patterns/space.svg');
-  background-attachment: fixed;
-  font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
-}
-/* Lägg till dessa base styles för att säkerställa att typsnitten används */
-@layer base {
-  html {
-    font-family: 'Titillium Web', system-ui, sans-serif;
+  
+  .hero-section {
+    padding: 1rem;
+    min-height: auto;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Orbitron', system-ui, sans-serif;
+  /* Fix for mobile safari */
+  .fixed {
+    position: fixed !important;
   }
-}
-/* Font classes */
-.font-orbitron {
-  font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
-}
-
-/* Glass effect base styles */
-.glass-effect {
-  @apply backdrop-blur-md bg-opacity-20 border border-white/10;
-}
-
-/* Image loading and error states */
-img {
-  @apply transition-all duration-300 ease-out;
-  background-color: var(--color-space-darker);
-}
-
-img.error-image {
-  @apply opacity-50;
-  filter: grayscale(100%);
+  
+  .sticky {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+  }
 }
 
 /* Custom scrollbar */
@@ -86,10 +75,6 @@ img.error-image {
   border-radius: 3px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
 /* Animation keyframes */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
@@ -101,42 +86,7 @@ img.error-image {
   100% { box-shadow: 0 0 20px rgba(100, 181, 246, 0.8); }
 }
 
-@keyframes hologram {
-  0% { opacity: 0.8; filter: brightness(1) blur(0px); }
-  100% { opacity: 1; filter: brightness(1.2) blur(0.5px); }
-}
-
-@layer components {
-  .btn {
-    @apply font-titillium px-4 py-2 rounded-lg transition-all duration-200;
-  }
-  
-  .btn-primary {
-    @apply bg-blue-500 text-white hover:bg-blue-600;
-  }
-  
-  .btn-secondary {
-    @apply bg-white/10 text-white hover:bg-white/20;
-  }
-}
-
-.hero-section {
-  padding: 1rem; /* Base mobile-first styles */
-}
-
-/* Tablet and desktop styles */
-@media (min-width: 640px) {
-  .hero-section {
-    padding: 2rem;
-  }
-}
-
-/* Ensure content is visible on mobile */
-body {
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-}
-
-html {
-  height: -webkit-fill-available;
+/* Font classes */
+.font-orbitron {
+  font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
 }
