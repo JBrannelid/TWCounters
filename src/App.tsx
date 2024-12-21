@@ -55,7 +55,23 @@ const App: React.FC = () => {
           <AuthProvider>
             <ThemeProvider>
               <CounterProvider>
-                <AppContent />
+                <ErrorBoundary
+                  fallback={
+                    <div className="min-h-screen flex items-center justify-center bg-space-black p-4">
+                      <div className="text-white text-center">
+                        <h1 className="text-xl mb-4">Something went wrong</h1>
+                        <button 
+                          onClick={() => window.location.reload()}
+                          className="px-4 py-2 bg-blue-500 rounded-lg"
+                        >
+                          Reload app
+                        </button>
+                      </div>
+                    </div>
+                  }
+                >
+                  <AppContent />
+                </ErrorBoundary>
               </CounterProvider>
             </ThemeProvider>
           </AuthProvider>

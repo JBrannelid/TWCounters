@@ -5,6 +5,12 @@
 @tailwind components;
 @tailwind utilities;
 
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 :root {
   --color-space-black: #0A0D14;
   --color-space-darker: #12151C;
@@ -13,8 +19,13 @@
 /* Media query för skärmar mindre än 640px */
 @media (max-width: 640px) {
   .hero-section {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding: 1rem;
+    min-height: auto;
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
 
