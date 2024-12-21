@@ -96,7 +96,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 {/* Mission Statement */}
                 <div className="flex items-start gap-4">
                   <Heart className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
-                  <p className="text-white/80">
+                  <p className="text-white/80 font-titillium">
                     This website is a passion project, built and maintained without any profit motive. Our mission is to help SWGOH players optimize their Territory Wars strategy.
                   </p>
                 </div>
@@ -104,14 +104,14 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 {/* Infrastructure Info */}
                 <div className="flex items-start gap-4">
                   <Database className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
-                  <p className="text-white/80">
+                  <p className="text-white/80 font-titillium">
                     While the site is free to use, there are ongoing costs for domain hosting and database maintenance. Your support helps keep this resource available to the community.
                   </p>
                 </div>
 
                 {/* Form Content */}
                 <div>
-                  <p className="text-white/80 mb-2">Have any questions or suggestions? Feel free to drop a message:</p>
+                  <p className="text-white/80 font-titillium mb-2">Have any questions or suggestions? Feel free to drop a message:</p>
 
                   {/* Netlify Form */}
                   <form
@@ -120,7 +120,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                     data-netlify="true"
                     data-netlify-honeypot="bot-field"
                     onSubmit={handleFormSubmit}
-                    className="space-y-4"
+                    className="space-y-4 font-titillium"
                   >
                     <input type="hidden" name="form-name" value="contact" />
                     <div hidden>

@@ -74,7 +74,7 @@ console.log('Full fleet data:', fleet);
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-orbitron text-white flex items-center gap-2">
-                <Ship className="w-5 h-5 text-blue-400" />
+                <Ship className="w-5 h-5 text-blue-400" />  {/* Fleet icon */}
                 {fleet.name}
               </h3>
               {/* Badges */}

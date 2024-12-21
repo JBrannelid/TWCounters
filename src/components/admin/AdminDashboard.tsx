@@ -234,9 +234,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-orbitron text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <Database className="w-6 h-6" />
-            Defense Manager
+            <span className="text-lg">Defense Manager</span>
           </h1>
           
           <div className="flex items-center gap-3">

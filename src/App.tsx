@@ -19,20 +19,14 @@ import { SearchBar } from '@/components/SearchBar';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { ensureFirebaseInitialized } from '@/lib/firebase';
-import { Helmet } from 'react-helmet';
+import { HelmetProvider } from 'react-helmet-async';
 
 // I App.tsx
 const App: React.FC = () => {
   const currentView = 'Squads';
 
   return (
-    <>
-      <Helmet>
-        <title>{`SWGOH TW Counters - ${currentView}`}</title>
-        <meta name="description" content={`View ${currentView} counters for SWGOH Territory Wars`} />
-        <meta property="og:title" content={`SWGOH TW Counters - ${currentView}`} />
-        <meta property="og:description" content={`View ${currentView} counters for SWGOH Territory Wars`} />
-      </Helmet>
+    <HelmetProvider>
       <ErrorBoundary 
         fallback={
           <div className="min-h-screen bg-space-darker flex items-center justify-center">
@@ -67,7 +61,7 @@ const App: React.FC = () => {
           </AuthProvider>
         </FirebaseProvider>
       </ErrorBoundary>
-    </>
+    </HelmetProvider>
   );
 }
 
@@ -81,12 +75,20 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
       const nameMatch = unit.name.toLowerCase().includes(searchLower);
       
       if ('characters' in unit) {
+        // For squads, search in character names
         const characterMatch = unit.characters.some(char => 
           char.name.toLowerCase().includes(searchLower)
         );
         const leaderMatch = unit.leader && unit.leader.name.toLowerCase().includes(searchLower);
         
         if (!nameMatch && !characterMatch && !leaderMatch) return false;
+      } else if ('capitalShip' in unit) {
+        // For fleets, search in ship names
+        const shipMatch = unit.startingLineup.some(ship => 
+          ship.name.toLowerCase().includes(searchLower)
+        ) || (unit.capitalShip && unit.capitalShip.name.toLowerCase().includes(searchLower));
+        
+        if (!nameMatch && !shipMatch) return false;
       } else if (!nameMatch) {
         return false;
       }
@@ -100,13 +102,6 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
     // TW Omicron filter
     if (filters.showTWOmicronOnly && 'twOmicronRequired' in unit && !unit.twOmicronRequired) {
       return false;
-    }
-
-    // GL filter
-    if (filters.excludeGL && 'characters' in unit) {
-      const hasGL = unit.characters.some(char => char.isGalacticLegend) || 
-                   (unit.leader && unit.leader.isGalacticLegend);
-      if (hasGL) return false;
     }
 
     return true;
@@ -522,6 +517,7 @@ if (firebaseLoading || authLoading || isLoading) {
                   onViewChange={setActiveView}
                   onOptionsClick={() => setFiltersOpen(true)}
                   filters={filters}
+                  placeholder={`Search  ${activeView === 'squads' ? 'squads' : 'fleets'}...`}
                 >
                   <SearchBar
                     value={searchTerm}

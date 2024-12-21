@@ -21,10 +21,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
         className="bg-space-darker w-full max-w-2xl rounded-lg border border-white/10"
       >
         <div className="flex justify-between items-center p-4 border-b border-white/10">
-          <h2 className="text-xl font-bold text-white">Admin Settings</h2>
+          <h2 className="text-xl font-sans text-white">Admin Settings</h2>
           <button
             onClick={onClose}
-            className="p-2 text-green-500 hover:text-green-100 hover:bg-green-500 rounded-lg"
+            className="p-2 text-green-500 hover:text-green-100 hover:bg-green-500 rounded-lg font-sans"
             >
             Tillbaka
           </button>

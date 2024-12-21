@@ -54,6 +54,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
         ${glowClasses[glowColor]}
         ${interactiveClasses}
         ${selectedClasses}
+        font-titillium
         ${className}
       `}
     >

@@ -62,11 +62,12 @@ export const MetadataView: React.FC<MetadataViewProps> = ({
         </button>
 
         <div className="p-4 space-y-3">
+          <h2 className="text-xl font-orbitron text-white mb-4">Metadata</h2>
           {/* Basic Info */}
           <div className="grid grid-cols-2 gap-2">
             <div className="p-2 bg-white/5 rounded-lg">
-              <div className="text-xs text-white/40">Name</div>
-              <div className="text-sm text-white">{data.name}</div>
+              <div className="text-xs font-titillium text-white/40">Name</div>
+              <div className="text-sm font-titillium text-white">{data.name}</div>
             </div>
             <div className="p-2 bg-white/5 rounded-lg">
               <div className="text-xs text-white/40">Type</div>

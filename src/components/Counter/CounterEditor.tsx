@@ -276,15 +276,13 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Sticky Header */}
-            <div className="sticky top-0 z-10 bg-space-darker border-b border-white/10 p-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-medium text-white">
-                  {existingCounter ? 'Edit Counter' : 'Add Counter'}
-                </h2>
-                <button onClick={onClose} className="p-2 text-white/60 hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+            <div className="sticky top-0 z-10 flex justify-between items-center p-4 border-b border-white/10 bg-space-darker">
+              <h2 className="text-xl font-orbitron text-white">
+                {existingCounter ? 'Edit Counter' : 'Add Counter'}
+              </h2>
+              <button onClick={onClose} className="p-2 text-white/60 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Scrollable Content */}

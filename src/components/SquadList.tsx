@@ -63,7 +63,7 @@ export const SquadList: React.FC<SquadListProps> = ({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-white/60">
         <Users className="w-12 h-12 mb-4 animate-float" />
-        <p className="text-lg">No squads found</p>
+        <p className="text-lg font-titillium">No squads found</p>
       </div>
     );
   }

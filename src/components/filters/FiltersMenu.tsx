@@ -1,3 +1,5 @@
+// src/components/filters/FiltersMenu.tsx
+
 import React, { useMemo, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Filter, X, SunMedium, Moon, Shield, Swords, RefreshCw } from 'lucide-react';
@@ -18,7 +20,6 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
   onFilterChange
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'searchTerm') return false;
@@ -64,24 +65,6 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
     }
   ], []);
 
-  const toggleOptions = [
-    {
-      key: 'showTWOmicronOnly' as FilterKey,
-      label: 'TW Omicron Only',
-      description: 'Show only teams with Territory Wars Omicron abilities'
-    },
-    {
-      key: 'showHardCounters' as FilterKey,
-      label: 'Hard Counters Only',
-      description: 'Show only teams with reliable counter options'
-    },
-    {
-      key: 'excludeGL' as FilterKey,
-      label: 'Exclude Galactic Legends',
-      description: 'Hide teams with Galactic Legend characters'
-    }
-  ];
-
   // Add focus trap
   useEffect(() => {
     if (isOpen && menuRef.current) {
@@ -119,9 +102,10 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
         initial={{ x: '100%' }}
         animate={{ x: isOpen ? 0 : '100%' }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed inset-y-0 right-0 w-full max-w-md flex flex-col bg-gradient-to-br 
-                 from-space-darker/90 to-space-dark/90 backdrop-blur-xl border-l 
-                 border-white/10 shadow-2xl rounded-l-2xl overflow-hidden z-50"
+        className="fixed inset-y-0 right-0 w-full max-w-md flex flex-col 
+                 bg-gradient-to-br from-space-darker/90 to-space-dark/90 
+                 backdrop-blur-xl border-l border-white/10 shadow-2xl 
+                 rounded-l-2xl overflow-hidden z-50"
         onClick={e => e.stopPropagation()}
       >
         {/* Header Section */}
@@ -142,7 +126,7 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div ref={contentRef} className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-6 space-y-8">
             {/* Filter Categories */}
             {filterCategories.map((category) => (
@@ -152,7 +136,9 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-4"
               >
-                <h3 className="text-sm font-medium text-white/60">{category.title}</h3>
+                <h3 className="text-sm font-titillium font-medium text-white/60">
+                  {category.title}
+                </h3>
                 <div className="grid grid-cols-2 gap-3">
                   {category.options.map((option) => (
                     <motion.button
@@ -163,12 +149,12 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                         option.key,
                         filters[option.key] === option.value ? null : option.value
                       )}
-                      className={`flex items-center justify-center gap-2 p-3 rounded-lg border 
-                              transition-all ${
-                                filters[option.key] === option.value
-                                  ? 'bg-blue-500/20 border-blue-400 text-white shadow-neon-blue'
-                                  : 'border-white/10 text-white/60 hover:bg-white/5'
-                              }`}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-lg 
+                                border transition-all font-titillium ${
+                        filters[option.key] === option.value
+                          ? 'bg-blue-500/20 border-blue-400 text-white shadow-neon-blue'
+                          : 'border-white/10 text-white/60 hover:bg-white/5'
+                      }`}
                     >
                       {option.icon}
                       {option.label}
@@ -184,36 +170,57 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              <h3 className="text-sm font-medium text-white/60">Additional Options</h3>
-              {toggleOptions.map((option) => (
-                <motion.label
-                  key={option.key}
-                  whileHover={{ scale: 1.01 }}
-                  className="flex items-start gap-3 p-4 rounded-lg border border-white/10 
-                           hover:bg-white/5 cursor-pointer group"
-                >
-                  <input
-                    type="checkbox"
-                    checked={filters[option.key] as boolean}
-                    onChange={(e) => onFilterChange(option.key, e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 checked:bg-blue-500 
-                             checked:border-blue-500 transition-colors"
-                  />
-                  <div className="space-y-1">
-                    <div className="text-white group-hover:text-blue-400 transition-colors">
-                      {option.label}
+              <h3 className="text-sm font-titillium font-medium text-white/60">
+                Additional Options
+              </h3>
+              <div className="space-y-3">
+                {[
+                  {
+                    key: 'showTWOmicronOnly' as FilterKey,
+                    label: 'TW Omicron Only',
+                    description: 'Show only teams with Territory Wars Omicron abilities'
+                  },
+                  {
+                    key: 'showHardCounters' as FilterKey,
+                    label: 'Hard Counters Only',
+                    description: 'Show only teams with reliable counter options'
+                  },
+                  {
+                    key: 'excludeGL' as FilterKey,
+                    label: 'Exclude Galactic Legends',
+                    description: 'Hide teams with Galactic Legend characters'
+                  }
+                ].map((option) => (
+                  <motion.label
+                    key={option.key}
+                    whileHover={{ scale: 1.01 }}
+                    className="flex items-start gap-3 p-4 rounded-lg border border-white/10 
+                             hover:bg-white/5 cursor-pointer group"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={filters[option.key] as boolean}
+                      onChange={(e) => onFilterChange(option.key, e.target.checked)}
+                      className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 
+                               checked:bg-blue-500 checked:border-blue-500 transition-colors"
+                    />
+                    <div className="space-y-1">
+                      <div className="font-titillium text-white group-hover:text-blue-400 
+                                    transition-colors">
+                        {option.label}
+                      </div>
+                      <div className="text-sm font-titillium text-white/40">
+                        {option.description}
+                      </div>
                     </div>
-                    <div className="text-sm text-white/40">
-                      {option.description}
-                    </div>
-                  </div>
-                </motion.label>
-              ))}
+                  </motion.label>
+                ))}
+              </div>
             </motion.div>
           </div>
         </div>
 
-        {/* Footer Section - Fixed at Bottom */}
+        {/* Footer Section */}
         <div className="p-6 border-t border-white/10 bg-space-darker/90 backdrop-blur-xl">
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -222,7 +229,7 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
             disabled={!hasActiveFilters}
             className="flex items-center justify-center gap-2 w-full p-3 rounded-lg 
                      bg-white/5 text-white hover:bg-white/10 disabled:opacity-50 
-                     disabled:cursor-not-allowed transition-colors"
+                     disabled:cursor-not-allowed transition-colors font-titillium"
           >
             <RefreshCw className="w-4 h-4" />
             Reset All Filters

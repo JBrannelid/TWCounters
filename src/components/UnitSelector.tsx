@@ -112,6 +112,12 @@ const handleSelect = useCallback((unit: T) => {
               </button>
             </div>
 
+            <div className="flex justify-between items-center p-2 border-b border-white/10">
+              <span className="text-sm font-titillium text-white/60">
+                Select {selectionType === 'leader' ? 'Leader' : 'Unit'}
+              </span>
+            </div>
+
             <div className="p-4">
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-white/40" />

@@ -13,6 +13,7 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
+// src/components/SearchBar.tsx
 export const SearchBar = memo<SearchBarProps>(({
   value,
   onChange,
@@ -21,15 +22,23 @@ export const SearchBar = memo<SearchBarProps>(({
   onSelectSuggestion,
   placeholder = "Search teams or ships..."
 }) => {
-  const filteredSuggestions = useMemo(() => 
-    suggestions.slice(0, 10), // Begränsa antal förslag för bättre prestanda
-    [suggestions]
-  );
-
   const [isFocused, setIsFocused] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Begränsa antal förslag till 10 för bättre prestanda
+  const filteredSuggestions = useMemo(() => 
+    suggestions.length > 0 
+      ? suggestions
+          .filter(item => 
+            item.name.toLowerCase().includes(value.toLowerCase())
+          )
+          .slice(0, 10)
+      : [],
+    [suggestions, value]
+  );
+
+  // Load images for suggestions
   useEffect(() => {
     const loadImages = async () => {
       const urls: Record<string, string> = {};
@@ -63,12 +72,13 @@ export const SearchBar = memo<SearchBarProps>(({
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-          className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-10 py-2 
+          className="w-full pl-10 pr-10 py-2 bg-white/5 border border-white/10 rounded-lg 
                    text-white placeholder-white/40 focus:outline-none focus:ring-2 
-                   focus:ring-blue-400/50 focus:border-transparent"
+                   focus:ring-blue-400/50 focus:border-transparent font-titillium"
           placeholder={placeholder}
         />
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
+        <Search className="absolute left-3 top-2.5 w-4 h-4 text-white/40" />
+        
         {value && (
           <button
             onClick={() => {
@@ -83,19 +93,25 @@ export const SearchBar = memo<SearchBarProps>(({
         )}
       </div>
 
+      {/* Suggestions Dropdown */}
       <AnimatePresence>
         {isFocused && filteredSuggestions.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 w-full mt-2 bg-space-dark border border-white/10 
-                     rounded-lg shadow-lg overflow-hidden max-h-[300px] overflow-y-auto"
+            className="absolute z-50 w-full mt-2 bg-space-darker border border-white/10 
+                     rounded-lg shadow-lg max-h-[300px] overflow-y-auto"
           >
             {filteredSuggestions.map((item) => (
               <button
                 key={item.id}
-                onClick={() => onSelectSuggestion?.(item)}
+                onClick={() => {
+                  if (onSelectSuggestion) {
+                    onSelectSuggestion(item);
+                  }
+                  setIsFocused(false);
+                }}
                 className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 
                          transition-colors text-left"
               >
@@ -104,19 +120,19 @@ export const SearchBar = memo<SearchBarProps>(({
                     src={imageUrls[item.leader.id] || '/placeholder.png'}
                     alt={item.leader.name}
                     className="w-8 h-8 rounded-full object-cover"
-                    loading="lazy" // Implementera lazy loading
+                    loading="lazy"
                   />
                 ) : 'capitalShip' in item && item.capitalShip ? (
                   <img
                     src={imageUrls[item.capitalShip.id] || '/placeholder.png'}
                     alt={item.capitalShip.name}
                     className="w-8 h-8 rounded-full object-cover"
-                    loading="lazy" // Implementera lazy loading
+                    loading="lazy"
                   />
                 ) : null}
                 <div>
-                  <div className="text-white">{item.name}</div>
-                  <div className="text-sm text-white/40">
+                  <div className="text-white font-titillium">{item.name}</div>
+                  <div className="text-sm text-white/40 font-titillium">
                     {'leader' in item ? 'Squad' : 'Fleet'}
                   </div>
                 </div>

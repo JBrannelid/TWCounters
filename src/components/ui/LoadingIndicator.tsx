@@ -44,7 +44,7 @@ export const LoadingIndicator = ({
         }}
       />
       {message && (
-        <p className="mt-4 text-white/60">{message}</p>
+        <p className="mt-4 text-white/60 font-titillium">{message}</p>
       )}
     </div>
   );

@@ -69,7 +69,7 @@ export const NewDefenseModal: React.FC<NewDefenseModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg"
+            className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg font-titillium"
           >
             <X className="w-5 h-5" />
           </button>

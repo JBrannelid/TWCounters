@@ -79,7 +79,7 @@ export const SyncButton: React.FC = () => {
         onClick={handleSync}
         disabled={isSyncing}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg ${getButtonStyles()} 
-                   text-white transition-all duration-300`}
+                   text-white transition-all duration-300 font-titillium`}
         animate={{
           scale: isSyncing ? 0.98 : 1,
         }}

@@ -50,11 +50,12 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="text-lg font-medium text-red-400 mb-2">
-                  Something went wrong
+                <h3 className="text-lg font-sans text-red-400 mb-2">
+                  Application Error
                 </h3>
-                <p className="text-sm text-red-400/80 mb-4">
-                  {this.state.error?.message || 'An unexpected error occurred'}
+                <p className="text-sm font-sans text-red-400/80 mb-4">
+                  We apologize, but something went wrong with the application. 
+                  Please try refreshing the page.
                 </p>
                 <button
                   onClick={this.handleReset}

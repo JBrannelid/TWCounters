@@ -10,6 +10,7 @@ interface SearchPanelProps {
   onOptionsClick: () => void;
   filters: Filters;
   children?: ReactNode;
+  placeholder: string;
 }
 
 export const SearchPanel: React.FC<SearchPanelProps> = ({

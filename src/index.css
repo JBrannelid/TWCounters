@@ -1,21 +1,5 @@
 /* Font definitions */
-@layer base {
-  @font-face {
-    font-family: 'Orbitron';
-    font-style: normal;
-    font-weight: 400 700;
-    font-display: swap;
-    src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
-  }
-
-  @font-face {
-    font-family: 'Titillium Web';
-    font-style: normal;
-    font-weight: 300 700;
-    font-display: swap;
-    src: url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap');
-  }
-}
+@import './styles/fonts.css';
 
 @tailwind base;
 @tailwind components;
@@ -26,7 +10,6 @@
   --color-space-darker: #12151C;
   --color-space-dark: #1A1E27;
 }
-
 /* Media query för skärmar mindre än 640px */
 @media (max-width: 640px) {
   .hero-section {
@@ -42,7 +25,16 @@ html, body {
   background-attachment: fixed;
   font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
 }
+/* Lägg till dessa base styles för att säkerställa att typsnitten används */
+@layer base {
+  html {
+    font-family: 'Titillium Web', system-ui, sans-serif;
+  }
 
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', system-ui, sans-serif;
+  }
+}
 /* Font classes */
 .font-orbitron {
   font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
@@ -101,4 +93,18 @@ img.error-image {
 @keyframes hologram {
   0% { opacity: 0.8; filter: brightness(1) blur(0px); }
   100% { opacity: 1; filter: brightness(1.2) blur(0.5px); }
+}
+
+@layer components {
+  .btn {
+    @apply font-titillium px-4 py-2 rounded-lg transition-all duration-200;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-500 text-white hover:bg-blue-600;
+  }
+  
+  .btn-secondary {
+    @apply bg-white/10 text-white hover:bg-white/20;
+  }
 }

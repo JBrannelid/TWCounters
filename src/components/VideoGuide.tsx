@@ -57,7 +57,7 @@ export const VideoGuide: React.FC<VideoGuideProps> = ({
             </div>
             {title && (
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80">
-                <h3 className="text-white font-medium">{title}</h3>
+                <h3 className="text-white font-orbitron">{title}</h3>
               </div>
             )}
           </div>

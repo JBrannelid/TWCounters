@@ -68,7 +68,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           animate={withAnimation ? { opacity: 1, y: 0 } : false}
           transition={{ delay: 0.2 }}
           className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-orbitron text-white text-center mb-4 tracking-wider"
-        >
+          >
           {title}
         </motion.h1>
         )}
@@ -78,8 +78,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           initial={withAnimation ? { opacity: 0, y: 20 } : false}
           animate={withAnimation ? { opacity: 1, y: 0 } : false}
           transition={{ delay: 0.3 }}
-          className="text-xl sm:text-2xl lg:text-3xl text-white/80 text-center mb-8 max-w-3xl mx-auto"
-        >
+          className="text-xl sm:text-2xl lg:text-3xl font-titillium text-white/80 text-center mb-8 max-w-3xl mx-auto"
+          >
           {subtitle}
         </motion.p>
         )}

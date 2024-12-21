@@ -74,14 +74,14 @@ export const NewSquadForm: React.FC<NewSquadFormProps> = ({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-white mb-2">
+          <label className="block text-sm font-titillium text-white mb-2">
             Squad Name
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white font-titillium"
             placeholder="Enter squad name"
           />
         </div>

@@ -45,8 +45,8 @@ module.exports = {
         'space-darker': '#16161e',
       },
       fontFamily: {
-        'orbitron': ['Orbitron', 'sans-serif'],
-        'titillium': ['Titillium Web', 'sans-serif']
+        orbitron: ['Orbitron', 'system-ui', '-apple-system', 'sans-serif'],
+        titillium: ['Titillium Web', 'system-ui', '-apple-system', 'sans-serif'],
       },
       backgroundImage: {
         'space-gradient': 'linear-gradient(to bottom, rgba(10, 13, 20, 0.8), rgba(26, 30, 39, 0.8))',
@@ -78,6 +78,11 @@ module.exports = {
         'glow': 'glow 2s ease-in-out infinite alternate',
         'hologram': 'hologram 2s ease-in-out infinite alternate'
       },
+      extend: {
+        backgroundImage: {
+          'space-pattern': "url('/patterns/space.svg')",
+        },
+      },      
       keyframes: {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
