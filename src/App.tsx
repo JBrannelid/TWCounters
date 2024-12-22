@@ -533,17 +533,12 @@ if (firebaseLoading || authLoading || isLoading) {
                 onAdminClick={() => setShowAdminLogin(true)}
                 onLogout={handleAdminLogout}
               />
-
-              <HeroSection
-                title="SWGOH Territory Wars"
-                subtitle="Find the perfect counter for any squad or fleet"
-              >
+              <HeroSection>
                 <SearchPanel
                   activeView={activeView}
                   onViewChange={setActiveView}
                   onOptionsClick={() => setFiltersOpen(true)}
                   filters={filters}
-                  placeholder={`Search  ${activeView === 'squads' ? 'squads' : 'fleets'}...`}
                 >
                   <SearchBar
                     value={searchTerm}
@@ -558,7 +553,6 @@ if (firebaseLoading || authLoading || isLoading) {
                   />
                 </SearchPanel>
               </HeroSection>
-
               <main className="container mx-auto px-4 py-8">
                 <AnimatePresence mode="wait">
                   {isLoading ? (

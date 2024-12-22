@@ -175,3 +175,16 @@ html {
     gap: 0.5rem;
   }
 }
+
+@layer components {
+  .search-panel-button {
+    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors;
+    min-width: 120px;
+  }
+  
+  @media (max-width: 640px) {
+    .search-panel-button {
+      width: 100%;
+    }
+  }
+}

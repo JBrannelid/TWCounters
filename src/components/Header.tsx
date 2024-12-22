@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Settings, LogOut, Coffee, Mail } from 'lucide-react';
+import { Settings, LogOut, Mail } from 'lucide-react';
 import { GlassCard } from './ui/GlassCard';
 import ContactModal from './ContactModal';
 
@@ -8,7 +8,6 @@ interface HeaderProps {
   onLogout: () => void;
   onAdminClick: () => void;
 }
-
 
 export const Header: React.FC<HeaderProps> = ({
   isAdmin,
@@ -21,35 +20,38 @@ export const Header: React.FC<HeaderProps> = ({
     <div>
       <GlassCard variant="darker" className="sticky top-0 z-50 py-4">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex justify-start sm:justify-end items-center gap-4">
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 
+                       rounded-lg bg-purple-500/20 hover:bg-purple-500/30 
+                       text-purple-400 transition-all min-w-[120px]"
+            >
+              <Mail className="w-5 h-5" />
+              <span>Contact</span>
+            </button>
 
-            <div className="flex items-center gap-2 md:gap-4">
+            {!isAdmin ? (
               <button
-                onClick={() => setShowModal(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 transition-all"
+                onClick={onAdminClick}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 
+                         rounded-lg bg-blue-500/20 hover:bg-blue-500/30 
+                         text-blue-400 transition-all min-w-[120px]"
               >
-                <Mail className="w-5 h-5" />
-                <span className="hidden sm:inline">Contact</span>
+                <Settings className="w-5 h-5" />
+                <span>Admin</span>
               </button>
-
-              {!isAdmin ? (
-                <button
-                  onClick={onAdminClick}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 transition-all"
-                >
-                  <Settings className="w-5 h-5" />
-                  <span className="hidden sm:inline">Admin</span>
-                </button>
-              ) : (
-                <button
-                  onClick={onLogout}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-all"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span className="hidden sm:inline">Logout</span>
-                </button>
-              )}
-            </div>
+            ) : (
+              <button
+                onClick={onLogout}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 
+                         rounded-lg bg-red-500/20 hover:bg-red-500/30 
+                         text-red-400 transition-all min-w-[120px]"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Logout</span>
+              </button>
+            )}
           </div>
         </div>
       </GlassCard>
