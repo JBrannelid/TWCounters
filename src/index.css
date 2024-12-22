@@ -114,3 +114,64 @@ body {
 html {
   overscroll-behavior-y: none;
 }
+
+/* Responsive containers */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Minimum touch target sizes */
+@media (max-width: 640px) {
+  button, 
+  [role="button"],
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .search-container {
+    width: 100%;
+  }
+  
+  .button-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .button-container > * {
+    flex: 1 1 auto;
+    min-width: max-content;
+  }
+}
+
+/* Ensure consistent widths */
+.search-bar,
+.squad-card,
+.fleet-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+@layer utilities {
+  .search-panel-container {
+    @apply w-full max-w-7xl mx-auto;
+  }
+
+  .button-wrapper {
+    @apply flex-1 min-w-[120px] sm:min-w-0 sm:w-auto;
+  }
+}
+
+/* Specifika media queries för SearchPanel */
+@media (max-width: 640px) {
+  .search-panel-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+}

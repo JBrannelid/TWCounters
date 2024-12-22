@@ -28,69 +28,67 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   );
 
   return (
-    <GlassCard variant="darker" className="sticky top-0 z-30 py-4">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search Bar */}
-          <div className="relative flex-1">
+    <GlassCard variant="darker" className="sticky top-0 z-30 w-full">
+      <div className="w-full max-w-7xl mx-auto px-4 py-4">
+        {/* Wrap everything in a flex container */}
+        <div className="flex flex-col w-full gap-4">
+          {/* Search Bar Container */}
+          <div className="w-full">
             {children}
           </div>
 
-          {/* View Toggles */}
-          <div className="flex gap-2">
-            <GlassCard
-              variant="light"
-              glowColor={activeView === 'squads' ? 'blue' : 'none'}
-              isInteractive
-              isSelected={activeView === 'squads'}
-              onClick={() => onViewChange('squads')}
-              className="flex items-center gap-2 px-6 py-2.5"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Users className="w-5 h-5" />
-              <span className="font-medium">Squads</span>
-            </GlassCard>
+          {/* Buttons Container */}
+          <div className="flex flex-wrap gap-2 w-full">
+            {/* Squad Button */}
+            <div className="flex-1 min-w-[120px] sm:flex-none">
+              <GlassCard
+                variant="light"
+                glowColor={activeView === 'squads' ? 'blue' : 'none'}
+                isInteractive
+                isSelected={activeView === 'squads'}
+                onClick={() => onViewChange('squads')}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Users className="w-5 h-5" />
+                <span className="whitespace-nowrap">Squads</span>
+              </GlassCard>
+            </div>
 
-            <GlassCard
-              variant="light"
-              glowColor={activeView === 'fleets' ? 'blue' : 'none'}
-              isInteractive
-              isSelected={activeView === 'fleets'}
-              onClick={() => onViewChange('fleets')}
-              className="flex items-center gap-2 px-6 py-2.5"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Ship className="w-5 h-5" />
-              <span className="font-medium">Fleets</span>
-            </GlassCard>
+            {/* Fleet Button */}
+            <div className="flex-1 min-w-[120px] sm:flex-none">
+              <GlassCard
+                variant="light"
+                glowColor={activeView === 'fleets' ? 'blue' : 'none'}
+                isInteractive
+                isSelected={activeView === 'fleets'}
+                onClick={() => onViewChange('fleets')}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Ship className="w-5 h-5" />
+                <span className="whitespace-nowrap">Fleets</span>
+              </GlassCard>
+            </div>
 
-            <GlassCard
-              variant="light"
-              glowColor={hasActiveFilters ? 'blue' : 'none'}
-              isInteractive
-              isSelected={hasActiveFilters}
-              onClick={onOptionsClick}
-              className="flex items-center gap-2 px-6 py-2.5"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Settings className={`w-5 h-5 ${hasActiveFilters ? 'text-blue-400' : ''}`} />
-              <span className="font-medium">Filters</span>
-              {hasActiveFilters && (
-                <motion.div
-                  className="w-2 h-2 rounded-full bg-blue-400"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30
-                  }}
-                />
-              )}
-            </GlassCard>
+            {/* Filters Button */}
+            <div className="flex-1 min-w-[120px] sm:flex-none">
+              <GlassCard
+                variant="light"
+                glowColor={hasActiveFilters ? 'blue' : 'none'}
+                isInteractive
+                isSelected={hasActiveFilters}
+                onClick={onOptionsClick}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Settings className="w-5 h-5" />
+                <span className="whitespace-nowrap">Filters</span>
+              </GlassCard>
+            </div>
           </div>
         </div>
       </div>
