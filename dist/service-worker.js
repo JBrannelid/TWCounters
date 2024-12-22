@@ -8,7 +8,8 @@ self.addEventListener('install', event => {
       return cache.addAll([
         '/',
         '/index.html',
-        '/manifest.json'
+        '/manifest.json',
+        '/offline.html'
       ]);
     })
   );
@@ -48,9 +49,9 @@ self.addEventListener('fetch', event => {
           return response;
         });
       })
-      .catch(() => new Response('Network error occurred', { 
-        status: 408,
-        headers: { 'Content-Type': 'text/plain' }
-      }))
+      .catch(() => {
+        // Return a fallback response for offline scenarios
+        return caches.match('/offline.html'); // Ensure you have an offline.html in your cache
+      })
   );
 });

@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Squad, Fleet, Counter, Filters, FilterKey } from '@/types';
 import { Header } from '@/components/Header';
 import { SearchPanel } from '@/components/SearchPanel';
 import { SquadList } from '@/components/SquadList';
 import { FleetList } from '@/components/FleetList';
 import { FiltersMenu } from '@/components/filters/FiltersMenu';
-import { AdminDashboard } from '@/components/admin/AdminDashboard';
-import { Auth } from '@/components/Auth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HeroSection } from '@/components/layouts/HeroSection';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
@@ -20,6 +18,18 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { ensureFirebaseInitialized } from '@/lib/firebase';
 import { HelmetProvider } from 'react-helmet-async';
+
+const AdminDashboard = lazy(() => 
+  import('@/components/admin/AdminDashboard').then(module => ({
+    default: module.AdminDashboard
+  }))
+);
+
+const Auth = lazy(() => 
+  import('@/components/Auth').then(module => ({
+    default: module.Auth
+  }))
+);
 
 // I App.tsx
 const App: React.FC = () => {
@@ -608,12 +618,11 @@ if (firebaseLoading || authLoading || isLoading) {
               />
             </motion.div>
           ) : (
-            <motion.div
-              key="admin-interface"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
+            <Suspense fallback={
+              <div className="min-h-screen bg-space-darker flex items-center justify-center">
+                <LoadingIndicator size="lg" message="Loading admin dashboard..." />
+              </div>
+            }>
               <AdminDashboard
                 squads={squads}
                 fleets={fleets}
@@ -621,15 +630,21 @@ if (firebaseLoading || authLoading || isLoading) {
                 {...adminHandlers}
                 onLogout={handleAdminLogout}
               />
-            </motion.div>
+            </Suspense>
           )}
         </AnimatePresence>
 
         {showAdminLogin && (
-          <Auth
-            onLogin={handleAdminLogin}
-            onClose={() => setShowAdminLogin(false)}
-          />
+          <Suspense fallback={
+            <div className="fixed inset-0 bg-space-darker/80 flex items-center justify-center">
+              <LoadingIndicator size="md" message="Loading..." />
+            </div>
+          }>
+            <Auth
+              onLogin={handleAdminLogin}
+              onClose={() => setShowAdminLogin(false)}
+            />
+          </Suspense>
         )}
       </div>
     </div>

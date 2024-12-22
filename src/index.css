@@ -54,6 +54,20 @@ body {
     position: -webkit-sticky !important;
     position: sticky !important;
   }
+  
+  /* Förbättra touch targets */
+  button, 
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent zoom on inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="search"] {
+    font-size: 16px;
+  }
 }
 
 /* Custom scrollbar */
@@ -89,4 +103,14 @@ body {
 /* Font classes */
 .font-orbitron {
   font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
+}
+
+/* Improve scrolling performance */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent pull-to-refresh */
+html {
+  overscroll-behavior-y: none;
 }

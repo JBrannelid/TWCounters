@@ -22,8 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Star className="w-6 h-6 text-yellow-400" />
-              <h1 className="text-xl font-orbitron text-white">SWGOH TW Counter</h1>
+              {/* <Star className="w-6 h-6 text-yellow-400" /> */}
             </div>
             
             <div className="flex items-center gap-2">

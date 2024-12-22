@@ -25,7 +25,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
   return (
     <div className="mb-8">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-6 flex-wrap">
         <div className="flex-1 relative">
           <div className="relative">
             <input
@@ -41,7 +41,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => handleBattleTypeChange('squad')}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-all ${

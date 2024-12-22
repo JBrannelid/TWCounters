@@ -24,8 +24,7 @@ export class FirebaseService {
     operation: () => Promise<T>,
     errorMessage: string
   ): Promise<T> {
-    const isOnline = await this.checkOnline();
-    if (!isOnline) {
+    if (!navigator.onLine) {
       throw new Error('Operation cannot be performed while offline');
     }
 
@@ -33,7 +32,7 @@ export class FirebaseService {
       return await operation();
     } catch (error) {
       console.error(`${errorMessage}:`, error);
-      throw new Error(errorMessage);
+      throw new Error(`${errorMessage}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -155,42 +154,40 @@ export class FirebaseService {
   }
 
   static async addOrUpdateSquad(squad: Squad): Promise<void> {
-    return SyncLock.withLock('squad-sync', async () => {
-      return this.handleOperation(
-        async () => {
-          const validation = squadValidators.validateCompleteSquad(squad);
-          if (!validation.isValid) {
-            throw new Error(validation.error || 'Invalid squad data');
-          }
+    return this.handleOperation(
+      async () => {
+        const validation = squadValidators.validateCompleteSquad(squad);
+        if (!validation.isValid) {
+          throw new Error(validation.error || 'Invalid squad data');
+        }
   
-          const userId = await this.getCurrentUserId();
-          const isUpdate = await this.documentExists('squads', squad.id);
-          const now = Date.now(); // Använd millisekundstidsstämpel
+        const userId = await this.getCurrentUserId();
+        const isUpdate = await this.documentExists('squads', squad.id);
+        const now = Date.now(); // Använd millisekundstidsstämpel
   
-          // Om det är en ny squad, sätt createdAt till nuvarande tid
-          const normalizedSquad = {
-            ...squad,
-            lastUpdated: now, // Använd nuvarande tidpunkt för lastUpdated
-            createdAt: isUpdate ? squad.createdAt : now, // Sätt createdAt till nu om det är en ny post
-            updatedBy: userId,
-            type: 'squad' // Säkerställ att type alltid är satt
-          };
+        // Om det är en ny squad, sätt createdAt till nuvarande tid
+        const normalizedSquad = {
+          ...squad,
+          lastUpdated: now, // Använd nuvarande tidpunkt för lastUpdated
+          createdAt: isUpdate ? squad.createdAt : now, // Sätt createdAt till nu om det är en ny post
+          updatedBy: userId,
+          type: 'squad' // Säkerställ att type alltid är satt
+        };
   
-          // Om createdAt är undefined (vilket skulle kunna hända för en uppdatering), ta bort den från dataobjektet
-          if (normalizedSquad.createdAt === undefined) {
-            delete normalizedSquad.createdAt;
-          }
+        // Om createdAt är undefined (vilket skulle kunna hända för en uppdatering), ta bort den från dataobjektet
+        if (normalizedSquad.createdAt === undefined) {
+          delete normalizedSquad.createdAt;
+        }
   
-          const docRef = doc(db, 'squads', squad.id);
-          // Här kan vi använda merge för att uppdatera dokumentet utan att skriva över hela dokumentet
-          await setDoc(docRef, normalizedSquad, { merge: true });
+        const docRef = doc(db, 'squads', squad.id);
+        // Här kan vi använda merge för att uppdatera dokumentet utan att skriva över hela dokumentet
+        await setDoc(docRef, normalizedSquad, { merge: true });
   
-          // Logga för att verifiera data
-          console.log('Saving squad with timestamps:', normalizedSquad);
-        },
-        'Failed to save squad'
-      );
-    });
+        // Logga för att verifiera data
+        console.log('Saving squad with timestamps:', normalizedSquad);
+      },
+      'Failed to save squad'
+    );
   }  
   
   private static validateFleetData(fleet: Fleet): boolean {

@@ -1,0 +1,50 @@
+<!-- public/offline.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWGOH TW Counter - Offline</title>
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-color: #0A0D14;
+            color: white;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .offline-container {
+            max-width: 500px;
+        }
+        h1 {
+            margin-bottom: 1rem;
+        }
+        .retry-button {
+            padding: 12px 24px;
+            background-color: #1E88E5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .retry-button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <h1>You're Offline</h1>
+        <p>Sorry, but you're currently offline. Please check your internet connection and try again.</p>
+        <button class="retry-button" onclick="window.location.reload()">
+            Try Again
+        </button>
+    </div>
+</body>
+</html>
