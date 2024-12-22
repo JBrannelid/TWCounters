@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /accounts
+
+Sitemap: https://www.twcounters.com/sitemap.xml
