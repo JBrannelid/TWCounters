@@ -2,88 +2,45 @@
 // Needed for Firebase, Firestore, Google Cloud Storage, Google Fonts, and YouTube
 // Add a protection layer against XSS attacks by disallowing inline scripts and styles
 // csp-config.js
+
 export const generateCSPString = (nonce: string): string => {
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
-  const devDirectives = isDevelopment ? {
-    'script-src': [
-      "'self'",
-      "'unsafe-eval'",
-      "'unsafe-inline'",
-      "http://localhost:5173",
-      "ws://localhost:5173"
-    ],
-    'connect-src': [
-      "'self'",
-      "ws://localhost:5173",
-      "http://localhost:5173",
-      "https://*.googleapis.com",
-      "wss://*.firebaseio.com",
-      "https://*.firebaseio.com",
-      "https://firestore.googleapis.com",
-      "https://identitytoolkit.googleapis.com",
-      "https://securetoken.googleapis.com"
-    ]
-  } : {
-    'script-src': [
-      "'strict-dynamic'",
-      `'nonce-${nonce}'`,
-      "'self'"
-    ],
-    'connect-src': [
-      "'self'",
-      "https://*.googleapis.com",
-      "wss://*.firebaseio.com",
-      "https://*.firebaseio.com",
-      "https://firestore.googleapis.com",
-      "https://identitytoolkit.googleapis.com",
-      "https://securetoken.googleapis.com"
-    ]
-  };
 
-  const baseDirectives = {
+  const directives = {
     'default-src': ["'self'"],
-    'style-src': [
+    'script-src': [
       "'self'",
-      "'unsafe-inline'"
+      `'nonce-${nonce}'`,
+      isDevelopment ? "'unsafe-eval'" : null,
+      "https://cdnjs.cloudflare.com"
+    ].filter(Boolean),
+    'style-src': [
+      "'self'", 
+      "'unsafe-inline'",
+      "https://fonts.googleapis.com"
     ],
     'img-src': [
       "'self'",
       "data:",
       "blob:",
+      "https://firebasestorage.googleapis.com"
+    ],
+    'connect-src': [
+      "'self'",
       "https://*.googleapis.com",
-      "https://*.google.com",
-      "https://firebasestorage.googleapis.com",
-      "https://*.cloudflare.com"
+      "https://*.firebaseio.com",
+      "wss://*.firebaseio.com"
     ],
-    'font-src': [
-      "'self'",
-      "data:",
-      "fonts.gstatic.com",
-      "https://fonts.gstatic.com"
-    ],
-    'frame-src': [
-      "'self'",
-      "https://www.youtube.com",
-      "https://www.buymeacoffee.com"
-    ],
-    'media-src': ["'self'"],
-    'worker-src': ["'self'", "blob:"],
-    'manifest-src': ["'self'"],
+    'font-src': ["'self'", "data:", "https://fonts.gstatic.com"],
+    'frame-ancestors': ["'none'"],
     'base-uri': ["'self'"],
     'form-action': ["'self'"],
-    'object-src': ["'none'"],
-    'upgrade-insecure-requests': []
-  };
-
-  const directives = {
-    ...baseDirectives,
-    ...devDirectives
+    'manifest-src': ["'self'"]
   };
 
   return Object.entries(directives)
     .map(([key, values]) => {
-      if (values.length === 0) return key;
+      if (!values || !values.length) return key;
       return `${key} ${values.join(' ')}`;
     })
     .join('; ');

@@ -69,38 +69,9 @@ export default defineConfig(({ mode }) => {
       cssCodeSplit: false,
       rollupOptions: {
         output: {
-          manualChunks: (id: string) => {
-            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-              return 'vendor';
-            }
-            if (id.includes('node_modules/firebase')) {
-              return 'firebase';
-            }
-            if (id.includes('src/lib') || id.includes('src/utils')) {
-              return 'utils';
-            }
-            return null;
-          },
-          entryFileNames: 'assets/[name]-[hash].js',
-          chunkFileNames: 'assets/[name]-[hash].js',
-          assetFileNames: (assetInfo) => {
-            if (!assetInfo.name) {
-              return 'assets/[name]-[hash][extname]';
-            }
-
-            const info = assetInfo.name.split('.');
-            const ext = info[info.length - 1];
-
-            if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
-              return `assets/images/[name]-[hash][extname]`;
-            }
-            if (/ttf|otf|eot|woff2?/i.test(ext)) {
-              return `assets/fonts/[name]-[hash][extname]`;
-            }
-            if (ext === 'css') {
-              return `assets/css/[name]-[hash][extname]`;
-            }
-            return `assets/[name]-[hash][extname]`;
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           }
         }
       },
