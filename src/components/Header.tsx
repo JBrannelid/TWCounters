@@ -17,13 +17,13 @@ export const Header: React.FC<HeaderProps> = ({
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <div>
-      <GlassCard variant="darker" className="sticky top-0 z-50 py-4">
+    <div className="sticky top-0 z-50">
+      <GlassCard variant="darker" className="py-4">
         <div className="container mx-auto px-4">
-          <div className="flex justify-start sm:justify-end items-center gap-4">
+          <div className="flex justify-end items-center gap-4">
             <button
               onClick={() => setShowModal(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 
+              className="flex items-center justify-center gap-2 px-4 py-2 
                        rounded-lg bg-purple-500/20 hover:bg-purple-500/30 
                        text-purple-400 transition-all min-w-[120px]"
             >
@@ -34,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
             {!isAdmin ? (
               <button
                 onClick={onAdminClick}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 
+                className="flex items-center justify-center gap-2 px-4 py-2 
                          rounded-lg bg-blue-500/20 hover:bg-blue-500/30 
                          text-blue-400 transition-all min-w-[120px]"
               >
@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <button
                 onClick={onLogout}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 
+                className="flex items-center justify-center gap-2 px-4 py-2 
                          rounded-lg bg-red-500/20 hover:bg-red-500/30 
                          text-red-400 transition-all min-w-[120px]"
               >

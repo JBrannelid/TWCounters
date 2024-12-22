@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo, useMemo } from 'react';
+import { useState, useEffect, useRef, memo, useMemo, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getUnitImage } from '@/lib/imageUtils';
@@ -62,6 +62,18 @@ export const SearchBar = memo<SearchBarProps>(({
     }
   }, [filteredSuggestions]);
 
+  const handleSelect = useCallback((unit: Squad | Fleet) => {
+    onSelectSuggestion?.(unit);
+    setIsFocused(false);
+    onChange(unit.name);
+  }, [onSelectSuggestion, onChange]);
+
+  const handleBlur = (e: React.FocusEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsFocused(false);
+    }
+  };
+  
   return (
     <div className="relative w-full">
       <div className="relative">
@@ -71,7 +83,7 @@ export const SearchBar = memo<SearchBarProps>(({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+          onBlur={handleBlur}
           className="w-full pl-10 pr-10 py-2 bg-white/5 border border-white/10 rounded-lg 
                    text-white placeholder-white/40 focus:outline-none focus:ring-2 
                    focus:ring-blue-400/50 focus:border-transparent font-titillium"
@@ -107,10 +119,7 @@ export const SearchBar = memo<SearchBarProps>(({
               <button
                 key={item.id}
                 onClick={() => {
-                  if (onSelectSuggestion) {
-                    onSelectSuggestion(item);
-                  }
-                  setIsFocused(false);
+                  handleSelect(item);
                 }}
                 className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 
                          transition-colors text-left"

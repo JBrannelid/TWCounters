@@ -18,6 +18,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { ensureFirebaseInitialized } from '@/lib/firebase';
 import { HelmetProvider } from 'react-helmet-async';
+import { Layout } from '@/components/layouts/Layout';
 
 const AdminDashboard = lazy(() => 
   import('@/components/admin/AdminDashboard').then(module => ({
@@ -281,6 +282,12 @@ function AppContent() {
     }));
   };
 
+  const handleSuggestionSelect = (item: Squad | Fleet) => {
+    setSelectedId(item.id);
+    // VIKTIGT: Gör INTE setSearchTerm('') här
+    // Behåll searchTerm och filters oförändrade
+  };
+
   const handleDeleteCounter = async (counterId: string) => {
     if (!isOnline) {
       setError('Cannot delete counter while offline');
@@ -513,135 +520,140 @@ if (firebaseLoading || authLoading || isLoading) {
   }
 
   return (
-    <div className="min-h-screen bg-space-black text-white">
-      {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 bg-yellow-500/90 text-black py-2 px-4 text-center z-50">
-          Du är offline. Ändringar kommer att synkroniseras när du återansluter.
-        </div>
-      )}
-      <div className="min-h-screen bg-space-gradient bg-fixed">
-        <AnimatePresence mode="wait">
-          {!isAdmin ? (
-            <motion.div
-              key="user-interface"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Header 
-                isAdmin={isAdmin}
-                onAdminClick={() => setShowAdminLogin(true)}
-                onLogout={handleAdminLogout}
-              />
-              <HeroSection>
-                <SearchPanel
-                  activeView={activeView}
-                  onViewChange={setActiveView}
-                  onOptionsClick={() => setFiltersOpen(true)}
-                  filters={filters}
-                >
-                  <SearchBar
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    onClear={() => handleSearchChange('')}
-                    suggestions={activeView === 'squads' ? filteredSquads : filteredFleets}
-                    onSelectSuggestion={(item) => {
-                      setSelectedId(item.id);
-                      handleSearchChange('');
-                    }}
-                    placeholder={`Search ${activeView === 'squads' ? 'teams' : 'fleets'}...`}
-                  />
-                </SearchPanel>
-              </HeroSection>
-              <main className="container mx-auto px-4 py-8">
-                <AnimatePresence mode="wait">
-                  {isLoading ? (
-                    <motion.div
-                      key="loading"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex justify-center items-center min-h-[400px]"
-                    >
+    <Layout
+      isAdmin={isAdmin}
+      onLogout={handleAdminLogout}
+      onAdminClick={() => setShowAdminLogin(true)}
+    >
+      <div className="min-h-screen bg-space-black text-white">
+        {!isOnline && (
+          <div className="fixed top-0 left-0 right-0 bg-yellow-500/90 text-black py-2 px-4 text-center z-50">
+            Du är offline. Ändringar kommer att synkroniseras när du återansluter.
+          </div>
+        )}
+        <div className="min-h-screen bg-space-gradient bg-fixed">
+          <AnimatePresence mode="wait">
+            {!isAdmin ? (
+              <motion.div
+                key="user-interface"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <HeroSection>
+                  <SearchPanel
+                    activeView={activeView}
+                    onViewChange={setActiveView}
+                    onOptionsClick={() => setFiltersOpen(true)}
+                    filters={filters}
+                  >
+                    <SearchBar
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      onClear={() => {
+                        handleSearchChange('');
+                        setSelectedId(null); // Återställ vald post när sökningen rensas
+                      }}
+                      suggestions={activeView === 'squads' ? filteredSquads : filteredFleets}
+                      onSelectSuggestion={(item) => {
+                        handleSuggestionSelect(item);
+                        // Behåll söktermen och filtreringen
+                        setSearchTerm(searchTerm);
+                      }}
+                      placeholder={`Search ${activeView === 'squads' ? 'teams' : 'fleets'}...`}
+                    />
+                  </SearchPanel>
+                </HeroSection>
+                <main className="container mx-auto px-4 py-8">
+                  <AnimatePresence mode="wait">
+                    {isLoading ? (
                       <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-12 h-12 border-4 border-saber-blue-400/50 border-t-saber-blue-400 rounded-full"
-                      />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key={`content-${activeView}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      {activeView === 'squads' ? (
-                        <SquadList
-                          squads={squads}
-                          filteredSquads={filteredSquads}
-                          selectedSquadId={selectedId}
-                          onSelectSquad={setSelectedId}
-                          getCounters={(id) => getCountersForUnit(id, 'squad')}
-                          isAdmin={isAdmin}
-                          onDeleteCounter={handleDeleteCounter}
-                          onViewDetails={() => {}}
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex justify-center items-center min-h-[400px]"
+                      >
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="w-12 h-12 border-4 border-saber-blue-400/50 border-t-saber-blue-400 rounded-full"
                         />
-                      ) : (
-                        <FleetList
-                          fleets={fleets}
-                          filteredFleets={filteredFleets}
-                          selectedFleetId={selectedId}
-                          onSelectFleet={setSelectedId}
-                          getCounters={(id) => getCountersForUnit(id, 'fleet')}
-                          isAdmin={isAdmin}
-                          onDeleteCounter={handleDeleteCounter}
-                          onViewDetails={() => {}}
-                        />
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </main>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key={`content-${activeView}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        {activeView === 'squads' ? (
+                          <SquadList
+                            squads={squads}
+                            filteredSquads={filteredSquads}
+                            selectedSquadId={selectedId}
+                            onSelectSquad={setSelectedId}
+                            getCounters={(id) => getCountersForUnit(id, 'squad')}
+                            isAdmin={isAdmin}
+                            onDeleteCounter={handleDeleteCounter}
+                            onViewDetails={() => {}}
+                          />
+                        ) : (
+                          <FleetList
+                            fleets={fleets}
+                            filteredFleets={filteredFleets}
+                            selectedFleetId={selectedId}
+                            onSelectFleet={setSelectedId}
+                            getCounters={(id) => getCountersForUnit(id, 'fleet')}
+                            isAdmin={isAdmin}
+                            onDeleteCounter={handleDeleteCounter}
+                            onViewDetails={() => {}}
+                          />
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </main>
 
-              <FiltersMenu
-                isOpen={isFiltersOpen}
-                onClose={() => setFiltersOpen(false)}
-                filters={filters}
-                onFilterChange={handleFilterChange}
-              />
-            </motion.div>
-          ) : (
+                <FiltersMenu
+                  isOpen={isFiltersOpen}
+                  onClose={() => setFiltersOpen(false)}
+                  filters={filters}
+                  onFilterChange={handleFilterChange}
+                />
+              </motion.div>
+            ) : (
+              <Suspense fallback={
+                <div className="min-h-screen bg-space-darker flex items-center justify-center">
+                  <LoadingIndicator size="lg" message="Loading admin dashboard..." />
+                </div>
+              }>
+                <AdminDashboard
+                  squads={squads}
+                  fleets={fleets}
+                  counters={counters}
+                  {...adminHandlers}
+                  onLogout={handleAdminLogout}
+                />
+              </Suspense>
+            )}
+          </AnimatePresence>
+
+          {showAdminLogin && (
             <Suspense fallback={
-              <div className="min-h-screen bg-space-darker flex items-center justify-center">
-                <LoadingIndicator size="lg" message="Loading admin dashboard..." />
+              <div className="fixed inset-0 bg-space-darker/80 flex items-center justify-center">
+                <LoadingIndicator size="md" message="Loading..." />
               </div>
             }>
-              <AdminDashboard
-                squads={squads}
-                fleets={fleets}
-                counters={counters}
-                {...adminHandlers}
-                onLogout={handleAdminLogout}
+              <Auth
+                onLogin={handleAdminLogin}
+                onClose={() => setShowAdminLogin(false)}
               />
             </Suspense>
           )}
-        </AnimatePresence>
-
-        {showAdminLogin && (
-          <Suspense fallback={
-            <div className="fixed inset-0 bg-space-darker/80 flex items-center justify-center">
-              <LoadingIndicator size="md" message="Loading..." />
-            </div>
-          }>
-            <Auth
-              onLogin={handleAdminLogin}
-              onClose={() => setShowAdminLogin(false)}
-            />
-          </Suspense>
-        )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
 
