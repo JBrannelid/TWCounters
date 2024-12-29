@@ -85,54 +85,6 @@ body {
  padding-right: 1rem;
 }
 
-/* Fleet Card Styles */
-.fleet-card-container {
-  position: relative;
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.fleet-card {
-  max-width: 100%;
-  width: auto;
-  overflow: visible;
-}
-
-.fleet-card-expanded {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 600px; /* Minska maxbredden för mobila enheter */
-  height: auto; /* Låt höjden vara flexibel */
-  max-height: 80vh;
-  overflow-y: auto; /* Tillåt vertikal scroll */
-  z-index: 60;
-  border-radius: 1rem;
-  margin: 20px;
-}
-
-.fleet-card-content {
-  max-height: calc(80vh - 48px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* Viktigt för iOS */
-  padding-right: 20px;
-}
-
-.fleet-card-content::-webkit-scrollbar {
-  display: none;
-}
-
-.fleet-card-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 50;
-}
 /* Search & Squad Card Styles */
 .search-bar,
 .squad-card {
@@ -142,6 +94,17 @@ body {
   overflow: hidden;
   overflow-y: hidden;
 }
+
+/* Search & fleet Card Styles */
+.search-bar,
+.fleet-card {
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  overflow: hidden;
+  overflow-y: hidden;
+}
+
 
 /* Mobile Styles */
 @media (max-width: 640px) {
