@@ -86,25 +86,21 @@ body {
 }
 
 /* Search & Squad Card Styles */
-.search-bar,
+
 .squad-card {
   max-width: 100%;
   width: auto;
-  height: auto;
-  overflow: hidden;
-  overflow-y: hidden;
+  height: auto; /* Ta bort om höjden kan vara flexibel */
+  overflow: visible; /* Ändra från hidden till visible */
 }
+/* Search & Squad Card Styles */
 
-/* Search & fleet Card Styles */
-.search-bar,
 .fleet-card {
   max-width: 100%;
   width: auto;
-  height: auto;
-  overflow: hidden;
-  overflow-y: hidden;
+  height: auto; /* Ta bort om höjden kan vara flexibel */
+  overflow: visible; /* Ändra från hidden till visible */
 }
-
 
 /* Mobile Styles */
 @media (max-width: 640px) {
@@ -126,6 +122,30 @@ body {
    position: -webkit-sticky !important;
    position: sticky !important;
  }
+
+ .fleet-card-expanded {
+  width: 95%;
+  max-width: 100%; /* Säkerställ att kortet fyller skärmen */
+  max-height: 90vh; /* Ge mer plats för innehållet */
+  margin: 10px;
+}
+
+.fleet-card-content {
+  max-height: calc(90vh - 24px);
+  padding-right: 1rem; /* Låt innehållet ha lite padding */
+}
+
+.squad-card-expanded {
+  width: 95%;
+  max-width: 100%; /* Säkerställ att kortet fyller skärmen */
+  max-height: 90vh; /* Ge mer plats för innehållet */
+  margin: 10px;
+}
+
+.squad-card-content {
+  max-height: calc(90vh - 24px);
+  padding-right: 1rem; /* Låt innehållet ha lite padding */
+}
  
  button, 
  [role="button"],
