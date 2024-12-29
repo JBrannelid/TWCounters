@@ -117,8 +117,7 @@ body {
 .fleet-card-content {
   max-height: calc(80vh - 48px);
   overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch; /* Viktigt för iOS */
   padding-right: 20px;
 }
 
@@ -224,7 +223,27 @@ body {
    .search-panel-button {
      width: 100%;
    }
+   .fleet-card-expanded {
+    width: 95%;
+    height: 80vh;
+    margin: 10px;
+  }
+  
+  .fleet-card-content {
+    max-height: calc(80vh - 24px);
+    padding-right: 16px;
+  }
  }
+   .fleet-card-expanded {
+    width: 95%;
+    height: 80vh;
+    margin: 10px;
+  }
+  
+  .fleet-card-content {
+    max-height: calc(80vh - 24px);
+    padding-right: 16px;
+  }
 }
 
 /* Lägg till dessa klasser i din befintliga CSS */

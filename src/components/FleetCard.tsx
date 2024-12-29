@@ -186,44 +186,43 @@ export const FleetCard = memo<FleetCardProps>(({
                         : 'bg-gradient-to-br from-red-500/10 to-red-600/5'
                     }`}
                   >
-{/* Content */}
-<div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
-  {/* Fleet Information */}
-  <div className="mb-6">
-  <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
-    <div className="flex items-center gap-3">
-      {fleet.capitalShip && (
-        <div className="relative">
-          <UnitImage
-            id={fleet.capitalShip.id}
-            name={fleet.capitalShip.name}
-            type="capital-ship"
-            size="md"
-            className="rounded-full border-2 border-blue-400/50"
-            isCapital
-          />
-        </div>
-      )}
-    </div>
-  </div>
-
-  {/* Starting Lineup */}
-  <div className="mb-6">
-    <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
-      <div className="flex flex-wrap gap-3">
-      {fleet.startingLineup.map((ship) => (
-        <div key={ship.id} className="relative">
-          <UnitImage
-            id={ship.id}
-            name={ship.name}
-            type="ship"
-            size="md"
-            className="rounded-full border-2 border-white/20"
-          />
-        </div>
-      ))}
-    </div>
-  </div>
+                  {/* Content */}
+                  <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
+                    {/* Fleet Information */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
+                      <div className="flex items-center gap-3">
+                        {fleet.capitalShip && (
+                          <div className="relative">
+                            <UnitImage
+                              id={fleet.capitalShip.id}
+                              name={fleet.capitalShip.name}
+                              type="capital-ship"
+                              size="md"
+                              className="rounded-full border-2 border-blue-400/50"
+                              isCapital
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {/* Starting Lineup */}
+                      <div className="mb-6">
+                        <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
+                          <div className="flex flex-wrap gap-3">
+                          {fleet.startingLineup.map((ship) => (
+                            <div key={ship.id} className="relative">
+                              <UnitImage
+                                id={ship.id}
+                                name={ship.name}
+                                type="ship"
+                                size="md"
+                                className="rounded-full border-2 border-white/20"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
 
   {/* Reinforcements - Already exists */}
   {fleet.reinforcements.length > 0 && (
