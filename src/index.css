@@ -96,8 +96,7 @@ body {
 .fleet-card {
   max-width: 100%;
   width: auto;
-  height: auto;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .fleet-card-expanded {
@@ -106,9 +105,10 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
-  max-width: 800px;
+  max-width: 600px; /* Minska maxbredden för mobila enheter */
+  height: auto; /* Låt höjden vara flexibel */
   max-height: 80vh;
-  overflow: hidden;
+  overflow-y: auto; /* Tillåt vertikal scroll */
   z-index: 60;
   border-radius: 1rem;
   margin: 20px;
@@ -117,7 +117,7 @@ body {
 .fleet-card-content {
   max-height: calc(80vh - 48px);
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch; /* Viktigt för iOS */
   padding-right: 20px;
 }
 
@@ -133,21 +133,6 @@ body {
   -webkit-backdrop-filter: blur(4px);
   z-index: 50;
 }
-
-/* Justering för mobila enheter */
-@media (max-width: 640px) {
-  .fleet-card-expanded {
-    width: 95%;
-    height: 80vh;
-    margin: 10px;
-  }
-
-  .fleet-card-content {
-    max-height: calc(80vh - 24px);
-    padding-right: 16px;
-  }
-}
-
 /* Search & Squad Card Styles */
 .search-bar,
 .squad-card {
@@ -156,19 +141,6 @@ body {
   height: auto;
   overflow: hidden;
   overflow-y: hidden;
-}
-
-@media (max-width: 640px) {
-  .squad-card-expanded {
-    width: 95%;
-    height: 80vh;
-    margin: 10px;
-  }
-
-  .squad-card-content {
-    max-height: calc(80vh - 24px);
-    padding-right: 16px;
-  }
 }
 
 /* Mobile Styles */
@@ -191,6 +163,33 @@ body {
    position: -webkit-sticky !important;
    position: sticky !important;
  }
+
+  .search-panel-button {
+    width: 100%;
+  }
+  .fleet-card-expanded {
+   width: 95%;
+   max-width: 100%; /* Säkerställ att kortet fyller skärmen */
+   max-height: 90vh; /* Ge mer plats för innehållet */
+   margin: 10px;
+ }
+
+ .fleet-card-content {
+   max-height: calc(90vh - 24px);
+   padding-right: 1rem; /* Låt innehållet ha lite padding */
+ }
+}
+  .fleet-card-expanded {
+   width: 95%;
+   height: 80vh;
+   margin: 10px;
+ }
+ 
+ .fleet-card-content {
+   max-height: calc(80vh - 24px);
+   padding-right: 16px;
+ }
+}
  
  button, 
  [role="button"],
@@ -246,13 +245,7 @@ body {
    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors;
    min-width: 120px;
  }
- 
- @media (max-width: 640px) {
-   .search-panel-button {
-     width: 100%;
-   }
- }
-}
+
 
 /* Lägg till dessa klasser i din befintliga CSS */
 .glass-card-content {
@@ -275,3 +268,4 @@ body {
 .glow-red {
   background: radial-gradient(circle at center, rgba(239,68,68,0.5), transparent 70%);
 }
+
