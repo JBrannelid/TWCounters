@@ -163,33 +163,6 @@ body {
    position: -webkit-sticky !important;
    position: sticky !important;
  }
-
-  .search-panel-button {
-    width: 100%;
-  }
-  .fleet-card-expanded {
-   width: 95%;
-   max-width: 100%; /* Säkerställ att kortet fyller skärmen */
-   max-height: 90vh; /* Ge mer plats för innehållet */
-   margin: 10px;
- }
-
- .fleet-card-content {
-   max-height: calc(90vh - 24px);
-   padding-right: 1rem; /* Låt innehållet ha lite padding */
- }
-}
-  .fleet-card-expanded {
-   width: 95%;
-   height: 80vh;
-   margin: 10px;
- }
- 
- .fleet-card-content {
-   max-height: calc(80vh - 24px);
-   padding-right: 16px;
- }
-}
  
  button, 
  [role="button"],
@@ -245,7 +218,7 @@ body {
    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors;
    min-width: 120px;
  }
-
+}
 
 /* Lägg till dessa klasser i din befintliga CSS */
 .glass-card-content {
