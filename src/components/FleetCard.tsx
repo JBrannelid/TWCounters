@@ -1,6 +1,6 @@
-import { memo, useState, useRef } from 'react';
+import { memo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ship, Trash2, Plus } from 'lucide-react';
+import { Ship, Trash2, Plus, ChevronDown } from 'lucide-react';
 import { Fleet, Counter } from '@/types';
 import { GlassCard } from './ui/GlassCard';
 import { UnitImage } from './ui/UnitImage';
@@ -29,18 +29,55 @@ export const FleetCard = memo<FleetCardProps>(({
   isFiltered = false,
   onAddCounter
 }) => {
-  const [] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-// Log data to console
-console.log('Full fleet data:', fleet);
 
-  // Filtrera counters för denna fleet
+  // Animation variants
+  const overlayVariants = {
+    initial: { opacity: 0 },
+    animate: { 
+      opacity: 1,
+      transition: { duration: 0.3 }
+    },
+    exit: { 
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  const cardVariants = {
+    initial: { scale: 0.95, opacity: 0 },
+    animate: { 
+      scale: 1, 
+      opacity: 1,
+      transition: { 
+        duration: 0.3,
+        type: "spring",
+        stiffness: 300,
+        damping: 25
+      }
+    },
+    exit: { 
+      scale: 0.95, 
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  const handleClickOutside = (e: React.MouseEvent | React.TouchEvent) => {
+    // Kontrollera om klicket var på innehållet eller utanför
+    const contentElement = contentRef.current;
+    const target = e.target as Node;
+    
+    if (contentElement && !contentElement.contains(target)) {
+      onSelect();
+    }
+  };
+
   const fleetCounters = counters.filter(counter => {
     const isTargetFleet = counter.targetSquad.id === fleet.id;
     const isCounterFleet = counter.counterSquad.id === fleet.id;
     const isTargetCapitalShip = 'capitalShip' in counter.targetSquad && 
       counter.targetSquad.capitalShip?.id === fleet.id;
-    
     return isTargetFleet || isCounterFleet || isTargetCapitalShip;
   });
 
@@ -52,265 +89,278 @@ console.log('Full fleet data:', fleet);
         </GlassCard>
       }
     >
-      <GlassCard
-        variant="dark"
-        glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-        isInteractive
-        isSelected={isSelected}
-        onClick={() => {
-          // Explicit call to toggle state
-          if (isSelected) {
-            onSelect();
-          } else {
-            onSelect();
-          }
-        }}
-        className={`transition-all duration-300 ease-out hover:scale-[1.01] ${
-          isFiltered ? 'opacity-100' : 'opacity-50'
-        }`}
-      >
-        <div className="p-4">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-orbitron text-white flex items-center gap-2">
-                <Ship className="w-5 h-5 text-blue-400" />  {/* Fleet icon */}
-                {fleet.name}
-              </h3>
-              {/* Badges */}
-              <div className="flex items-center gap-2 mt-2">
-                <span className={`px-2 py-1 rounded-full text-xs
-                  ${fleet.alignment === 'light'
-                    ? 'bg-blue-500/20 text-blue-400'
-                    : 'bg-red-500/20 text-red-400'
-                  }`}
+      <div className={`relative ${isSelected ? 'z-50' : 'z-0'}`}>
+        <motion.div
+          layout
+          onClick={() => !isSelected && onSelect()}
+          className="w-full"
+        >
+          <GlassCard
+            variant="dark"
+            glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
+            isInteractive={!isSelected}
+            className={`transition-all duration-300 cursor-pointer ${
+              isFiltered ? 'opacity-100' : 'opacity-50'
+            }`}
+          >
+            <div className="relative p-4">
+              {/* Header section */}
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-orbitron text-white flex items-center gap-2">
+                    <Ship className="w-5 h-5 text-blue-400" />
+                    {fleet.name}
+                  </h3>
+                  <span className={`inline-block px-2 py-1 mt-2 rounded-full text-xs ${
+                    fleet.alignment === 'light'
+                      ? 'bg-blue-500/20 text-blue-400 border border-blue-400/20'
+                      : 'bg-red-500/20 text-red-400 border border-red-400/20'
+                  }`}>
+                    {fleet.alignment === 'light' ? 'Light Side' : 'Dark Side'}
+                  </span>
+                </div>
+                <motion.div
+                  animate={{ rotate: isSelected ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg"
                 >
-                  {fleet.alignment === 'light' ? 'Light Side' : 'Dark Side'}
-                </span>
-              </div>
-            </div>
-              {/* Visa metadata i Icon Tooltip*/}
-              {/*
-            <div className="flex items-center gap-2">
-              {onViewDetails && (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowMetadata(true);
-                    }}
-                    className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg"
-                  >
-                    <Info className="w-4 h-4" />
-                  </button>
-                  <MetadataView 
-                    isOpen={showMetadata}
-                    onClose={() => setShowMetadata(false)}
-                    data={fleet}
-                  />
-                </>
-              )}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onSelect();
-                }}
-                className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg"
-              >
-                {isSelected ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
                   <ChevronDown className="w-4 h-4" />
-                )}
-              </button>
-            </div>  */}
-          </div>
+                </motion.div>
+              </div>
 
-          {/* Fleet Formation */}
-          <div className="flex flex-wrap items-center gap-2 mt-4">
-            {/* Capital Ship */}
-            {fleet.capitalShip && (
-              <UnitImage
-                id={fleet.capitalShip.id}
-                name={fleet.capitalShip.name}
-                type="capital-ship"
-                size="md"
-                className="rounded-full border-2 border-blue-400"
-                withTooltip={true}
-                isCapital={true}
-              />
-            )}
-
-            {/* Starting Lineup */}
-            {fleet.startingLineup.map((ship) => (
-              <UnitImage
-                key={ship.id}
-                id={ship.id}
-                name={ship.name}
-                type="ship"
-                size="md"
-                className="rounded-full border-2 border-white/20"
-                withTooltip={true}
-              />
-            ))}
-
-            {/* Reinforcements */}
-            {fleet.reinforcements.map((ship) => (
-              <div key={ship.id} className="relative group opacity-75">
-                <div className="relative">
+              {/* Fleet preview */}
+              <div className="flex flex-wrap items-center gap-2">
+                {fleet.capitalShip && (
                   <UnitImage
+                    id={fleet.capitalShip.id}
+                    name={fleet.capitalShip.name}
+                    type="capital-ship"
+                    size="md"
+                    className="rounded-full border-2 border-blue-400/50"
+                    isCapital
+                  />
+                )}
+                {fleet.startingLineup.map((ship) => (
+                  <UnitImage
+                    key={ship.id}
                     id={ship.id}
                     name={ship.name}
                     type="ship"
                     size="md"
                     className="rounded-full border-2 border-white/20"
-                    withTooltip={true}
                   />
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* Fleet Call Order Strategy - Keep this since it's part of Fleet type */}
-          {fleet.callOrder && (
-            <div className="mt-4 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-              <h4 className="text-sm font-medium text-blue-400 mb-1">Call Order</h4>
-              <p className="text-sm text-white/70">{fleet.callOrder}</p>
             </div>
-          )}
+          </GlassCard>
+        </motion.div>
 
-          {/* Counters Section */}
-          <AnimatePresence>
-            {isSelected && fleetCounters.length > 0 && (
+        <AnimatePresence>
+          {isSelected && (
+            <div className="fixed inset-0 z-50" onClick={handleClickOutside}>
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="mt-6 space-y-4 overflow-hidden"
-                ref={contentRef}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+                variants={overlayVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              />
+              <motion.div
+                className="fixed inset-0 flex items-center justify-center p-4"
+                variants={cardVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
               >
-                <h4 className="text-lg font-medium text-white">Counters</h4>
-                {fleetCounters.map((counter) => (
-                  <div key={counter.id} className="p-4 bg-white/5 rounded-lg space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs
-                          ${counter.counterType === 'hard'
-                            ? 'bg-green-500/20 text-green-400'
-                            : counter.counterType === 'soft'
-                            ? 'bg-yellow-500/20 text-yellow-400'
-                            : 'bg-red-500/20 text-red-400'
-                          }`}
-                        >
-                          {counter.counterType.charAt(0).toUpperCase() + counter.counterType.slice(1)}
-                        </span>
-                        {counter.video_url && <VideoIndicator videoUrl={counter.video_url} />}
-                      </div>
-                      {isAdmin && onDeleteCounter && (
-                        <button
-                          onClick={() => onDeleteCounter(counter.id)}
-                          className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-
-                    <p className="text-white/70">{counter.description}</p>
-
-{/* Counter Fleet Preview */}
-{'capitalShip' in counter.counterSquad && (
-  <div className="mt-4">
-    <div className="flex flex-wrap items-center gap-2">
-      {/* Capital Ship */}
-      {counter.counterSquad.capitalShip && (
+                <div
+                  ref={contentRef}
+                  className="w-full max-w-xl mx-auto"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <GlassCard
+                    variant="dark"
+                    glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
+                    className={`glass-card-content max-h-[80vh] overflow-hidden ${
+                      fleet.alignment === 'light' 
+                        ? 'bg-gradient-to-br from-blue-500/10 to-blue-600/5' 
+                        : 'bg-gradient-to-br from-red-500/10 to-red-600/5'
+                    }`}
+                  >
+{/* Content */}
+<div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
+  {/* Fleet Information */}
+  <div className="mb-6">
+  <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
+    <div className="flex items-center gap-3">
+      {fleet.capitalShip && (
         <div className="relative">
           <UnitImage
-            id={counter.counterSquad.capitalShip.id}
-            name={counter.counterSquad.capitalShip.name}
+            id={fleet.capitalShip.id}
+            name={fleet.capitalShip.name}
             type="capital-ship"
-            size="sm"
-            className="border-2 border-blue-400"
+            size="md"
+            className="rounded-full border-2 border-blue-400/50"
+            isCapital
           />
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full 
-                       flex items-center justify-center text-white text-xs">
-            C
-          </div>
         </div>
       )}
+    </div>
+  </div>
 
-      {/* Starting Lineup */}
-      {counter.counterSquad.startingLineup.map((ship) => (
-        <UnitImage
-          key={ship.id}
-          id={ship.id}
-          name={ship.name}
-          type="ship"
-          size="sm"
-          className="border-2 border-white/20"
-        />
-      ))}
-
-      {/* Reinforcements */}
-      {counter.counterSquad.reinforcements.map((ship) => (
+  {/* Starting Lineup */}
+  <div className="mb-6">
+    <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
+      <div className="flex flex-wrap gap-3">
+      {fleet.startingLineup.map((ship) => (
         <div key={ship.id} className="relative">
           <UnitImage
             id={ship.id}
             name={ship.name}
             type="ship"
-            size="sm"
-            className="border-2 border-white/20 opacity-75"
+            size="md"
+            className="rounded-full border-2 border-white/20"
           />
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full 
-                       flex items-center justify-center text-white text-xs">
-            R
-          </div>
         </div>
       ))}
     </div>
   </div>
-)}
 
-                    {/* Strategy */}
-                    {counter.strategy.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-medium text-white/80">Strategy:</h4>
-                        <div className="space-y-3">
-                          {counter.strategy.map((step, idx) => (
-                            <div key={step.key} className="flex gap-3">
-                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 
-                                            flex items-center justify-center text-sm">
-                                {idx + 1}
-                              </span>
-                              <p className="text-sm text-white/70">{step.description}</p>
-                            </div>
-                          ))}
+  {/* Reinforcements - Already exists */}
+  {fleet.reinforcements.length > 0 && (
+    <div className="mb-6">
+      <h4 className="text-sm font-bold text-white/80 mb-3">Reinforcements</h4>
+      <div className="flex flex-wrap gap-3">
+        {fleet.reinforcements.map((ship, index) => (
+          <div key={ship.id} className="relative">
+            <UnitImage
+              id={ship.id}
+              name={ship.name}
+              type="ship"
+              size="md"
+              className="rounded-full border-2 border-white/20"
+            />
+            <div className="absolute -top-1 -left-1 w-5 h-5 bg-blue-500 rounded-full 
+                          flex items-center justify-center text-white text-xs">
+              {index + 1}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {/* Call Order */}
+  {fleet.callOrder && (
+    <div className={`rounded-lg border p-4 mb-6 ${
+      fleet.alignment === 'light'
+        ? 'bg-blue-500/10 border-blue-500/20'
+        : 'bg-red-500/10 border-red-500/20'
+    }`}>
+      <h4 className={`text-sm font-medium mb-1 ${
+        fleet.alignment === 'light' ? 'text-blue-400' : 'text-red-400'
+      }`}>Call Order</h4>
+      <p className="text-sm text-white/70">{fleet.callOrder}</p>
+    </div>
+  )}
+
+                      {fleetCounters.length > 0 && (
+                        <div className="space-y-4">
+                          <h4 className="text-lg font-medium text-white">Counters</h4>
+                          <div className="space-y-3">
+                            {fleetCounters.map((counter) => (
+                              <div
+                                key={counter.id}
+                                className={`rounded-lg p-4 space-y-3 border transition-all duration-200 ${
+                                  fleet.alignment === 'light' 
+                                    ? 'border-blue-400/20 bg-blue-500/10 hover:bg-blue-500/20 hover:border-blue-400/30' 
+                                    : 'border-red-400/20 bg-red-500/10 hover:bg-red-500/20 hover:border-red-400/30'
+                                }`}
+                              >
+                                {/* Counter content remains the same */}
+                                <div className="flex justify-between items-start">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      counter.counterType === 'hard'
+                                        ? 'bg-green-500/20 text-green-400'
+                                        : counter.counterType === 'soft'
+                                        ? 'bg-yellow-500/20 text-yellow-400'
+                                        : 'bg-red-500/20 text-red-400'
+                                    }`}>
+                                      {counter.counterType.charAt(0).toUpperCase() + counter.counterType.slice(1)}
+                                    </span>
+                                    {counter.video_url && <VideoIndicator videoUrl={counter.video_url} />}
+                                  </div>
+                                  {isAdmin && onDeleteCounter && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDeleteCounter(counter.id);
+                                      }}
+                                      className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </div>
+
+                                <p className="text-white/70">{counter.description}</p>
+
+                                {'capitalShip' in counter.counterSquad && (
+                                  <div className="flex items-center gap-2 mt-2">
+                                    {counter.counterSquad.capitalShip && (
+                                      <UnitImage
+                                        id={counter.counterSquad.capitalShip.id}
+                                        name={counter.counterSquad.capitalShip.name}
+                                        type="capital-ship"
+                                        size="md"
+                                        className="border-2 border-blue-400"
+                                      />
+                                    )}
+                                    {counter.counterSquad.startingLineup.map((ship) => (
+                                      <UnitImage
+                                        key={ship.id}
+                                        id={ship.id}
+                                        name={ship.name}
+                                        type="ship"
+                                        size="md"
+                                        className="border-2 border-white/20"
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  </GlassCard>
+                </div>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </div>
+          )}
+        </AnimatePresence>
 
-          {isAdmin && onAddCounter && (
+        {isAdmin && onAddCounter && !isSelected && (
+          <div className="mt-4">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onAddCounter(fleet);
               }}
-              className="p-2 text-green-400 hover:bg-green-400/10 rounded-lg"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg 
+                       bg-green-500/20 text-green-400 hover:bg-green-500/30"
             >
               <Plus className="w-4 h-4" />
+              Add Counter
             </button>
-          )}
-        </div>
-      </GlassCard>
+          </div>
+        )}
+      </div>
     </ErrorBoundary>
   );
 });
 
 FleetCard.displayName = 'FleetCard';
+
+export default FleetCard;

@@ -1,13 +1,28 @@
+// main.tsx
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
 import './index.css';
 import { AuthProvider } from './contexts/AuthContext';
+import { FirebaseProvider } from './contexts/FirebaseContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { HelmetProvider } from 'react-helmet-async';
+import { CounterProvider } from './contexts/CounterContext';
 
-createRoot(document.getElementById('root')!).render(
+const root = createRoot(document.getElementById('root')!);
+
+root.render(
   <StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <HelmetProvider>
+      <FirebaseProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <CounterProvider>
+              <App />
+            </CounterProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </FirebaseProvider>
+    </HelmetProvider>
   </StrictMode>
 );

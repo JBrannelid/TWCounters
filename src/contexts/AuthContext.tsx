@@ -20,17 +20,23 @@ interface AuthContextType {
   error: string | null;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMasterAdmin, setIsMasterAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (user) {
@@ -52,20 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => unsubscribe();
-  }, []);
-
-  // Lägg till online/offline monitoring
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      unsubscribe();
     };
   }, []);
 
@@ -78,12 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Skapa eller uppdatera användardokumentet
       const userRef = doc(db, 'users', userCredential.user.uid);
       const userDoc = await getDoc(userRef);
       
       if (!userDoc.exists()) {
-        // Skapa nytt användardokument för första inloggningen
         await setDoc(userRef, {
           email: userCredential.user.email,
           isAdmin: false,
@@ -92,13 +86,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           lastLogin: new Date().toISOString()
         });
       } else {
-        // Uppdatera senaste inloggning
         await setDoc(userRef, {
           lastLogin: new Date().toISOString()
         }, { merge: true });
       }
 
-      // Verifiera admin-status
       const updatedDoc = await getDoc(userRef);
       const userData = updatedDoc.data();
       
@@ -132,8 +124,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(null);
       setIsAdmin(false);
       setIsMasterAdmin(false);
-      
-      // Rensa localStorage vid utloggning
       storage.clearAllData();
     } catch (error) {
       console.error('Logout error:', error);
@@ -157,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {!loading && children}
     </AuthContext.Provider>
   );
-}
+};
 
 export function useAuth() {
   const context = useContext(AuthContext);

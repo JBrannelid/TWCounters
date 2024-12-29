@@ -35,14 +35,19 @@ export const SquadList: React.FC<SquadListProps> = ({
   };
 
   const renderedSquads = useMemo(() => 
-    filteredSquads.map((squad) => (
+    filteredSquads.map((squad, index) => (
       <motion.div
         key={squad.id}
+        className={`card-wrapper ${selectedSquadId === squad.id ? 'expanded-card' : ''}`}
         layout
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
+        style={{ 
+          gridColumn: `span ${selectedSquadId === squad.id ? 1 : 1}`,
+          zIndex: selectedSquadId === squad.id ? 50 : 1
+        }}
       >
         <SquadCard
           squad={squad}
@@ -91,7 +96,7 @@ export const SquadList: React.FC<SquadListProps> = ({
         </div>
       }
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
         <AnimatePresence mode="popLayout">
           {renderedSquads}
         </AnimatePresence>

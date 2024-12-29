@@ -13,6 +13,7 @@ module.exports = {
       '2xl': '1536px',
     },
     extend: {
+      // Behåll alla dina befintliga färger och andra inställningar
       colors: {
         'space': {
           black: '#0A0D14',
@@ -68,6 +69,7 @@ module.exports = {
           radial-gradient(circle at 50% 0%, rgba(30, 136, 229, 0.15), transparent 40%),
           radial-gradient(circle at 0% 50%, rgba(220, 38, 38, 0.1), transparent 40%)
         `,
+        'space-pattern': "url('/patterns/space.svg')",
       },
       backgroundSize: {
         'grid': '30px 30px',
@@ -85,11 +87,34 @@ module.exports = {
         'glow': 'glow 2s ease-in-out infinite alternate',
         'hologram': 'hologram 2s ease-in-out infinite alternate'
       },
-      extend: {
-        backgroundImage: {
-          'space-pattern': "url('/patterns/space.svg')",
-        },
-      },      
+      // Nya tillägg för bättre z-index hantering
+      zIndex: {
+        '0': '0',
+        '10': '10',
+        '20': '20',
+        '30': '30',
+        '40': '40',
+        '50': '50',
+        '60': '60',
+        '70': '70',
+        '80': '80',
+        '90': '90',
+        '100': '100',
+        'auto': 'auto',
+        'dropdown': '1000',
+        'modal': '1100',
+        'tooltip': '1200'
+      },
+      // Förbättrad layout-kontroll
+      spacing: {
+        '128': '32rem',
+        '144': '36rem',
+      },
+      maxWidth: {
+        '8xl': '88rem',
+        '9xl': '96rem',
+      },
+      // Keyframes för animationer
       keyframes: {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },

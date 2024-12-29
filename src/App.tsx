@@ -480,7 +480,7 @@ function AppContent() {
     },
   };
 
-  // Combined loading state
+// Combined loading state
 // I App.tsx
 // Under combined loading state
 if (firebaseLoading || authLoading || isLoading) {

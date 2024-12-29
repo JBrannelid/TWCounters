@@ -91,8 +91,8 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="p-6 space-y-6 overflow-auto max-h-[500px]">
+                {/* Content */}
+                <div className="p-6 space-y-6 overflow-auto max-h-[500px] custom-scrollbar">
                 {/* Mission Statement */}
                 <div className="flex items-start gap-4">
                   <Heart className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
@@ -187,11 +187,11 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                   href="https://www.buymeacoffee.com/jbrannelid"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-[#FFDD00] text-black hover:bg-[#FFDD00]/90 transition-all text-sm"
-                >
-                  <Coffee className="w-4 h-4" />
-                  <span className="hidden sm:block">Support the Project</span>
-                </a>
+                  className="flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-[#FFDD00] text-black hover:bg-[#FFDD00]/90 transition-all text-xs sm:text-sm"
+                  >
+                    <Coffee className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span>Support the Project</span>
+                  </a>
               </div>
             </motion.div>
           </div>

@@ -5,15 +5,16 @@
 @tailwind utilities;
 
 :root {
-  --color-space-black: #0A0D14;
-  --color-space-darker: #12151C;
-  --color-space-dark: #1A1E27;
+ --color-space-black: #0A0D14;
+ --color-space-darker: #12151C;
+ --color-space-dark: #1A1E27;
 }
 
-/* Base styles */
 html {
   height: 100%;
   height: -webkit-fill-available;
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
 }
 
 body {
@@ -25,59 +26,24 @@ body {
   background-image: url('/patterns/space.svg');
   background-attachment: fixed;
   overscroll-behavior-y: none;
+  overflow-x: hidden;
 }
 
 #root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+ min-height: 100vh;
+ display: flex;
+ flex-direction: column;
 }
 
-/* Mobile optimizations */
-@media (max-width: 640px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  .hero-section {
-    padding: 1rem;
-    min-height: auto;
-  }
-
-  /* Fix for mobile safari */
-  .fixed {
-    position: fixed !important;
-  }
-  
-  .sticky {
-    position: -webkit-sticky !important;
-    position: sticky !important;
-  }
-  
-  /* Förbättra touch targets */
-  button, 
-  [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  /* Prevent zoom on inputs */
-  input[type="text"],
-  input[type="email"],
-  input[type="search"] {
-    font-size: 16px;
-  }
-}
-
-/* Custom scrollbar */
+/* Scrollbar styling */
 .custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+ scrollbar-width: thin;
+ scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -85,106 +51,201 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
 
-/* Animation keyframes */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+ 0%, 100% { transform: translateY(0px); }
+ 50% { transform: translateY(-10px); }
 }
 
 @keyframes glow {
-  0% { box-shadow: 0 0 5px rgba(100, 181, 246, 0.5); }
-  100% { box-shadow: 0 0 20px rgba(100, 181, 246, 0.8); }
+ 0% { box-shadow: 0 0 5px rgba(100, 181, 246, 0.5); }
+ 100% { box-shadow: 0 0 20px rgba(100, 181, 246, 0.8); }
 }
 
-/* Font classes */
 .font-orbitron {
-  font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
+ font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
 }
 
-/* Improve scrolling performance */
 * {
-  -webkit-overflow-scrolling: touch;
+ -webkit-overflow-scrolling: touch;
 }
 
-/* Prevent pull-to-refresh */
-html {
-  overscroll-behavior-y: none;
-}
-
-/* Responsive containers */
 .container {
+ width: 100%;
+ max-width: 1280px;
+ margin: 0 auto;
+ padding-left: 1rem;
+ padding-right: 1rem;
+}
+
+/* Fleet Card Styles */
+.fleet-card-container {
+  position: relative;
   width: 100%;
-  max-width: 1280px;
+  max-width: 800px;
   margin: 0 auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
 }
 
-/* Minimum touch target sizes */
-@media (max-width: 640px) {
-  button, 
-  [role="button"],
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  .search-container {
-    width: 100%;
-  }
-  
-  .button-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  
-  .button-container > * {
-    flex: 1 1 auto;
-    min-width: max-content;
-  }
-}
-
-/* Ensure consistent widths */
-.search-bar,
-.squad-card,
 .fleet-card {
-  width: 100%;
   max-width: 100%;
+  width: auto;
+  height: auto;
+  overflow: hidden;
+}
+
+.fleet-card-expanded {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow: hidden;
+  z-index: 60;
+  border-radius: 1rem;
+  margin: 20px;
+}
+
+.fleet-card-content {
+  max-height: calc(80vh - 48px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-right: 20px;
+}
+
+.fleet-card-content::-webkit-scrollbar {
+  display: none;
+}
+
+.fleet-card-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 50;
+}
+/* Search & Squad Card Styles */
+.search-bar,
+.squad-card {
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  overflow: hidden;
+  overflow-y: hidden;
+}
+
+/* Mobile Styles */
+@media (max-width: 640px) {
+ .container {
+   padding-left: 1rem;
+   padding-right: 1rem;
+ }
+ 
+ .hero-section {
+   padding: 1rem;
+   min-height: auto;
+ }
+
+ .fixed {
+   position: fixed !important;
+ }
+ 
+ .sticky {
+   position: -webkit-sticky !important;
+   position: sticky !important;
+ }
+ 
+ button, 
+ [role="button"],
+ .touch-target {
+   min-height: 44px;
+   min-width: 44px;
+ }
+ 
+ input[type="text"],
+ input[type="email"],
+ input[type="search"] {
+   font-size: 16px;
+ }
+ 
+ .search-container {
+   width: 100%;
+ }
+ 
+ .button-container {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 0.5rem;
+ }
+ 
+ .button-container > * {
+   flex: 1 1 auto;
+   min-width: max-content;
+ }
+
+ .search-panel-buttons {
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+   gap: 0.5rem;
+ }
 }
 
 @layer utilities {
-  .search-panel-container {
-    @apply w-full max-w-7xl mx-auto;
-  }
-
-  .button-wrapper {
-    @apply flex-1 min-w-[120px] sm:min-w-0 sm:w-auto;
-  }
-}
-
-/* Specifika media queries för SearchPanel */
-@media (max-width: 640px) {
-  .search-panel-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 0.5rem;
-  }
+ .search-panel-container {
+   @apply w-full max-w-7xl mx-auto;
+ }
+ .button-wrapper {
+   @apply flex-1 min-w-[120px] sm:min-w-0 sm:w-auto;
+ }
+ .header-button {
+   @apply flex items-center justify-center gap-2 px-3 sm:px-4 py-2 
+          min-w-[100px] sm:min-w-[120px] rounded-lg transition-all 
+          text-sm sm:text-base;
+ }
 }
 
 @layer components {
-  .search-panel-button {
-    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors;
-    min-width: 120px;
-  }
-  
-  @media (max-width: 640px) {
-    .search-panel-button {
-      width: 100%;
-    }
-  }
+ .search-panel-button {
+   @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors;
+   min-width: 120px;
+ }
+ 
+ @media (max-width: 640px) {
+   .search-panel-button {
+     width: 100%;
+   }
+ }
 }
+
+/* Lägg till dessa klasser i din befintliga CSS */
+.glass-card-content {
+  position: relative;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.glow-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.glow-blue {
+  background: radial-gradient(circle at center, rgba(59,130,246,0.5), transparent 70%);
+}
+
+.glow-red {
+  background: radial-gradient(circle at center, rgba(239,68,68,0.5), transparent 70%);
+}
+

@@ -13,30 +13,30 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-// src/components/SearchBar.tsx
 export const SearchBar = memo<SearchBarProps>(({
   value,
   onChange,
   onClear,
   suggestions = [],
   onSelectSuggestion,
-  placeholder = "Search teams or ships..."
+  placeholder = "Search teams..."
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Begränsa antal förslag till 10 för bättre prestanda
-  const filteredSuggestions = useMemo(() => 
-    suggestions.length > 0 
-      ? suggestions
-          .filter(item => 
-            item.name.toLowerCase().includes(value.toLowerCase())
-          )
-          .slice(0, 10)
-      : [],
-    [suggestions, value]
-  );
+// Filter suggestions based on search value
+const filteredSuggestions = useMemo(() => {
+  // Om value är tomt, visa max 4 förslag
+  if (value.trim() === '') {
+    return suggestions.slice(0, 3);
+  }
+  // Filtrera baserat på användarens inmatning
+  return suggestions
+    .filter(item => item.name.toLowerCase().includes(value.toLowerCase()))
+    .slice(0, 4); // Visa max 10 matchande resultat
+}, [suggestions, value]);
 
   // Load images for suggestions
   useEffect(() => {
@@ -45,9 +45,9 @@ export const SearchBar = memo<SearchBarProps>(({
       for (const item of filteredSuggestions) {
         try {
           if ('leader' in item && item.leader) {
-            urls[item.leader.id] = await getUnitImage(item.leader.id, 'character');
+            urls[item.leader.id] = await getUnitImage(item.leader.id, 'squad-leader');
           } else if ('capitalShip' in item && item.capitalShip) {
-            urls[item.capitalShip.id] = await getUnitImage(item.capitalShip.id, 'ship');
+            urls[item.capitalShip.id] = await getUnitImage(item.capitalShip.id, 'capital-ship');
           }
         } catch (error) {
           console.error(`Failed to load image for suggestion:`, error);
@@ -62,20 +62,33 @@ export const SearchBar = memo<SearchBarProps>(({
     }
   }, [filteredSuggestions]);
 
+  // Handle selection of an item
   const handleSelect = useCallback((unit: Squad | Fleet) => {
     onSelectSuggestion?.(unit);
     setIsFocused(false);
     onChange(unit.name);
   }, [onSelectSuggestion, onChange]);
 
-  const handleBlur = (e: React.FocusEvent) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setIsFocused(false);
-    }
-  };
-  
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsFocused(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="relative w-full">
+    <div 
+      ref={containerRef} 
+      className="relative w-full"
+      style={{ position: 'relative', zIndex: 9999 }}
+    >
       <div className="relative">
         <input
           ref={inputRef}
@@ -83,7 +96,6 @@ export const SearchBar = memo<SearchBarProps>(({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
-          onBlur={handleBlur}
           className="w-full pl-10 pr-10 py-2 bg-white/5 border border-white/10 rounded-lg 
                    text-white placeholder-white/40 focus:outline-none focus:ring-2 
                    focus:ring-blue-400/50 focus:border-transparent font-titillium"
@@ -105,22 +117,31 @@ export const SearchBar = memo<SearchBarProps>(({
         )}
       </div>
 
-      {/* Suggestions Dropdown */}
       <AnimatePresence>
         {isFocused && filteredSuggestions.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 w-full mt-2 bg-space-darker border border-white/10 
-                     rounded-lg shadow-lg max-h-[300px] overflow-y-auto"
+            className="absolute w-full mt-2"
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              zIndex: 9999,
+              backgroundColor: '#12151C',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '0.5rem',
+              maxHeight: '300px',
+              overflowY: 'auto',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            }}
           >
             {filteredSuggestions.map((item) => (
               <button
                 key={item.id}
-                onClick={() => {
-                  handleSelect(item);
-                }}
+                onClick={() => handleSelect(item)}
                 className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 
                          transition-colors text-left"
               >

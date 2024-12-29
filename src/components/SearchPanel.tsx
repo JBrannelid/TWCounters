@@ -28,14 +28,14 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   const inactiveClass = 'bg-white/5 text-white hover:bg-white/10';
 
   return (
-    <div className="w-full space-y-4 max-w-4xl mx-auto">
-      {/* Search Bar */}
-      <div className="w-full">
+    <div className="w-full space-y-4 max-w-4xl mx-auto" style={{ position: 'relative', zIndex: 100 }}>
+      {/* Search Container */}
+      <div className="w-full relative" style={{ zIndex: 1000 }}>
         {children}
       </div>
 
       {/* Buttons Container */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" style={{ position: 'relative', zIndex: 50 }}>
         <button
           onClick={() => onViewChange('squads')}
           className={`${buttonBaseClass} ${

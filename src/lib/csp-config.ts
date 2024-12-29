@@ -32,7 +32,6 @@ export const generateCSPString = (nonce: string): string => {
       "wss://*.firebaseio.com"
     ],
     'font-src': ["'self'", "data:", "https://fonts.gstatic.com"],
-    'frame-ancestors': ["'none'"],
     'base-uri': ["'self'"],
     'form-action': ["'self'"],
     'manifest-src': ["'self'"]

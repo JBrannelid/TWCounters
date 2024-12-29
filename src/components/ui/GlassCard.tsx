@@ -1,5 +1,7 @@
+// GlassCard.tsx
 import { motion, HTMLMotionProps } from 'framer-motion';
 import { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 interface GlassCardProps extends HTMLMotionProps<"div"> {
   children: ReactNode;
@@ -12,53 +14,56 @@ interface GlassCardProps extends HTMLMotionProps<"div"> {
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
-  onClick,
   children,
   variant = 'light',
   glowColor = 'none',
   isInteractive = false,
   isSelected = false,
   className = '',
+  onClick,
   ...motionProps
 }) => {
-  const baseClasses = 'rounded-lg backdrop-blur-md transition-all';
-  
   const variantClasses = {
-    light: 'bg-white/5',
-    dark: 'bg-space-dark/80',
-    darker: 'bg-space-darker/90'
+    light: 'bg-white/5 backdrop-blur-sm',
+    dark: 'bg-space-dark/90 backdrop-blur-md',
+    darker: 'bg-space-darker/95 backdrop-blur-lg'
   };
 
   const glowClasses = {
     none: '',
-    blue: 'shadow-neon-blue',
-    red: 'shadow-neon-red',
-    yellow: 'shadow-neon-yellow'
+    blue: 'shadow-[0_0_30px_rgba(59,130,246,0.5)] border border-blue-400/30',
+    red: 'shadow-[0_0_30px_rgba(239,68,68,0.5)] border border-red-400/30',
+    yellow: 'shadow-[0_0_30px_rgba(234,179,8,0.5)] border border-yellow-400/30'
   };
 
-  const interactiveClasses = isInteractive
-    ? 'cursor-pointer hover:bg-white/10'
-    : '';
-
-  const selectedClasses = isSelected
-    ? 'bg-white/10 border-blue-400'
-    : 'border-white/10';
+  const containerClasses = cn(
+    'rounded-lg transition-all duration-300',
+    variantClasses[variant],
+    glowColor !== 'none' && glowClasses[glowColor],
+    isInteractive && !isSelected && 'hover:scale-[1.01] hover:bg-white/10',
+    className
+  );
 
   return (
     <motion.div
       onClick={onClick}
+      className={containerClasses}
       {...motionProps}
-      className={`
-        ${baseClasses}
-        ${variantClasses[variant]}
-        ${glowClasses[glowColor]}
-        ${interactiveClasses}
-        ${selectedClasses}
-        font-titillium
-        ${className}
-      `}
     >
-      {children}
+      <div className="relative h-full">
+        {children}
+        
+        {glowColor !== 'none' && (
+          <div className="absolute inset-0 pointer-events-none rounded-lg overflow-hidden">
+            <div className={cn(
+              'absolute inset-0 opacity-20 blur-xl',
+              `bg-${glowColor}-500/20`
+            )} />
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 };
+
+export default GlassCard;

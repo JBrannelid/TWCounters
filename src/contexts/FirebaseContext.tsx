@@ -52,22 +52,24 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initialize = async () => {
+      console.log('Starting Firebase initialization...');
       try {
         setIsLoading(true);
         setError(null);
         
         try {
+          console.log('Ensuring Firebase is initialized...');
           await ensureFirebaseInitialized();
-          
+          console.log('Setting up Firestore timeout...');
           const firestoreTimeout = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Firestore connection timeout')), 10000);
           });
-          
+          console.log('Starting data sync...');
           await Promise.race([
             FirebaseService.syncAllData(),
             firestoreTimeout
           ]);
-          
+          console.log('Firebase initialization complete');
           setIsInitialized(true);
         } catch (error) {
           console.error('Firebase initialization error:', error);
@@ -77,6 +79,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
         console.error('Error in initialize:', err);
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
       } finally {
+        console.log('Setting isLoading to false');
         setIsLoading(false);
       }
     };
