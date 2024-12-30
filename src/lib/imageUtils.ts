@@ -12,7 +12,7 @@ interface ImageDimensions {
 }
 
 // Constants
-const ASSETS_BASE_PATH = '/assets';
+const ASSETS_BASE_PATH = '/asset';
 const DEFAULT_PLACEHOLDER = '/placeholder.png';
 const IMAGE_CACHE = new Map<string, string>();
 const LOADING_CACHE = new Map<string, Promise<string>>();
@@ -62,46 +62,75 @@ export const getUnitImage = async (id: string | undefined, type: ImageType): Pro
 
   const cacheKey = `${id}-${type}`;
   
-  // Check memory cache first
+  // Kontrollera cache först
   if (IMAGE_CACHE.has(cacheKey)) {
+    console.log(`[Image Debug] Cache hit for ${id} (${type})`);
     return IMAGE_CACHE.get(cacheKey)!;
   }
 
-  // Check if this image is already being loaded
+  // Kontrollera om bilden redan laddas
   if (LOADING_CACHE.has(cacheKey)) {
+    console.log(`[Image Debug] Image already loading for ${id} (${type})`);
     return LOADING_CACHE.get(cacheKey)!;
   }
 
-  // Create new loading promise
+  // Skapa en laddnings-promise
   const loadingPromise = (async () => {
     try {
       const fileName = getImageFileName(id, type);
       if (!fileName) {
-        logDebug(`No mapping found for ${id} (${type})`);
+        console.log(`[Image Debug] No file mapping for ${id} (${type})`);
         return DEFAULT_PLACEHOLDER;
       }
 
-      const folder = type.includes('ship') ? 'ships' : 'characters';
-      const imagePath = `${folder}/${fileName}.webp`;
-      
-      try {
-        const imageRef = ref(storage, imagePath);
-        const url = await getDownloadURL(imageRef);
-        IMAGE_CACHE.set(cacheKey, url);
-        logDebug(`Successfully loaded Firebase image for ${id}`);
-        return url;
-      } catch (firebaseError) {
-        const localPath = `${ASSETS_BASE_PATH}/${imagePath}`;
+    // Bestäm rätt mapp baserat på typen
+    const folder = type.includes('ships') ? 'ships' : 'characters';
+
+    // Bygg den lokala sökvägen för att söka i rätt mapp
+    const localPath = `/asset/${folder}/${fileName}.webp`;
+    console.log(`[Image Debug] Attempting to load image from local path: ${localPath}`);
+
+      // Försök ladda från lokala assets först
+      const localImage = new Image();
+      localImage.src = localPath;
+
+      const isLocalAvailable = await new Promise((resolve) => {
+        localImage.onload = () => {
+          console.log(`[Image Debug] Local image loaded successfully: ${localPath}`);
+          resolve(true);
+        };
+        localImage.onerror = () => {
+          console.error(`[Image Debug] Failed to load local image from path: ${localPath}`);
+          resolve(false);
+        };
+      });
+
+      // Om lokal bild är tillgänglig
+      if (isLocalAvailable) {
+        console.log(`[Image Debug] Loaded ${id} (${type}) from local path: ${localPath}`);
         IMAGE_CACHE.set(cacheKey, localPath);
-        logDebug(`Using local path: ${localPath}`);
         return localPath;
       }
+
+      // Fallback till Firebase
+      const imagePath = `${folder}/${fileName}.webp`;
+      try {
+        const imageRef = ref(storage, imagePath);
+        const firebaseUrl = await getDownloadURL(imageRef);
+        IMAGE_CACHE.set(cacheKey, firebaseUrl);
+        console.log(`[Image Debug] Loaded ${id} (${type}) from Firebase URL: ${firebaseUrl}`);
+        return firebaseUrl;
+      } catch (firebaseError) {
+        console.error(`[Image Debug] Firebase failed for ${id} (${type}):`, firebaseError);
+      }
     } catch (error) {
-      console.error(`Failed to load image for ${id}:`, error);
-      return DEFAULT_PLACEHOLDER;
+      console.error(`[Image Debug] Failed to load image for ${id} (${type}):`, error);
     } finally {
       LOADING_CACHE.delete(cacheKey);
     }
+
+    console.log(`[Image Debug] Using placeholder for ${id} (${type})`);
+    return DEFAULT_PLACEHOLDER;
   })();
 
   LOADING_CACHE.set(cacheKey, loadingPromise);
