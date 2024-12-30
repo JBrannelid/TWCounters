@@ -179,10 +179,10 @@ export const FleetCard = memo<FleetCardProps>(({
       className="w-full max-w-xl mx-auto"  // Simplified
       onClick={(e) => e.stopPropagation()}
     >
-      <GlassCard
-                    variant="dark"
-                    glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                    className="overflow-hidden" // Simplified
+                    <GlassCard
+                      variant="dark"
+                      glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
+                      className="min-h-[60vh] max-h-[90vh] overflow-hidden flex flex-col"
                     >
                      {/* Content wrapper */}
                      <div className="p-6 overflow-y-auto max-h-[80vh] custom-scrollbar">

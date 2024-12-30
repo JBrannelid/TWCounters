@@ -122,29 +122,6 @@ body {
   background: radial-gradient(circle at center, rgba(239,68,68,0.5), transparent 70%);
 }
 
-/* Fleet card specific styles */
-.fleet-card-modal {
-  @apply fixed inset-0 z-50;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-}
-
-.fleet-card-expanded {
-  @apply fixed inset-0 z-50;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.fleet-card-content {
-  @apply flex-1 overflow-y-auto custom-scrollbar;
-  max-height: calc(100vh - 2rem);
-  -webkit-overflow-scrolling: touch;
-}
-
 /* Mobile styles */
 @media (max-width: 640px) {
   .container {
