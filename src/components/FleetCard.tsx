@@ -186,9 +186,9 @@ export const FleetCard = memo<FleetCardProps>(({
                       {/* Fleet Information */}
                       <div className="mb-6">
                         <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
-                        <div className="flex items-center gap-3">
+                        <div className="grid grid-cols-1 gap-4"> {/* Ändra till grid */}
                           {fleet.capitalShip && (
-                            <div className="relative">
+                            <div className="flex items-center gap-3"> {/* Lägg till flex och gap */}
                               <UnitImage
                                 id={fleet.capitalShip.id}
                                 name={fleet.capitalShip.name}
@@ -197,6 +197,10 @@ export const FleetCard = memo<FleetCardProps>(({
                                 className="rounded-full border-2 border-blue-400/50"
                                 isCapital
                               />
+                              <div>
+                                <div className="text-white font-medium">{fleet.capitalShip.name}</div>
+                                <div className="text-white/60 text-sm">Capital Ship</div>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -205,9 +209,9 @@ export const FleetCard = memo<FleetCardProps>(({
                       {/* Starting Lineup */}
                       <div className="mb-6">
                         <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="grid grid-cols-2 gap-4"> {/* Ändra till grid */}
                           {fleet.startingLineup.map((ship) => (
-                            <div key={ship.id} className="relative">
+                            <div key={ship.id} className="flex items-center gap-3"> {/* Lägg till flex och gap */}
                               <UnitImage
                                 id={ship.id}
                                 name={ship.name}
@@ -215,6 +219,10 @@ export const FleetCard = memo<FleetCardProps>(({
                                 size="md"
                                 className="rounded-full border-2 border-white/20"
                               />
+                              <div>
+                                <div className="text-white font-medium">{ship.name}</div>
+                                <div className="text-white/60 text-sm">Starting Ship</div>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -224,19 +232,25 @@ export const FleetCard = memo<FleetCardProps>(({
                       {fleet.reinforcements.length > 0 && (
                         <div className="mb-6">
                           <h4 className="text-sm font-bold text-white/80 mb-3">Reinforcements</h4>
-                          <div className="flex flex-wrap gap-3">
+                          <div className="grid grid-cols-2 gap-4"> {/* Ändra till grid */}
                             {fleet.reinforcements.map((ship, index) => (
-                              <div key={ship.id} className="relative">
-                                <UnitImage
-                                  id={ship.id}
-                                  name={ship.name}
-                                  type="ship"
-                                  size="md"
-                                  className="rounded-full border-2 border-white/20"
-                                />
-                                <div className="absolute -top-1 -left-1 w-5 h-5 bg-blue-500 rounded-full 
-                                            flex items-center justify-center text-white text-xs">
-                                  {index + 1}
+                              <div key={ship.id} className="flex items-center gap-3"> {/* Lägg till flex och gap */}
+                                <div className="relative">
+                                  <UnitImage
+                                    id={ship.id}
+                                    name={ship.name}
+                                    type="ship"
+                                    size="md"
+                                    className="rounded-full border-2 border-white/20"
+                                  />
+                                  <div className="absolute -top-1 -left-1 w-5 h-5 bg-blue-500 rounded-full 
+                                              flex items-center justify-center text-white text-xs">
+                                    {index + 1}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-white font-medium">{ship.name}</div>
+                                  <div className="text-white/60 text-sm">Reinforcement {index + 1}</div>
                                 </div>
                               </div>
                             ))}
