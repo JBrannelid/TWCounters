@@ -156,7 +156,7 @@ export const FleetCard = memo<FleetCardProps>(({
 
         <AnimatePresence>
           {isSelected && (
-            <div className="fixed inset-0 z-50" onClick={handleClickOutside}>
+            <div className="fleet-card-modal" onClick={handleClickOutside}>
               <motion.div
                 className="fixed inset-0 bg-black/50 backdrop-blur-sm"
                 variants={overlayVariants}
@@ -164,28 +164,28 @@ export const FleetCard = memo<FleetCardProps>(({
                 animate="animate"
                 exit="exit"
               />
-                <motion.div
-                  className="fixed inset-0 flex items-start sm:items-center justify-center p-4 overflow-y-auto"  // Ny flexbox-justering
-                  variants={cardVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
+              <motion.div
+                className="modal-content"
+                variants={cardVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
                 <div
                   ref={contentRef}
-                  className="w-full max-w-xl mx-auto my-auto" // Lagt till my-auto
+                  className="w-full max-w-xl mx-auto p-4"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <GlassCard
                     variant="dark"
                     glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                    className="min-h-[50vh] max-h-[90vh] overflow-hidden" // Justerad max-height
-                    >
+                    className="fleet-card-expanded"
+                  >
                     {/* Content */}
-                    <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
-                      {/* Fleet Information */}
-                      <div className="mb-6">
-                        <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
+                    <div className="fleet-card-content">
+                    {/* Fleet Information */}
+                    <div className="fleet-scroll-container">
+                    <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
                         <div className="grid grid-cols-1 gap-4"> {/* Ändra till grid */}
                           {fleet.capitalShip && (
                             <div className="flex items-center gap-3"> {/* Lägg till flex och gap */}

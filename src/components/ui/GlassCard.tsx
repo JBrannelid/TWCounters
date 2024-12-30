@@ -37,25 +37,21 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   };
 
   const containerClasses = cn(
-    // Grundläggande klasser
+    // Basklasser
     'rounded-lg transition-all duration-300',
-    'relative flex flex-col', // Lägg till flex-col för bättre innehållshantering
-    'min-h-0', // Viktigt för att undvika overflow på mobil
-    'w-full h-full', // Säkerställ full bredd och höjd
+    'relative flex flex-col',
+    'w-full',
     
-    // Variant och glow-klasser
+    // Mobil-specifika klasser
+    'min-h-0 h-full',
+    'sm:min-h-screen-small',
+    'overflow-hidden',
+    
+    // Variant och glow
     variantClasses[variant],
     glowColor !== 'none' && glowClasses[glowColor],
     
-    // Interaktivitetsklasser
-    isInteractive && !isSelected && 'hover:scale-[1.01] hover:bg-white/10',
-    
-    // Mobilspecifika klasser
-    'touch-action-pan-y', // För bättre scrollning på mobil
-    'overflow-hidden', // Förhindra oönskad overflow
-    'sm:overflow-visible', // Tillåt overflow på större skärmar
-    
-    // Custom klasser från props
+    // Custom klasser
     className
   );
 

@@ -1,15 +1,18 @@
+/* Base imports */
 @import './styles/fonts.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Root variables */
 :root {
  --color-space-black: #0A0D14;
  --color-space-darker: #12151C;
  --color-space-dark: #1A1E27;
 }
 
+/* Base styles */
 html {
   height: 100%;
   height: -webkit-fill-available;
@@ -30,16 +33,21 @@ body {
 }
 
 #root {
- min-height: 100vh;
- display: flex;
- flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Touch behavior */
+* {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Scrollbar styling */
 .custom-scrollbar {
- scrollbar-width: thin;
- scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
- -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  -webkit-overflow-scrolling: touch;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -60,33 +68,32 @@ body {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Animations */
 @keyframes float {
- 0%, 100% { transform: translateY(0px); }
- 50% { transform: translateY(-10px); }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
 @keyframes glow {
- 0% { box-shadow: 0 0 5px rgba(100, 181, 246, 0.5); }
- 100% { box-shadow: 0 0 20px rgba(100, 181, 246, 0.8); }
+  0% { box-shadow: 0 0 5px rgba(100, 181, 246, 0.5); }
+  100% { box-shadow: 0 0 20px rgba(100, 181, 246, 0.8); }
 }
 
+/* Font utilities */
 .font-orbitron {
- font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
+  font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
 }
 
-* {
- -webkit-overflow-scrolling: touch;
-}
-
+/* Layout utilities */
 .container {
- width: 100%;
- max-width: 1280px;
- margin: 0 auto;
- padding-left: 1rem;
- padding-right: 1rem;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-/* Generella kort-styles som fungerar för både Squad och Fleet */
+/* Card styles */
 .card-content {
   max-height: calc(80vh - 3rem);
   overflow-y: auto;
@@ -99,6 +106,7 @@ body {
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* Glow effects */
 .glow-overlay {
   position: absolute;
   inset: 0;
@@ -114,108 +122,118 @@ body {
   background: radial-gradient(circle at center, rgba(239,68,68,0.5), transparent 70%);
 }
 
-/* Mobile Styles */
-@media (max-width: 640px) {
- .container {
-   padding-left: 1rem;
-   padding-right: 1rem;
- }
- 
- .hero-section {
-   padding: 1rem;
-   min-height: auto;
- }
-
- .fixed {
-   position: fixed !important;
- }
- 
- .sticky {
-   position: -webkit-sticky !important;
-   position: sticky !important;
- }
-
- /* Gemensam styling för expanderade kort */
- .card-content {
-   max-height: 90vh;
-   padding: 1rem;
-   margin: 0.5rem;
-   overflow-y: auto;
-   -webkit-overflow-scrolling: touch;
- }
- 
- button, 
- [role="button"],
- .touch-target {
-   min-height: 44px;
-   min-width: 44px;
- }
- 
- input[type="text"],
- input[type="email"],
- input[type="search"] {
-   font-size: 16px;
- }
- 
- .search-container {
-   width: 100%;
- }
- 
- .button-container {
-   display: flex;
-   flex-wrap: wrap;
-   gap: 0.5rem;
- }
- 
- .button-container > * {
-   flex: 1 1 auto;
-   min-width: max-content;
- }
-
- .search-panel-buttons {
-   display: grid;
-   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-   gap: 0.5rem;
- }
+/* Fleet card specific styles */
+.fleet-card-modal {
+  @apply fixed inset-0 z-50;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
 }
 
-@layer utilities {
- .search-panel-container {
-   @apply w-full max-w-7xl mx-auto;
- }
- .button-wrapper {
-   @apply flex-1 min-w-[120px] sm:min-w-0 sm:w-auto;
- }
- .header-button {
-   @apply flex items-center justify-center gap-2 px-3 sm:px-4 py-2 
-          min-w-[100px] sm:min-w-[120px] rounded-lg transition-all 
-          text-sm sm:text-base;
- }
- .fleet-card-expanded {
+.fleet-card-expanded {
   @apply fixed inset-0 z-50 flex items-center justify-center;
-  height: 100%; /* Tvingar full höjd på mobil */
-  min-height: -webkit-fill-available; /* iOS fix */
+  height: 100%;
+  min-height: -webkit-fill-available;
 }
 
 .fleet-card-content {
   @apply overflow-y-auto;
   max-height: calc(100vh - 4rem);
-  -webkit-overflow-scrolling: touch; /* Bättre scroll på iOS */
+  -webkit-overflow-scrolling: touch;
 }
+
+/* Mobile styles */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .hero-section {
+    padding: 1rem;
+    min-height: auto;
+  }
+
+  .fixed {
+    position: fixed !important;
+  }
+  
+  .sticky {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+  }
+
+  .card-content {
+    max-height: 90vh;
+    padding: 1rem;
+    margin: 0.5rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  button, 
+  [role="button"],
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  input[type="text"],
+  input[type="email"],
+  input[type="search"] {
+    font-size: 16px;
+  }
+  
+  .search-container {
+    width: 100%;
+  }
+  
+  .button-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .button-container > * {
+    flex: 1 1 auto;
+    min-width: max-content;
+  }
+
+  .search-panel-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+}
+
+/* Tailwind layers */
+@layer utilities {
+  .search-panel-container {
+    @apply w-full max-w-7xl mx-auto;
+  }
+  .button-wrapper {
+    @apply flex-1 min-w-[120px] sm:min-w-0 sm:w-auto;
+  }
+  .header-button {
+    @apply flex items-center justify-center gap-2 px-3 sm:px-4 py-2 
+           min-w-[100px] sm:min-w-[120px] rounded-lg transition-all 
+           text-sm sm:text-base;
+  }
 }
 
 @layer components {
- .search-panel-button {
-   @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors;
-   min-width: 120px;
- }
- 
- @media (max-width: 640px) {
-   .search-panel-button {
-     width: 100%;
-   }
- }
+  .search-panel-button {
+    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors;
+    min-width: 120px;
+  }
+  
+  @media (max-width: 640px) {
+    .search-panel-button {
+      width: 100%;
+    }
+  }
 }
+
+/* iOS support */
 @supports (-webkit-touch-callout: none) {
   .fleet-card-expanded {
     height: -webkit-fill-available;
