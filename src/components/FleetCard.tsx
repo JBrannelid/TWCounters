@@ -64,7 +64,6 @@ export const FleetCard = memo<FleetCardProps>(({
   };
 
   const handleClickOutside = (e: React.MouseEvent | React.TouchEvent) => {
-    // Kontrollera om klicket var på innehållet eller utanför
     const contentElement = contentRef.current;
     const target = e.target as Node;
     
@@ -178,38 +177,39 @@ export const FleetCard = memo<FleetCardProps>(({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <GlassCard
-                    variant="dark"
-                    glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                    className={`glass-card-content max-h-[80vh] overflow-hidden ${
-                      fleet.alignment === 'light' 
-                        ? 'bg-gradient-to-br from-blue-500/10 to-blue-600/5' 
-                        : 'bg-gradient-to-br from-red-500/10 to-red-600/5'
-                    }`}
-                  >
-                  {/* Content */}
-                  <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
-                    {/* Fleet Information */}
-                    <div className="mb-6">
-                      <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
-                      <div className="flex items-center gap-3">
-                        {fleet.capitalShip && (
-                          <div className="relative">
-                            <UnitImage
-                              id={fleet.capitalShip.id}
-                              name={fleet.capitalShip.name}
-                              type="capital-ship"
-                              size="md"
-                              className="rounded-full border-2 border-blue-400/50"
-                              isCapital
+                  variant="dark"
+                  glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
+                  className={`glass-card-content max-h-[80vh] overflow-hidden ${
+                    fleet.alignment === 'light' 
+                      ? 'bg-gradient-to-br from-blue-500/10 to-blue-600/5' 
+                      : 'bg-gradient-to-br from-red-500/10 to-red-600/5'
+                  }`}
+                    >
+                    {/* Content */}
+                    <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
+                      {/* Fleet Information */}
+                      <div className="mb-6">
+                        <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
+                        <div className="flex items-center gap-3">
+                          {fleet.capitalShip && (
+                            <div className="relative">
+                              <UnitImage
+                                id={fleet.capitalShip.id}
+                                name={fleet.capitalShip.name}
+                                type="capital-ship"
+                                size="md"
+                                className="rounded-full border-2 border-blue-400/50"
+                                isCapital
                               />
                             </div>
                           )}
                         </div>
                       </div>
+
                       {/* Starting Lineup */}
                       <div className="mb-6">
                         <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
-                          <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-3">
                           {fleet.startingLineup.map((ship) => (
                             <div key={ship.id} className="relative">
                               <UnitImage
@@ -224,44 +224,45 @@ export const FleetCard = memo<FleetCardProps>(({
                         </div>
                       </div>
 
-  {/* Reinforcements - Already exists */}
-  {fleet.reinforcements.length > 0 && (
-    <div className="mb-6">
-      <h4 className="text-sm font-bold text-white/80 mb-3">Reinforcements</h4>
-      <div className="flex flex-wrap gap-3">
-        {fleet.reinforcements.map((ship, index) => (
-          <div key={ship.id} className="relative">
-            <UnitImage
-              id={ship.id}
-              name={ship.name}
-              type="ship"
-              size="md"
-              className="rounded-full border-2 border-white/20"
-            />
-            <div className="absolute -top-1 -left-1 w-5 h-5 bg-blue-500 rounded-full 
-                          flex items-center justify-center text-white text-xs">
-              {index + 1}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
+                      {/* Reinforcements */}
+                      {fleet.reinforcements.length > 0 && (
+                        <div className="mb-6">
+                          <h4 className="text-sm font-bold text-white/80 mb-3">Reinforcements</h4>
+                          <div className="flex flex-wrap gap-3">
+                            {fleet.reinforcements.map((ship, index) => (
+                              <div key={ship.id} className="relative">
+                                <UnitImage
+                                  id={ship.id}
+                                  name={ship.name}
+                                  type="ship"
+                                  size="md"
+                                  className="rounded-full border-2 border-white/20"
+                                />
+                                <div className="absolute -top-1 -left-1 w-5 h-5 bg-blue-500 rounded-full 
+                                            flex items-center justify-center text-white text-xs">
+                                  {index + 1}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
-  {/* Call Order */}
-  {fleet.callOrder && (
-    <div className={`rounded-lg border p-4 mb-6 ${
-      fleet.alignment === 'light'
-        ? 'bg-blue-500/10 border-blue-500/20'
-        : 'bg-red-500/10 border-red-500/20'
-    }`}>
-      <h4 className={`text-sm font-medium mb-1 ${
-        fleet.alignment === 'light' ? 'text-blue-400' : 'text-red-400'
-      }`}>Call Order</h4>
-      <p className="text-sm text-white/70">{fleet.callOrder}</p>
-    </div>
-  )}
+                      {/* Call Order */}
+                      {fleet.callOrder && (
+                        <div className={`rounded-lg border p-4 mb-6 ${
+                          fleet.alignment === 'light'
+                            ? 'bg-blue-500/10 border-blue-500/20'
+                            : 'bg-red-500/10 border-red-500/20'
+                        }`}>
+                          <h4 className={`text-sm font-medium mb-1 ${
+                            fleet.alignment === 'light' ? 'text-blue-400' : 'text-red-400'
+                          }`}>Call Order</h4>
+                          <p className="text-sm text-white/70">{fleet.callOrder}</p>
+                        </div>
+                      )}
 
+                      {/* Counters */}
                       {fleetCounters.length > 0 && (
                         <div className="space-y-4">
                           <h4 className="text-lg font-medium text-white">Counters</h4>
@@ -275,7 +276,6 @@ export const FleetCard = memo<FleetCardProps>(({
                                     : 'border-red-400/20 bg-red-500/10 hover:bg-red-500/20 hover:border-red-400/30'
                                 }`}
                               >
-                                {/* Counter content remains the same */}
                                 <div className="flex justify-between items-start">
                                   <div className="flex items-center gap-2">
                                     <span className={`px-2 py-1 rounded-full text-xs ${

@@ -39,6 +39,7 @@ body {
 .custom-scrollbar {
  scrollbar-width: thin;
  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+ -webkit-overflow-scrolling: touch;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -85,21 +86,32 @@ body {
  padding-right: 1rem;
 }
 
-/* Search & Squad Card Styles */
-
-.squad-card {
-  max-width: 100%;
-  width: auto;
-  height: auto; /* Ta bort om höjden kan vara flexibel */
-  overflow: visible; /* Ändra från hidden till visible */
+/* Generella kort-styles som fungerar för både Squad och Fleet */
+.card-content {
+  max-height: calc(80vh - 3rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
-/* Search & Squad Card Styles */
 
-.fleet-card {
-  max-width: 100%;
-  width: auto;
-  height: auto; /* Ta bort om höjden kan vara flexibel */
-  overflow: visible; /* Ändra från hidden till visible */
+.glass-card-content {
+  position: relative;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.glow-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.glow-blue {
+  background: radial-gradient(circle at center, rgba(59,130,246,0.5), transparent 70%);
+}
+
+.glow-red {
+  background: radial-gradient(circle at center, rgba(239,68,68,0.5), transparent 70%);
 }
 
 /* Mobile Styles */
@@ -123,29 +135,14 @@ body {
    position: sticky !important;
  }
 
- .fleet-card-expanded {
-  width: 95%;
-  max-width: 100%; /* Säkerställ att kortet fyller skärmen */
-  max-height: 90vh; /* Ge mer plats för innehållet */
-  margin: 10px;
-}
-
-.fleet-card-content {
-  max-height: calc(90vh - 24px);
-  padding-right: 1rem; /* Låt innehållet ha lite padding */
-}
-
-.squad-card-expanded {
-  width: 95%;
-  max-width: 100%; /* Säkerställ att kortet fyller skärmen */
-  max-height: 90vh; /* Ge mer plats för innehållet */
-  margin: 10px;
-}
-
-.squad-card-content {
-  max-height: calc(90vh - 24px);
-  padding-right: 1rem; /* Låt innehållet ha lite padding */
-}
+ /* Gemensam styling för expanderade kort */
+ .card-content {
+   max-height: 90vh;
+   padding: 1rem;
+   margin: 0.5rem;
+   overflow-y: auto;
+   -webkit-overflow-scrolling: touch;
+ }
  
  button, 
  [role="button"],
@@ -201,27 +198,10 @@ body {
    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors;
    min-width: 120px;
  }
+ 
+ @media (max-width: 640px) {
+   .search-panel-button {
+     width: 100%;
+   }
+ }
 }
-
-/* Lägg till dessa klasser i din befintliga CSS */
-.glass-card-content {
-  position: relative;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.glow-overlay {
-  position: absolute;
-  inset: 0;
-  opacity: 0.2;
-  pointer-events: none;
-}
-
-.glow-blue {
-  background: radial-gradient(circle at center, rgba(59,130,246,0.5), transparent 70%);
-}
-
-.glow-red {
-  background: radial-gradient(circle at center, rgba(239,68,68,0.5), transparent 70%);
-}
-
