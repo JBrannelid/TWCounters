@@ -165,13 +165,13 @@ export const SquadCard = memo<SquadCardProps>(({
                 animate="animate"
                 exit="exit"
               />
-              <motion.div
-                className="fixed inset-0 flex items-center justify-center p-4"
-                variants={cardVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-              >
+                <motion.div
+                  className="fixed inset-0 flex items-start sm:items-center justify-center p-4 overflow-y-auto"  // Ny flexbox-justering
+                  variants={cardVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
                 <div
                   ref={contentRef}
                   className="w-full max-w-xl mx-auto"
