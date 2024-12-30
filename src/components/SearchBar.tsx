@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, memo, useMemo, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getUnitImage } from '@/lib/imageUtils';
 import { Squad, Fleet } from '@/types';
+import { UnitImage } from './ui/UnitImage';
 
 interface SearchBarProps {
   value: string;
@@ -11,6 +11,8 @@ interface SearchBarProps {
   suggestions?: (Squad | Fleet)[];
   onSelectSuggestion?: (item: Squad | Fleet) => void;
   placeholder?: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 export const SearchBar = memo<SearchBarProps>(({
@@ -19,89 +21,116 @@ export const SearchBar = memo<SearchBarProps>(({
   onClear,
   suggestions = [],
   onSelectSuggestion,
-  placeholder = "Search teams..."
+  placeholder = "Search teams...",
+  onFocus,
+  onBlur
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
-// Filter suggestions based on search value
-const filteredSuggestions = useMemo(() => {
-  // Om value är tomt, visa max 4 förslag
-  if (value.trim() === '') {
-    return suggestions.slice(0, 3);
-  }
-  // Filtrera baserat på användarens inmatning
-  return suggestions
-    .filter(item => item.name.toLowerCase().includes(value.toLowerCase()))
-    .slice(0, 4); // Visa max 10 matchande resultat
-}, [suggestions, value]);
-
-  // Load images for suggestions
-  useEffect(() => {
-    const loadImages = async () => {
-      const urls: Record<string, string> = {};
-      for (const item of filteredSuggestions) {
-        try {
-          if ('leader' in item && item.leader) {
-            urls[item.leader.id] = await getUnitImage(item.leader.id, 'squad-leader');
-          } else if ('capitalShip' in item && item.capitalShip) {
-            urls[item.capitalShip.id] = await getUnitImage(item.capitalShip.id, 'capital-ship');
-          }
-        } catch (error) {
-          console.error(`Failed to load image for suggestion:`, error);
-          urls[item.id] = '/placeholder.png';
-        }
-      }
-      setImageUrls(urls);
-    };
-
-    if (filteredSuggestions.length > 0) {
-      loadImages();
+  // Filter suggestions based on search value
+  const filteredSuggestions = useMemo(() => {
+    if (value.trim() === '') {
+      return suggestions.slice(0, 3);
     }
-  }, [filteredSuggestions]);
+    return suggestions
+      .filter(item => item.name.toLowerCase().includes(value.toLowerCase()))
+      .slice(0, 4);
+  }, [suggestions, value]);
 
-  // Handle selection of an item
-  const handleSelect = useCallback((unit: Squad | Fleet) => {
-    onSelectSuggestion?.(unit);
-    setIsFocused(false);
-    onChange(unit.name);
-  }, [onSelectSuggestion, onChange]);
+  // Keyboard navigation
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setActiveIndex(prev => 
+          prev < filteredSuggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setActiveIndex(prev => prev > -1 ? prev - 1 : prev);
+        break;
+      case 'Enter':
+        if (activeIndex >= 0 && filteredSuggestions[activeIndex]) {
+          onSelectSuggestion?.(filteredSuggestions[activeIndex]);
+          setIsFocused(false);
+          setActiveIndex(-1);
+        }
+        break;
+      case 'Escape':
+        setIsFocused(false);
+        setActiveIndex(-1);
+        break;
+    }
+  }, [filteredSuggestions, activeIndex, onSelectSuggestion]);
 
-  // Handle click outside
+  // Scroll active suggestion into view
+  useEffect(() => {
+    if (activeIndex >= 0 && suggestionsRef.current) {
+      const activeElement = suggestionsRef.current.children[activeIndex] as HTMLElement;
+      if (activeElement) {
+        activeElement.scrollIntoView({
+          block: 'nearest',
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [activeIndex]);
+
+  // Click outside handling
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsFocused(false);
+        setActiveIndex(-1);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
     <div 
       ref={containerRef} 
       className="relative w-full"
-      style={{ position: 'relative', zIndex: 9999 }}
+      onKeyDown={handleKeyDown}
     >
-      <div className="relative">
+      <div 
+        className="relative"
+        role="combobox"
+        aria-expanded={isFocused}
+        aria-haspopup="listbox"
+        aria-controls="search-suggestions"
+      >
         <input
           ref={inputRef}
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          onFocus={() => setIsFocused(true)}
+          onFocus={() => {
+            setIsFocused(true);
+            onFocus?.();
+          }}
           className="w-full pl-10 pr-10 py-2 bg-white/5 border border-white/10 rounded-lg 
                    text-white placeholder-white/40 focus:outline-none focus:ring-2 
                    focus:ring-blue-400/50 focus:border-transparent font-titillium"
           placeholder={placeholder}
+          aria-label="Search"
+          role="searchbox"
+          aria-autocomplete="list"
+          aria-activedescendant={
+            activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined
+          }
         />
-        <Search className="absolute left-3 top-2.5 w-4 h-4 text-white/40" />
+        <Search 
+          className="absolute left-3 top-2.5 w-4 h-4 text-white/40" 
+          aria-hidden="true"
+        />
         
         {value && (
           <button
@@ -111,8 +140,9 @@ const filteredSuggestions = useMemo(() => {
             }}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 
                      text-white/40 hover:text-white"
+            aria-label="Clear search"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -120,53 +150,44 @@ const filteredSuggestions = useMemo(() => {
       <AnimatePresence>
         {isFocused && filteredSuggestions.length > 0 && (
           <motion.div
+            ref={suggestionsRef}
+            id="search-suggestions"
+            role="listbox"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute w-full mt-2"
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              zIndex: 9999,
-              backgroundColor: '#12151C',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '0.5rem',
-              maxHeight: '300px',
-              overflowY: 'auto',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-            }}
+            className="absolute w-full mt-2 bg-space-darker border border-white/10 
+                     rounded-lg shadow-lg max-h-60 overflow-y-auto z-50"
           >
-            {filteredSuggestions.map((item) => (
-              <button
+            {filteredSuggestions.map((item, index) => (
+              <motion.div
                 key={item.id}
-                onClick={() => handleSelect(item)}
-                className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 
-                         transition-colors text-left"
+                id={`suggestion-${index}`}
+                role="option"
+                aria-selected={index === activeIndex}
+                onClick={() => {
+                  onSelectSuggestion?.(item);
+                  setIsFocused(false);
+                }}
+                className={`flex items-center gap-2 p-2 cursor-pointer
+                          ${index === activeIndex ? 'bg-white/10' : 'hover:bg-white/5'}
+                          transition-colors`}
+                whileHover={{ x: 4 }}
               >
-                {'leader' in item && item.leader ? (
-                  <img
-                    src={imageUrls[item.leader.id] || '/placeholder.png'}
-                    alt={item.leader.name}
-                    className="w-8 h-8 rounded-full object-cover"
-                    loading="lazy"
-                  />
-                ) : 'capitalShip' in item && item.capitalShip ? (
-                  <img
-                    src={imageUrls[item.capitalShip.id] || '/placeholder.png'}
-                    alt={item.capitalShip.name}
-                    className="w-8 h-8 rounded-full object-cover"
-                    loading="lazy"
-                  />
-                ) : null}
+                <UnitImage
+                  id={item.id}
+                  name={item.name}
+                  type={'leader' in item ? 'squad-leader' : 'capital-ship'}
+                  size="sm"
+                  aria-hidden="true"
+                />
                 <div>
-                  <div className="text-white font-titillium">{item.name}</div>
-                  <div className="text-sm text-white/40 font-titillium">
+                  <span className="text-white">{item.name}</span>
+                  <span className="text-sm text-white/40 block">
                     {'leader' in item ? 'Squad' : 'Fleet'}
-                  </div>
+                  </span>
                 </div>
-              </button>
+              </motion.div>
             ))}
           </motion.div>
         )}

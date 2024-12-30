@@ -13,7 +13,7 @@ module.exports = {
       '2xl': '1536px',
     },
     extend: {
-      // Behåll alla dina befintliga färger och andra inställningar
+      // Färger
       colors: {
         'space': {
           black: '#0A0D14',
@@ -48,14 +48,16 @@ module.exports = {
           purple: '#B39DDB',
           cyan: '#4DD0E1',
           glow: '#64B5F640'
-        },
-        'space-dark': '#1a1b26',
-        'space-darker': '#16161e',
+        }
       },
+
+      // Typsnitt
       fontFamily: {
         orbitron: ['Orbitron', 'system-ui', '-apple-system', 'sans-serif'],
         titillium: ['Titillium Web', 'system-ui', '-apple-system', 'sans-serif'],
       },
+
+      // Bakgrundsbilder och mönster
       backgroundImage: {
         'space-gradient': 'linear-gradient(to bottom, rgba(10, 13, 20, 0.8), rgba(26, 30, 39, 0.8))',
         'hero-pattern': `radial-gradient(circle at 50% 50%, 
@@ -71,23 +73,30 @@ module.exports = {
         `,
         'space-pattern': "url('/patterns/space.svg')",
       },
+
+      // Bakgrundsstorlekar
       backgroundSize: {
         'grid': '30px 30px',
         'dots': '20px 20px',
       },
+
+      // Skuggor och glödeffekter
       boxShadow: {
         'neon-blue': '0 0 15px rgba(59, 130, 246, 0.5)',
         'neon-red': '0 0 15px rgba(239, 68, 68, 0.5)',
         'neon-yellow': '0 0 15px rgba(234, 179, 8, 0.5)',
         'holo': '0 0 15px theme(colors.holo.glow)',
       },
+
+      // Animationer
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'float': 'float 6s ease-in-out infinite',
         'glow': 'glow 2s ease-in-out infinite alternate',
         'hologram': 'hologram 2s ease-in-out infinite alternate'
       },
-      // Nya tillägg för bättre z-index hantering
+
+      // Z-index hantering
       zIndex: {
         '0': '0',
         '10': '10',
@@ -105,21 +114,27 @@ module.exports = {
         'modal': '1100',
         'tooltip': '1200'
       },
-      // Förbättrad layout-kontroll
+
+      // Layout och spacing
       spacing: {
         '128': '32rem',
         '144': '36rem',
       },
+
+      // Max breddder
       maxWidth: {
         '8xl': '88rem',
         '9xl': '96rem',
       },
+
+      // Höjder för mobil och iOS
       height: {
         'screen-dynamic': '100dvh',
         'screen-safe': ['100vh', '-webkit-fill-available'],
         'modal-mobile': ['calc(100vh - 2rem)', 'calc(-webkit-fill-available - 2rem)']
       },
-      // Keyframes för animationer
+
+      // Keyframe animationer
       keyframes: {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
@@ -136,10 +151,17 @@ module.exports = {
       }
     }
   },
+
+  // Variants
   variants: {
     extend: {
       height: ['responsive'],
       overflow: ['responsive'],
     },
   },
-}
+  
+  // Plugins
+  plugins: [
+    require('tailwindcss-animate')
+  ],
+};

@@ -22,27 +22,43 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
     flex items-center justify-center gap-2 
     px-4 py-2 rounded-lg transition-colors
     min-w-[120px]
+    focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2
+    focus:ring-offset-space-darker
   `;
 
   const activeClass = 'bg-blue-500 text-white';
   const inactiveClass = 'bg-white/5 text-white hover:bg-white/10';
 
   return (
-    <div className="w-full space-y-4 max-w-4xl mx-auto" style={{ position: 'relative', zIndex: 100 }}>
+    <div 
+      className="w-full space-y-4 max-w-4xl mx-auto" 
+      style={{ position: 'relative', zIndex: 100 }}
+      role="search"
+      aria-label="Territory Wars search panel"
+    >
       {/* Search Container */}
       <div className="w-full relative" style={{ zIndex: 1000 }}>
         {children}
       </div>
 
       {/* Buttons Container */}
-      <div className="flex flex-wrap gap-2" style={{ position: 'relative', zIndex: 50 }}>
+      <div 
+        className="flex flex-wrap gap-2" 
+        style={{ position: 'relative', zIndex: 50 }}
+        role="tablist"
+        aria-label="View selection"
+      >
         <button
           onClick={() => onViewChange('squads')}
           className={`${buttonBaseClass} ${
             activeView === 'squads' ? activeClass : inactiveClass
           }`}
+          role="tab"
+          aria-selected={activeView === 'squads'}
+          aria-controls="squads-panel"
+          id="squads-tab"
         >
-          <Users className="w-5 h-5" />
+          <Users className="w-5 h-5" aria-hidden="true" />
           <span className="whitespace-nowrap">Squads</span>
         </button>
 
@@ -51,8 +67,12 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
           className={`${buttonBaseClass} ${
             activeView === 'fleets' ? activeClass : inactiveClass
           }`}
+          role="tab"
+          aria-selected={activeView === 'fleets'}
+          aria-controls="fleets-panel"
+          id="fleets-tab"
         >
-          <Ship className="w-5 h-5" />
+          <Ship className="w-5 h-5" aria-hidden="true" />
           <span className="whitespace-nowrap">Fleets</span>
         </button>
 
@@ -63,10 +83,31 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
               ? activeClass
               : inactiveClass
           }`}
+          aria-expanded={filters.alignment !== null || filters.showTWOmicronOnly}
+          aria-haspopup="dialog"
+          aria-label="Filter options"
         >
-          <Settings className="w-5 h-5" />
+          <Settings className="w-5 h-5" aria-hidden="true" />
           <span className="whitespace-nowrap">Filters</span>
         </button>
+      </div>
+
+      {/* Hidden but semantically present panels for ARIA */}
+      <div 
+        role="tabpanel" 
+        id="squads-panel" 
+        aria-labelledby="squads-tab"
+        className="sr-only"
+      >
+        Squad search content
+      </div>
+      <div 
+        role="tabpanel" 
+        id="fleets-panel" 
+        aria-labelledby="fleets-tab"
+        className="sr-only"
+      >
+        Fleet search content
       </div>
     </div>
   );

@@ -48,6 +48,16 @@ export const SquadList: React.FC<SquadListProps> = ({
           gridColumn: `span ${selectedSquadId === squad.id ? 1 : 1}`,
           zIndex: selectedSquadId === squad.id ? 50 : 1
         }}
+        role="listitem"
+        aria-selected={selectedSquadId === squad.id}
+        aria-label={`Squad ${squad.name}`}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleSquadSelect(squad.id);
+          }
+        }}
       >
         <SquadCard
           squad={squad}
@@ -64,10 +74,15 @@ export const SquadList: React.FC<SquadListProps> = ({
     [filteredSquads, selectedSquadId, getCounters, isAdmin, onDeleteCounter, onViewDetails]
   );
 
+  // Förbättrat felmeddelande för när inga squads finns
   if (!squads || squads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-white/60">
-        <Users className="w-12 h-12 mb-4 animate-float" />
+      <div 
+        className="flex flex-col items-center justify-center py-12 text-white/60"
+        role="alert"
+        aria-live="polite"
+      >
+        <Users className="w-12 h-12 mb-4" aria-hidden="true" />
         <p className="text-lg font-titillium">No squads found</p>
       </div>
     );
@@ -76,7 +91,11 @@ export const SquadList: React.FC<SquadListProps> = ({
   return (
     <ErrorBoundary 
       fallback={
-        <div className="flex flex-col items-center justify-center p-8">
+        <div 
+          className="flex flex-col items-center justify-center p-8"
+          role="alert"
+          aria-live="assertive"
+        >
           <div className="p-6 bg-red-500/10 rounded-lg border border-red-500/20 max-w-md w-full">
             <h3 className="text-lg font-medium text-red-400 mb-2">
               Failed to load squads
@@ -96,7 +115,11 @@ export const SquadList: React.FC<SquadListProps> = ({
         </div>
       }
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
+      <div 
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative"
+        role="list"
+        aria-label="Squad list"
+      >
         <AnimatePresence mode="popLayout">
           {renderedSquads}
         </AnimatePresence>

@@ -21,6 +21,33 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Hantera tangentbordsnavigering
+  useEffect(() => {
+    let trap: ReturnType<typeof createFocusTrap>;
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      
+      trap = createFocusTrap(menuRef.current!, {
+        escapeDeactivates: true,
+        allowOutsideClick: true,
+        fallbackFocus: '[data-autofocus]'
+      });
+      trap.activate();
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      if (trap) {
+        trap.deactivate();
+      }
+    };
+  }, [isOpen, onClose]);
+
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'searchTerm') return false;
     if (typeof value === 'boolean') return value;
@@ -31,54 +58,41 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
   const filterCategories = useMemo(() => [
     {
       title: 'Battle Type',
+      id: 'battle-type',
       options: [
         { 
           key: 'battleType' as FilterKey,
           value: 'team',
           label: 'Squads',
-          icon: <Swords className="w-4 h-4" />
+          icon: <Swords className="w-4 h-4" aria-hidden="true" />
         },
         {
           key: 'battleType' as FilterKey,
           value: 'fleet',
           label: 'Fleets',
-          icon: <Shield className="w-4 h-4" />
+          icon: <Shield className="w-4 h-4" aria-hidden="true" />
         }
       ]
     },
     {
       title: 'Alignment',
+      id: 'alignment',
       options: [
         {
           key: 'alignment' as FilterKey,
           value: 'light',
           label: 'Light Side',
-          icon: <SunMedium className="w-4 h-4" />
+          icon: <SunMedium className="w-4 h-4" aria-hidden="true" />
         },
         {
           key: 'alignment' as FilterKey,
           value: 'dark',
           label: 'Dark Side',
-          icon: <Moon className="w-4 h-4" />
+          icon: <Moon className="w-4 h-4" aria-hidden="true" />
         }
       ]
     }
   ], []);
-
-  // Add focus trap
-  useEffect(() => {
-    if (isOpen && menuRef.current) {
-      const trap = createFocusTrap(menuRef.current, {
-        escapeDeactivates: true,
-        allowOutsideClick: true
-      });
-      trap.activate();
-      return () => {
-        trap.deactivate();
-      };
-    }
-    return;
-  }, [isOpen]);
 
   const resetFilters = () => {
     onFilterChange('battleType', null);
@@ -96,6 +110,9 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
       transition={{ duration: 0.2 }}
       className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 ${!isOpen && 'pointer-events-none'}`}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="filters-title"
     >
       <motion.div
         ref={menuRef}
@@ -111,17 +128,18 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
         {/* Header Section */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <Filter className={`w-5 h-5 ${hasActiveFilters ? 'text-blue-400' : 'text-white/60'}`} />
-            <h2 className="text-xl font-orbitron text-white">Filters</h2>
+            <Filter className={`w-5 h-5 ${hasActiveFilters ? 'text-blue-400' : 'text-white/60'}`} aria-hidden="true" />
+            <h2 id="filters-title" className="text-xl font-orbitron text-white">Filters</h2>
           </div>
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={onClose}
-            className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg 
-                     transition-colors"
+            className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            aria-label="Close filters"
+            data-autofocus
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </motion.button>
         </div>
 
@@ -135,8 +153,10 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-4"
+                role="region"
+                aria-labelledby={`category-${category.id}`}
               >
-                <h3 className="text-sm font-titillium font-medium text-white/60">
+                <h3 id={`category-${category.id}`} className="text-sm font-titillium font-medium text-white/60">
                   {category.title}
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
@@ -155,6 +175,7 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                           ? 'bg-blue-500/20 border-blue-400 text-white shadow-neon-blue'
                           : 'border-white/10 text-white/60 hover:bg-white/5'
                       }`}
+                      aria-pressed={filters[option.key] === option.value}
                     >
                       {option.icon}
                       {option.label}
@@ -169,8 +190,10 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
+              role="region"
+              aria-labelledby="additional-options"
             >
-              <h3 className="text-sm font-titillium font-medium text-white/60">
+              <h3 id="additional-options" className="text-sm font-titillium font-medium text-white/60">
                 Additional Options
               </h3>
               <div className="space-y-3">
@@ -202,7 +225,8 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                       checked={filters[option.key] as boolean}
                       onChange={(e) => onFilterChange(option.key, e.target.checked)}
                       className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 
-                               checked:bg-blue-500 checked:border-blue-500 transition-colors"
+                               checked:bg-blue-500 checked:border-blue-500 transition-colors
+                               focus:ring-2 focus:ring-blue-400 focus:ring-offset-space-darker"
                     />
                     <div className="space-y-1">
                       <div className="font-titillium text-white group-hover:text-blue-400 
@@ -230,8 +254,9 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
             className="flex items-center justify-center gap-2 w-full p-3 rounded-lg 
                      bg-white/5 text-white hover:bg-white/10 disabled:opacity-50 
                      disabled:cursor-not-allowed transition-colors font-titillium"
+            aria-label="Reset all filters"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-4 h-4" aria-hidden="true" />
             Reset All Filters
           </motion.button>
         </div>
