@@ -177,13 +177,9 @@ export const FleetCard = memo<FleetCardProps>(({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <GlassCard
-                  variant="dark"
-                  glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                  className={`glass-card-content max-h-[80vh] overflow-hidden ${
-                    fleet.alignment === 'light' 
-                      ? 'bg-gradient-to-br from-blue-500/10 to-blue-600/5' 
-                      : 'bg-gradient-to-br from-red-500/10 to-red-600/5'
-                  }`}
+                    variant="dark"
+                    glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
+                    className="min-h-[50vh] sm:min-h-0 overflow-hidden" // Lägg till min-height för mobil
                     >
                     {/* Content */}
                     <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">

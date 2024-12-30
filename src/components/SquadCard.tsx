@@ -180,12 +180,8 @@ export const SquadCard = memo<SquadCardProps>(({
                   <GlassCard
                     variant="dark"
                     glowColor={squad.alignment === 'light' ? 'blue' : 'red'}
-                    className={`glass-card-content max-h-[80vh] overflow-hidden ${
-                      squad.alignment === 'light' 
-                        ? 'bg-gradient-to-br from-blue-500/10 to-blue-600/5' 
-                        : 'bg-gradient-to-br from-red-500/10 to-red-600/5'
-                    }`}
-                  >
+                    className="min-h-[50vh] sm:min-h-0 overflow-hidden" // Lägg till min-height för mobil
+                    >
                     {/* Content */}
                     <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
                       {/* Squad Leader */}
