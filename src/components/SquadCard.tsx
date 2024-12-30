@@ -180,7 +180,7 @@ export const SquadCard = memo<SquadCardProps>(({
                   <GlassCard
                     variant="dark"
                     glowColor={squad.alignment === 'light' ? 'blue' : 'red'}
-                    className="min-h-[50vh] sm:min-h-0 overflow-hidden" // Lägg till min-height för mobil
+                    className="min-h-[50vh] max-h-[90vh] overflow-hidden" // Justerad max-height
                     >
                     {/* Content */}
                     <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">

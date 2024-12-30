@@ -191,6 +191,17 @@ body {
           min-w-[100px] sm:min-w-[120px] rounded-lg transition-all 
           text-sm sm:text-base;
  }
+ .fleet-card-expanded {
+  @apply fixed inset-0 z-50 flex items-center justify-center;
+  height: 100%; /* Tvingar full höjd på mobil */
+  min-height: -webkit-fill-available; /* iOS fix */
+}
+
+.fleet-card-content {
+  @apply overflow-y-auto;
+  max-height: calc(100vh - 4rem);
+  -webkit-overflow-scrolling: touch; /* Bättre scroll på iOS */
+}
 }
 
 @layer components {
@@ -204,4 +215,9 @@ body {
      width: 100%;
    }
  }
+}
+@supports (-webkit-touch-callout: none) {
+  .fleet-card-expanded {
+    height: -webkit-fill-available;
+  }
 }

@@ -37,10 +37,11 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   };
 
   const containerClasses = cn(
-    'rounded-lg transition-all duration-300',
+    'rounded-lg transition-all duration-300 h-full', // Lagt till h-full
     variantClasses[variant],
     glowColor !== 'none' && glowClasses[glowColor],
     isInteractive && !isSelected && 'hover:scale-[1.01] hover:bg-white/10',
+    'touch-action: pan-y', // Bättre touch-hantering
     className
   );
 
