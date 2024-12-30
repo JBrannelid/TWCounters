@@ -173,7 +173,7 @@ export const FleetCard = memo<FleetCardProps>(({
                 >
                 <div
                   ref={contentRef}
-                  className="w-full max-w-xl mx-auto"
+                  className="w-full max-w-xl mx-auto my-auto" // Lagt till my-auto
                   onClick={(e) => e.stopPropagation()}
                 >
                   <GlassCard

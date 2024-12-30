@@ -37,11 +37,25 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   };
 
   const containerClasses = cn(
-    'rounded-lg transition-all duration-300 h-full', // Lagt till h-full
+    // Grundläggande klasser
+    'rounded-lg transition-all duration-300',
+    'relative flex flex-col', // Lägg till flex-col för bättre innehållshantering
+    'min-h-0', // Viktigt för att undvika overflow på mobil
+    'w-full h-full', // Säkerställ full bredd och höjd
+    
+    // Variant och glow-klasser
     variantClasses[variant],
     glowColor !== 'none' && glowClasses[glowColor],
+    
+    // Interaktivitetsklasser
     isInteractive && !isSelected && 'hover:scale-[1.01] hover:bg-white/10',
-    'touch-action: pan-y', // Bättre touch-hantering
+    
+    // Mobilspecifika klasser
+    'touch-action-pan-y', // För bättre scrollning på mobil
+    'overflow-hidden', // Förhindra oönskad overflow
+    'sm:overflow-visible', // Tillåt overflow på större skärmar
+    
+    // Custom klasser från props
     className
   );
 
@@ -51,13 +65,15 @@ export const GlassCard: React.FC<GlassCardProps> = ({
       className={containerClasses}
       {...motionProps}
     >
-      <div className="relative h-full">
+      {/* Innehållscontainer */}
+      <div className="relative flex flex-col flex-1 w-full h-full">
         {children}
         
+        {/* Glow-effekt */}
         {glowColor !== 'none' && (
           <div className="absolute inset-0 pointer-events-none rounded-lg overflow-hidden">
             <div className={cn(
-              'absolute inset-0 opacity-20 blur-xl',
+              'absolute inset-0 opacity-20 blur-xl transition-opacity duration-300',
               `bg-${glowColor}-500/20`
             )} />
           </div>

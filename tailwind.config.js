@@ -114,6 +114,9 @@ module.exports = {
         '8xl': '88rem',
         '9xl': '96rem',
       },
+      height: {
+        'screen-safe': ['100vh', '100dvh'],
+      },
       // Keyframes för animationer
       keyframes: {
         float: {
@@ -130,6 +133,11 @@ module.exports = {
         }
       }
     }
+  },
+    variants: {
+      extend: {
+        overflow: ['sm'],
+      },
   },
   plugins: [
     require('tailwindcss-animate')
