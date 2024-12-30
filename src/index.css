@@ -240,6 +240,6 @@ body {
 /* iOS support */
 @supports (-webkit-touch-callout: none) {
   .modal-container {
-    min-height: -webkit-fill-available;
+    height: -webkit-fill-available;
   }
 }

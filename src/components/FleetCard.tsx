@@ -159,35 +159,34 @@ export const FleetCard = memo<FleetCardProps>(({
 
         <AnimatePresence>
           {isSelected && (
-            <div className="fixed inset-0 z-50" onClick={handleClickOutside}>
-              <motion.div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-                variants={overlayVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-              />
-                <motion.div
-                  className="fixed inset-0 flex items-start sm:items-center justify-center p-4 overflow-y-auto"
-                  variants={cardVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <div
-                    ref={contentRef}
-                    className="w-full max-w-xl mx-auto my-auto" // Added my-auto
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                  <GlassCard
+            <motion.div className="fixed inset-0 z-50" onClick={handleClickOutside}>
+  <motion.div 
+    className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+    variants={overlayVariants}
+    initial="initial"
+    animate="animate" 
+    exit="exit"
+  />
+  <motion.div 
+    className="fixed inset-0 flex items-center justify-center p-4" // Removed overflow
+    variants={cardVariants}
+    initial="initial"
+    animate="animate"
+    exit="exit"
+  >
+    <div
+      ref={contentRef}
+      className="w-full max-w-xl mx-auto"  // Simplified
+      onClick={(e) => e.stopPropagation()}
+    >
+      <GlassCard
                     variant="dark"
                     glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                    className="max-h-[90vh] overflow-hidden flex flex-col" // Updated classes
+                    className="overflow-hidden" // Simplified
                     >
                      {/* Content wrapper */}
-                     <div className="flex flex-col flex-1 overflow-hidden">
-                      <div className="p-6 overflow-y-auto custom-scrollbar">
-                      {/* Capital Ship */}
+                     <div className="p-6 overflow-y-auto max-h-[80vh] custom-scrollbar">
+                     {/* Capital Ship */}
                           <div className="mb-6">
                             <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
                               {fleet.capitalShip && (
@@ -336,11 +335,10 @@ export const FleetCard = memo<FleetCardProps>(({
                           )}
                         
                       </div>
-                    </div>
                   </GlassCard>
                 </div>
               </motion.div>
-            </div>
+              </motion.div>
           )}
         </AnimatePresence>
 
