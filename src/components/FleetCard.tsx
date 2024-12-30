@@ -155,38 +155,38 @@ export const FleetCard = memo<FleetCardProps>(({
         </motion.div>
 
         <AnimatePresence>
-          {isSelected && (
-            <div className="fleet-card-modal" onClick={handleClickOutside}>
-              <motion.div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-                variants={overlayVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-              />
-              <motion.div
-                className="modal-content"
-                variants={cardVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-              >
-                <div
-                  ref={contentRef}
-                  className="w-full max-w-xl mx-auto p-4"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <GlassCard
-                    variant="dark"
-                    glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                    className="fleet-card-expanded"
-                  >
-                    {/* Content */}
-                    <div className="fleet-card-content">
-                    {/* Fleet Information */}
-                    <div className="fleet-scroll-container">
-                    <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
-                        <div className="grid grid-cols-1 gap-4"> {/* Ändra till grid */}
+        {isSelected && (
+  <div className="fixed inset-0 z-50" onClick={handleClickOutside}>
+    <motion.div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+      variants={overlayVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    />
+    <motion.div
+      className="fixed inset-0 flex items-start justify-center p-4 overflow-y-auto"
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
+      <div
+        ref={contentRef}
+        className="w-full max-w-xl mx-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <GlassCard
+          variant="dark"
+          glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
+          className="min-h-[50vh] max-h-[90vh] overflow-hidden"
+        >
+          <div className="p-6 overflow-y-auto">
+            {/* Fleet-specifikt innehåll här */}
+            <div className="space-y-6">
+              {/* Capital Ship */}
+              <div>
+                <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
                           {fleet.capitalShip && (
                             <div className="flex items-center gap-3"> {/* Lägg till flex och gap */}
                               <UnitImage
@@ -208,7 +208,7 @@ export const FleetCard = memo<FleetCardProps>(({
 
                       {/* Starting Lineup */}
                       <div className="mb-6">
-                        <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
+                      <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
                         <div className="grid grid-cols-2 gap-4"> {/* Ändra till grid */}
                           {fleet.startingLineup.map((ship) => (
                             <div key={ship.id} className="flex items-center gap-3"> {/* Lägg till flex och gap */}
@@ -230,8 +230,8 @@ export const FleetCard = memo<FleetCardProps>(({
 
                       {/* Reinforcements */}
                       {fleet.reinforcements.length > 0 && (
-                        <div className="mb-6">
-                          <h4 className="text-sm font-bold text-white/80 mb-3">Reinforcements</h4>
+                <div className="mb-6">
+                  <h4 className="text-sm font-bold text-white/80 mb-3">Reinforcements</h4>
                           <div className="grid grid-cols-2 gap-4"> {/* Ändra till grid */}
                             {fleet.reinforcements.map((ship, index) => (
                               <div key={ship.id} className="flex items-center gap-3"> {/* Lägg till flex och gap */}
@@ -274,7 +274,7 @@ export const FleetCard = memo<FleetCardProps>(({
 
                       {/* Counters */}
                       {fleetCounters.length > 0 && (
-                        <div className="space-y-4">
+                <div className="space-y-4">
                           <h4 className="text-lg font-medium text-white">Counters</h4>
                           <div className="space-y-3">
                             {fleetCounters.map((counter) => (
