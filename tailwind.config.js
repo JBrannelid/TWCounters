@@ -115,8 +115,9 @@ module.exports = {
         '9xl': '96rem',
       },
       height: {
-        'screen-dynamic': ['100vh', '100dvh'],
-        'screen-small': ['100vh', '-webkit-fill-available'],
+        'screen-dynamic': '100dvh',
+        'screen-safe': ['100vh', '-webkit-fill-available'],
+        'modal-mobile': ['calc(100vh - 2rem)', 'calc(-webkit-fill-available - 2rem)']
       },
       // Keyframes för animationer
       keyframes: {

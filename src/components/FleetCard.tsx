@@ -167,26 +167,26 @@ export const FleetCard = memo<FleetCardProps>(({
                 animate="animate"
                 exit="exit"
               />
-              <motion.div
-                className="fixed inset-0 flex items-start sm:items-center justify-center p-4 overflow-y-auto"
-                variants={cardVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-              >
-                <div
-                  ref={contentRef}
-                  className="w-full max-w-xl mx-auto"
-                  onClick={(e) => e.stopPropagation()}
+                <motion.div
+                  className="fixed inset-0 flex items-start sm:items-center justify-center p-4 overflow-y-auto"
+                  variants={cardVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                 >
+                  <div
+                    ref={contentRef}
+                    className="w-full max-w-xl mx-auto my-auto" // Added my-auto
+                    onClick={(e) => e.stopPropagation()}
+                  >
                   <GlassCard
                     variant="dark"
                     glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                    className="min-h-[50vh] max-h-[90vh] overflow-hidden" // Justerad max-height
-                  >
-                     {/* Content */}
-                    <div className="flex flex-col max-h-[90vh] overflow-hidden">
-                      <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
+                    className="max-h-[90vh] overflow-hidden flex flex-col" // Updated classes
+                    >
+                     {/* Content wrapper */}
+                     <div className="flex flex-col flex-1 overflow-hidden">
+                      <div className="p-6 overflow-y-auto custom-scrollbar">
                       {/* Capital Ship */}
                           <div className="mb-6">
                             <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>

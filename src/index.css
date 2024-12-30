@@ -130,14 +130,18 @@ body {
 }
 
 .fleet-card-expanded {
-  @apply fixed inset-0 z-50 flex items-center justify-center;
-  height: 100%;
+  @apply fixed inset-0 z-50;
+  min-height: 100vh;
   min-height: -webkit-fill-available;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
 }
 
 .fleet-card-content {
-  @apply overflow-y-auto;
-  max-height: calc(100vh - 4rem);
+  @apply flex-1 overflow-y-auto custom-scrollbar;
+  max-height: calc(100vh - 2rem);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -235,7 +239,7 @@ body {
 
 /* iOS support */
 @supports (-webkit-touch-callout: none) {
-  .fleet-card-expanded {
-    height: -webkit-fill-available;
+  .modal-container {
+    min-height: -webkit-fill-available;
   }
 }
