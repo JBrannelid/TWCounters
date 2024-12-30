@@ -31,10 +31,10 @@ export const SearchBar = memo<SearchBarProps>(({
   const containerRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // Filter suggestions based on search value
+  // Filter suggestions based on search value and limit to 30
   const filteredSuggestions = useMemo(() => {
     if (value.trim() === '') {
-      return suggestions.slice(0, 3);
+      return suggestions.slice(0, 30);
     }
     return suggestions
       .filter(item => item.name.toLowerCase().includes(value.toLowerCase()))
@@ -157,7 +157,7 @@ export const SearchBar = memo<SearchBarProps>(({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="absolute w-full mt-2 bg-space-darker border border-white/10 
-                     rounded-lg shadow-lg max-h-60 overflow-y-auto z-50"
+                      rounded-lg shadow-lg max-h-60 overflow-x-hidden custom-scrollbar z-50"
           >
             {filteredSuggestions.map((item, index) => (
               <motion.div
