@@ -1,4 +1,3 @@
-// GlassCard.tsx
 import { motion, HTMLMotionProps } from 'framer-motion';
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -11,6 +10,7 @@ interface GlassCardProps extends HTMLMotionProps<"div"> {
   isSelected?: boolean;
   className?: string;
   onClick?: (e: React.MouseEvent) => void;
+  ariaLabel?: string;  // För att lägga till aria-label om knappen är interaktiv
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
@@ -21,6 +21,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   isSelected = false,
   className = '',
   onClick,
+  ariaLabel,
   ...motionProps
 }) => {
   const variantClasses = {
@@ -59,6 +60,10 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     <motion.div
       onClick={onClick}
       className={containerClasses}
+      role={isInteractive ? 'button' : undefined} // Lägg till role="button" om det är interaktivt
+      aria-label={ariaLabel || (isInteractive ? "Interactive GlassCard" : undefined)} // Om aria-label inte skickas, sätt ett standardvärde
+      aria-selected={isSelected}
+      tabIndex={isInteractive ? 0 : -1}  // Gör det tabbbar om interaktivt
       {...motionProps}
     >
       {/* Innehållscontainer */}

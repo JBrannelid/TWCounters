@@ -79,8 +79,6 @@ export const UnitImage = memo<UnitImageProps>(({
     return () => { isMounted = false; };
   }, [id, type]);
 
-  // Skapa sizes string baserat på komponentens storlek
-
   return (
     <div className={cn(
       'relative',
@@ -91,6 +89,7 @@ export const UnitImage = memo<UnitImageProps>(({
       <img
         src={imageUrl}
         alt={name}
+        aria-label={name} // Lägg till aria-label för att göra bilden tillgänglig för skärmläsare
         className={cn(
           'w-full h-full',
           'object-cover rounded-full',
@@ -104,12 +103,14 @@ export const UnitImage = memo<UnitImageProps>(({
           setHasError(true);
           setImageUrl(getPlaceholderDataUrl(size));
         }}
+        role="img"  // För att säkerställa att bilden är korrekt semantisk
       />
       {(isLeader || isCapital) && (
         <div 
           className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full 
                    flex items-center justify-center text-white text-xs font-bold
                    shadow-md"
+          aria-label={isLeader ? 'Squad Leader' : 'Capital Ship'} // Lägg till en aria-label för ledare och kapital
         >
           {isLeader ? 'L' : 'C'}
         </div>
@@ -117,7 +118,8 @@ export const UnitImage = memo<UnitImageProps>(({
       {withTooltip && (
         <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 
                      bg-black/90 px-2 py-1 rounded text-xs text-white whitespace-nowrap 
-                     opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                     opacity-0 group-hover:opacity-100 transition-opacity z-10"
+             role="tooltip" aria-live="assertive">
           {name}
         </div>
       )}

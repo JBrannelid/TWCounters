@@ -21,7 +21,7 @@ export const SearchBar = memo<SearchBarProps>(({
   onClear,
   suggestions = [],
   onSelectSuggestion,
-  placeholder = "Search teams...",
+  placeholder = "Search squads...",
   onFocus,
   onBlur
 }) => {

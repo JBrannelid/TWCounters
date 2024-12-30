@@ -21,7 +21,9 @@ module.exports = {
           dark: '#1A1E27',
           DEFAULT: '#232837',
           light: '#2C3444',
-          lighter: '#354052'
+          lighter: '#354052',
+          'light-text': '#D1D5DB', // Ljus text för bättre kontrast
+          'dark-text': '#1F2937' // Mörk text för att matcha mörk bakgrund
         },
         'saber': {
           blue: {

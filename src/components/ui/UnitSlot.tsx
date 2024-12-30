@@ -93,6 +93,7 @@ export const UnitSlot: React.FC<UnitSlotProps> = React.memo(({
         initial={{ opacity: 0 }}
         animate={{ opacity: imageLoaded ? 1 : 0 }}
         className={`relative group ${containerClass}`}
+        aria-labelledby={`unit-${unit.id}`} // Lägg till aria-labelledby för att länka till enhetens namn
       >
         <UnitImage
           id={unit.id}
@@ -121,6 +122,7 @@ export const UnitSlot: React.FC<UnitSlotProps> = React.memo(({
             className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full 
                      flex items-center justify-center hover:bg-red-600
                      opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                     aria-label={`Remove ${unit.name}`} // Lägg till aria-label för borttagningsknapp
           >
             <X className="w-3 h-3 text-white" />
           </motion.button>
@@ -159,6 +161,7 @@ export const UnitSlot: React.FC<UnitSlotProps> = React.memo(({
           )}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          aria-label="Add unit" // Lägg till aria-label för lägga till-enhet knapp
         >
           <Plus className="w-4 h-4 text-white/40" />
         </motion.button>
@@ -177,6 +180,7 @@ export const UnitSlot: React.FC<UnitSlotProps> = React.memo(({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             className="absolute z-50 w-64 bg-space-darker border border-white/10 rounded-lg shadow-lg"
+            aria-live="assertive" // För att säkerställa att ändringar i listan med enheter läses upp
           >
             <div className="p-3 border-b border-white/10">
               <div className="relative">
@@ -188,6 +192,7 @@ export const UnitSlot: React.FC<UnitSlotProps> = React.memo(({
                   className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg 
                            text-white placeholder-white/40"
                   autoFocus
+                  aria-label="Search units" // Lägg till aria-label för sökfältet
                 />
               </div>
             </div>
@@ -203,6 +208,7 @@ export const UnitSlot: React.FC<UnitSlotProps> = React.memo(({
                   }}
                   className="w-full p-2 flex items-center gap-2 hover:bg-white/5 text-left"
                   whileHover={{ x: 4 }}
+                  aria-label={`Add ${unit.name}`} // Lägg till aria-label för enhetens tillägg
                 >
                   <div className="flex-shrink-0">
                     <UnitImage
