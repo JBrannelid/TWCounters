@@ -31,10 +31,17 @@ export const FleetCard = memo<FleetCardProps>(({
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Animation variants
   const overlayVariants = {
     initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 }
+    animate: { 
+      opacity: 1,
+      transition: { duration: 0.3 }
+    },
+    exit: { 
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
   };
 
   const cardVariants = {
@@ -42,9 +49,18 @@ export const FleetCard = memo<FleetCardProps>(({
     animate: { 
       scale: 1, 
       opacity: 1,
-      transition: { type: "spring", stiffness: 300, damping: 25 }
+      transition: { 
+        duration: 0.3,
+        type: "spring",
+        stiffness: 300,
+        damping: 25
+      }
     },
-    exit: { scale: 0.95, opacity: 0 }
+    exit: { 
+      scale: 0.95, 
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
   };
 
   const handleClickOutside = (e: React.MouseEvent | React.TouchEvent) => {
@@ -87,19 +103,22 @@ export const FleetCard = memo<FleetCardProps>(({
             }`}
           >
             <div className="relative p-4">
+               {/* Header section */}
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-xl font-orbitron text-white flex items-center gap-2">
                     <Ship className="w-5 h-5 text-blue-400" />
                     {fleet.name}
                   </h3>
-                  <span className={`inline-block px-2 py-1 mt-2 rounded-full text-xs ${
-                    fleet.alignment === 'light'
-                      ? 'bg-blue-500/20 text-blue-400 border border-blue-400/20'
-                      : 'bg-red-500/20 text-red-400 border border-red-400/20'
-                  }`}>
+                  <div className="flex items-center gap-2 mt-2">
+                     <span className={`inline-block px-2 py-1 rounded-full text-xs ${
+                       fleet.alignment === 'light'
+                        ? 'bg-blue-500/20 text-blue-400 border border-blue-400/20'
+                        : 'bg-red-500/20 text-red-400 border border-red-400/20'
+                    }`}>
                     {fleet.alignment === 'light' ? 'Light Side' : 'Dark Side'}
                   </span>
+                  </div>
                 </div>
                 <motion.div
                   animate={{ rotate: isSelected ? 180 : 0 }}
@@ -109,17 +128,19 @@ export const FleetCard = memo<FleetCardProps>(({
                   <ChevronDown className="w-4 h-4" />
                 </motion.div>
               </div>
-
+              {/* Fleet preview */}
               <div className="flex flex-wrap items-center gap-2">
                 {fleet.capitalShip && (
+                  <div className="relative group">
                   <UnitImage
                     id={fleet.capitalShip.id}
                     name={fleet.capitalShip.name}
                     type="capital-ship"
                     size="md"
-                    className="border-2 border-blue-400/50"
+                    className="rounded-full border-2 border-blue-400/50"
                     isCapital
                   />
+                  </div>
                 )}
                 {fleet.startingLineup.map((ship) => (
                   <UnitImage
@@ -128,7 +149,7 @@ export const FleetCard = memo<FleetCardProps>(({
                     name={ship.name}
                     type="ship"
                     size="md"
-                    className="border-2 border-white/20"
+                    className="rounded-full border-2 border-white/20"
                   />
                 ))}
               </div>
@@ -155,21 +176,20 @@ export const FleetCard = memo<FleetCardProps>(({
               >
                 <div
                   ref={contentRef}
-                  className="w-full max-w-xl mx-auto my-auto"
+                  className="w-full max-w-xl mx-auto"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <GlassCard
                     variant="dark"
                     glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                    className="overflow-hidden relative"
+                    className="min-h-[50vh] max-h-[90vh] overflow-hidden" // Justerad max-height
                   >
+                     {/* Content */}
                     <div className="flex flex-col max-h-[90vh] overflow-hidden">
-                      <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
-                        <div className="space-y-6">
-                          {/* Capital Ship */}
-                          <div>
+                      <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
+                      {/* Capital Ship */}
+                          <div className="mb-6">
                             <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
-                            <div className="grid grid-cols-1 gap-4">
                               {fleet.capitalShip && (
                                 <div className="flex items-center gap-3">
                                   <UnitImage
@@ -177,22 +197,19 @@ export const FleetCard = memo<FleetCardProps>(({
                                     name={fleet.capitalShip.name}
                                     type="capital-ship"
                                     size="md"
-                                    className="border-2 border-blue-400/50"
+                                    className="rounded-full border-2 border-blue-400/50"
                                     isCapital
                                   />
                                   <div>
                                     <div className="text-white font-medium">{fleet.capitalShip.name}</div>
                                     <div className="text-white/60 text-sm">Capital Ship</div>
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
+                                )}
+                              </div>
                           {/* Starting Lineup */}
                           <div className="mb-6">
                             <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {fleet.startingLineup.map((ship) => (
                                 <div key={ship.id} className="flex items-center gap-3">
                                   <UnitImage
@@ -200,8 +217,8 @@ export const FleetCard = memo<FleetCardProps>(({
                                     name={ship.name}
                                     type="ship"
                                     size="md"
-                                    className="border-2 border-white/20"
-                                  />
+                                    className="rounded-full border-2 border-white/20"
+                                    />
                                   <div>
                                     <div className="text-white font-medium">{ship.name}</div>
                                     <div className="text-white/60 text-sm">Starting Ship</div>
@@ -209,13 +226,10 @@ export const FleetCard = memo<FleetCardProps>(({
                                 </div>
                               ))}
                             </div>
-                          </div>
-
                           {/* Reinforcements */}
                           {fleet.reinforcements.length > 0 && (
                             <div className="mb-6">
                               <h4 className="text-sm font-bold text-white/80 mb-3">Reinforcements</h4>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {fleet.reinforcements.map((ship, index) => (
                                   <div key={ship.id} className="flex items-center gap-3">
                                     <div className="relative">
@@ -224,8 +238,8 @@ export const FleetCard = memo<FleetCardProps>(({
                                         name={ship.name}
                                         type="ship"
                                         size="md"
-                                        className="border-2 border-white/20"
-                                      />
+                                        className="rounded-full border-2 border-white/20"
+                                        />
                                       <div className="absolute -top-1 -left-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
                                         {index + 1}
                                       </div>
@@ -237,9 +251,7 @@ export const FleetCard = memo<FleetCardProps>(({
                                   </div>
                                 ))}
                               </div>
-                            </div>
                           )}
-
                           {/* Call Order */}
                           {fleet.callOrder && (
                             <div className={`rounded-lg border p-4 mb-6 ${
@@ -264,8 +276,8 @@ export const FleetCard = memo<FleetCardProps>(({
                                     key={counter.id}
                                     className={`rounded-lg p-4 space-y-3 border transition-all duration-200 ${
                                       fleet.alignment === 'light' 
-                                        ? 'border-blue-400/20 bg-blue-500/10 hover:bg-blue-500/20' 
-                                        : 'border-red-400/20 bg-red-500/10 hover:bg-red-500/20'
+                                    ? 'border-blue-400/20 bg-blue-500/10 hover:bg-blue-500/20 hover:border-blue-400/30' 
+                                    : 'border-red-400/20 bg-red-500/10 hover:bg-red-500/20 hover:border-red-400/30'
                                     }`}
                                   >
                                     <div className="flex justify-between items-start">
@@ -322,7 +334,7 @@ export const FleetCard = memo<FleetCardProps>(({
                               </div>
                             </div>
                           )}
-                        </div>
+                        
                       </div>
                     </div>
                   </GlassCard>
