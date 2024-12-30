@@ -279,15 +279,12 @@ export const SquadCard = memo<SquadCardProps>(({
                                     {counter.video_url && <VideoIndicator videoUrl={counter.video_url} />}
                                   </div>
                                   {isAdmin && onDeleteCounter && (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDeleteCounter(counter.id);
-                                      }}
-                                      className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
+                                        <button
+                                        onClick={() => onDeleteCounter(counter.id)}
+                                        className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
                                   )}
                                 </div>
 

@@ -5,7 +5,7 @@ import { Fleet, Counter } from '@/types';
 import { GlassCard } from './ui/GlassCard';
 import { UnitImage } from './ui/UnitImage';
 import { VideoIndicator } from './ui/VideoIndicator';
-import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorBoundary } from 'react-error-boundary'; 
 
 interface FleetCardProps {
   fleet: Fleet;
@@ -159,33 +159,33 @@ export const FleetCard = memo<FleetCardProps>(({
 
         <AnimatePresence>
           {isSelected && (
-            <motion.div className="fixed inset-0 z-50" onClick={handleClickOutside}>
-  <motion.div 
-    className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-    variants={overlayVariants}
-    initial="initial"
-    animate="animate" 
-    exit="exit"
-  />
-  <motion.div 
-    className="fixed inset-0 flex items-center justify-center p-4" // Removed overflow
-    variants={cardVariants}
-    initial="initial"
-    animate="animate"
-    exit="exit"
-  >
-    <div
-      ref={contentRef}
-      className="w-full max-w-xl mx-auto"  // Simplified
-      onClick={(e) => e.stopPropagation()}
-    >
+            <div className="fixed inset-0 z-50" onClick={handleClickOutside}>
+              <motion.div 
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+                variants={overlayVariants}
+                initial="initial"
+                animate="animate" 
+                exit="exit"
+              />
+              <motion.div 
+                className="fixed inset-0 flex items-start sm:items-center justify-center p-4 overflow-y-auto"  // Ny flexbox-justering
+                variants={cardVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <div
+                  ref={contentRef}
+                  className="w-full max-w-xl mx-auto"  // Simplified
+                  onClick={(e) => e.stopPropagation()}
+                >
                     <GlassCard
                       variant="dark"
                       glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                      className="min-h-[60vh] max-h-[90vh] overflow-hidden flex flex-col"
-                    >
+                      className="min-h-[50vh] max-h-[90vh] overflow-hidden" // Justerad max-height
+                      >
                      {/* Content wrapper */}
-                     <div className="p-6 overflow-y-auto max-h-[80vh] custom-scrollbar">
+                     <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
                      {/* Capital Ship */}
                           <div className="mb-6">
                             <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
@@ -209,6 +209,7 @@ export const FleetCard = memo<FleetCardProps>(({
                           {/* Starting Lineup */}
                           <div className="mb-6">
                             <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
+                            <div className="grid grid-cols-2 gap-4">
                               {fleet.startingLineup.map((ship) => (
                                 <div key={ship.id} className="flex items-center gap-3">
                                   <UnitImage
@@ -225,6 +226,7 @@ export const FleetCard = memo<FleetCardProps>(({
                                 </div>
                               ))}
                             </div>
+                          </div>
                           {/* Reinforcements */}
                           {fleet.reinforcements.length > 0 && (
                             <div className="mb-6">
@@ -338,7 +340,7 @@ export const FleetCard = memo<FleetCardProps>(({
                   </GlassCard>
                 </div>
               </motion.div>
-              </motion.div>
+            </div>
           )}
         </AnimatePresence>
 
