@@ -84,11 +84,11 @@ export const getUnitImage = async (id: string | undefined, type: ImageType): Pro
       }
 
     // Bestäm rätt mapp baserat på typen
-    const folder = type.includes('ships') ? 'ships' : 'characters';
+    const folder = type.includes('ship') ? 'ships' : 'characters';
 
     // Bygg den lokala sökvägen för att söka i rätt mapp
     const localPath = `/asset/${folder}/${fileName}.webp`;
-    console.log(`[Image Debug] Attempting to load image from local path: ${localPath}`);
+    //console.log(`[Image Debug] Attempting to load image from local path: ${localPath}`);
 
       // Försök ladda från lokala assets först
       const localImage = new Image();
@@ -114,23 +114,25 @@ export const getUnitImage = async (id: string | undefined, type: ImageType): Pro
 
       // Fallback till Firebase
       const imagePath = `${folder}/${fileName}.webp`;
+      
       try {
         const imageRef = ref(storage, imagePath);
-        const firebaseUrl = await getDownloadURL(imageRef);
-        IMAGE_CACHE.set(cacheKey, firebaseUrl);
-        console.log(`[Image Debug] Loaded ${id} (${type}) from Firebase URL: ${firebaseUrl}`);
-        return firebaseUrl;
+        const url = await getDownloadURL(imageRef);
+        IMAGE_CACHE.set(cacheKey, url);
+        logDebug(`Successfully loaded Firebase image for ${id}`);
+        return url;
       } catch (firebaseError) {
-        console.error(`[Image Debug] Firebase failed for ${id} (${type}):`, firebaseError);
+        const localPath = `${ASSETS_BASE_PATH}/${imagePath}`;
+        IMAGE_CACHE.set(cacheKey, localPath);
+        logDebug(`Using local path: ${localPath}`);
+        return localPath;
       }
     } catch (error) {
-      console.error(`[Image Debug] Failed to load image for ${id} (${type}):`, error);
+      console.error(`Failed to load image for ${id}:`, error);
+      return DEFAULT_PLACEHOLDER;
     } finally {
       LOADING_CACHE.delete(cacheKey);
     }
-
-    console.log(`[Image Debug] Using placeholder for ${id} (${type})`);
-    return DEFAULT_PLACEHOLDER;
   })();
 
   LOADING_CACHE.set(cacheKey, loadingPromise);

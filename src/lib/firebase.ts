@@ -8,9 +8,11 @@ import {
 import { 
   Firestore, 
   connectFirestoreEmulator,
-  enableMultiTabIndexedDbPersistence,
+  enableIndexedDbPersistence,
   initializeFirestore,
-  CACHE_SIZE_UNLIMITED
+  CACHE_SIZE_UNLIMITED,
+  persistentLocalCache,
+  persistentMultipleTabManager
 } from 'firebase/firestore';
 import { 
   getStorage, 
@@ -49,10 +51,16 @@ class FirebaseClient {
     // Initialisera alla properties direkt
     this.app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
     this._auth = getAuth(this.app);
+    
+    // Uppdaterad Firestore-initialisering med korrekta typer
     this._db = initializeFirestore(this.app, {
-      cacheSizeBytes: CACHE_SIZE_UNLIMITED,
       experimentalForceLongPolling: true,
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+        cacheSizeBytes: 104857600 // 100 MB
+      })
     });
+
     this._storage = getStorage(this.app);
     
     // Initiera promise
@@ -77,7 +85,7 @@ class FirebaseClient {
 
   private async setupPersistence(): Promise<void> {
     try {
-      await enableMultiTabIndexedDbPersistence(this._db);
+      await enableIndexedDbPersistence(this._db);
       console.log('Offline persistence enabled');
     } catch (error) {
       if (error instanceof Error && 'code' in error) {
@@ -96,7 +104,6 @@ class FirebaseClient {
       } else {
         console.error('Unknown error enabling offline persistence:', error);
       }
-      // Fortsätt även om persistence misslyckas
     }
   }
 
@@ -159,7 +166,6 @@ class FirebaseClient {
     return this.initializationPromise;
   }
 
-  // Metod för att återansluta vid nätverksproblem
   public async reconnect(): Promise<void> {
     if (!this.initialized || this.initError) {
       this.initError = null;
