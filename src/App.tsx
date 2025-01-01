@@ -19,6 +19,7 @@ import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { ensureFirebaseInitialized } from '@/lib/firebase';
 import { HelmetProvider } from 'react-helmet-async';
 import { Layout } from '@/components/layouts/Layout';
+import { CookieConsent } from '@/components/ui/CookieConsent';
 
 const AdminDashboard = lazy(() => 
   import('@/components/admin/AdminDashboard').then(module => ({
@@ -682,8 +683,19 @@ if (firebaseLoading || authLoading || isLoading) {
             </Suspense>
           )}
         </div>
-      </div>
-    </Layout>
+      {/* CookieConsent */}
+        <CookieConsent 
+        cbid="8127fb39-368b-4abb-9e1b-123ae8e3b37d"
+        onAccept={() => {
+          console.log('Cookies accepted');
+        }}
+        onDecline={() => {
+          console.log('Cookies declined');
+        }}
+      />
+      ) 
+    </div>
+  </Layout>
   );
 }
 

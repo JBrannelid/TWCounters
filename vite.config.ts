@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
             [/<script/g, `<script nonce="${nonce}"`],
             [/<style/g, `<style nonce="${nonce}"`],
             [/<link([^>]*?)rel="stylesheet"/g, `<link$1rel="stylesheet" nonce="${nonce}"`],
+            [/<meta[^>]*Content-Security-Policy[^>]*>/, ''], // Ta bort befintlig CSP meta tag
             ['</head>', `<meta http-equiv="Content-Security-Policy" content="${cspString}">\n</head>`]
           ];
           return transforms.reduce((acc, [pattern, replacement]) => 
@@ -57,11 +58,11 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
+      assetsDir: 'assets',
+      cssCodeSplit: false, // This ensures CSS is bundled into one file
       sourcemap: !isProduction,
       minify: isProduction ? 'esbuild' : false,
       target: 'es2020',
-      assetsDir: 'assets',
-      cssCodeSplit: false,
       rollupOptions: {
         output: {
           manualChunks: {

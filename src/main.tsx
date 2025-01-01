@@ -1,8 +1,8 @@
 // main.tsx
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import './styles/critical.css';  
-import './index.css';  
+import './styles/critical.css';  // Critical CSS first
+import './index.css';  // Main styles
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
 import { FirebaseProvider } from './contexts/FirebaseContext';

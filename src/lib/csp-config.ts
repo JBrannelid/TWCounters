@@ -10,26 +10,43 @@ export const generateCSPString = (nonce: string): string => {
     'default-src': ["'self'"],
     'script-src': [
       "'self'",
-      `'nonce-${nonce}'`,
-      isDevelopment ? "'unsafe-eval'" : null,
-      "https://cdnjs.cloudflare.com"
-    ].filter(Boolean),
-    'style-src': [
-      "'self'", 
       "'unsafe-inline'",
-      "https://fonts.googleapis.com"
+      "'unsafe-eval'",
+      "https://cdnjs.cloudflare.com",
+      "https://consent.cookiebot.com",
+      "https://consentcdn.cookiebot.com"
+    ],
+    'script-src-elem': [
+      "'self'",
+      "'unsafe-inline'",
+      "https://consent.cookiebot.com",
+      "https://consentcdn.cookiebot.com"
+    ],
+    'connect-src': [
+      "'self'",
+      "https://*.googleapis.com",
+      "wss://*.firebaseio.com",
+      "https://*.firebaseio.com",
+      "https://*.cookiebot.com",
+      "https://consentcdn.cookiebot.com"
+    ],
+    'frame-src': [
+      "'self'",
+      "https://consentcdn.cookiebot.com"
+    ],
+    'style-src': [
+      "'self'",
+      "'unsafe-inline'",
+      "https://consent.cookiebot.com"
     ],
     'img-src': [
       "'self'",
       "data:",
       "blob:",
-      "https://firebasestorage.googleapis.com"
-    ],
-    'connect-src': [
-      "'self'",
-      "https://*.googleapis.com",
-      "https://*.firebaseio.com",
-      "wss://*.firebaseio.com"
+      "https://firebasestorage.googleapis.com",
+      "https://consent.cookiebot.com",
+      "https://imgsct.cookiebot.com",
+      "https://consentcdn.cookiebot.com"
     ],
     'font-src': ["'self'", "data:", "https://fonts.gstatic.com"],
     'base-uri': ["'self'"],
