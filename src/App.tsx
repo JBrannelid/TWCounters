@@ -623,19 +623,34 @@ if (firebaseLoading || authLoading || isLoading) {
                 />
               </motion.div>
             ) : (
-              <Suspense fallback={
-                <div className="min-h-screen bg-space-darker flex items-center justify-center">
-                  <LoadingIndicator size="lg" message="Loading admin dashboard..." />
+          <Suspense fallback={
+            <div className="min-h-screen bg-space-darker flex items-center justify-center">
+              <LoadingIndicator size="lg" message="Loading admin dashboard..." />
+            </div>
+          }>
+            <ErrorBoundary fallback={
+              <div className="min-h-screen flex items-center justify-center bg-red-500/10 p-4">
+                <div className="text-red-400 text-center">
+                  <AlertTriangle className="w-12 h-12 mx-auto mb-4" />
+                  <h1 className="text-xl mb-4">Failed to load admin dashboard</h1>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-red-500/20 rounded-lg"
+                  >
+                    Try Again
+                  </button>
                 </div>
-              }>
-                <AdminDashboard
-                  squads={squads}
-                  fleets={fleets}
-                  counters={counters}
-                  {...adminHandlers}
-                  onLogout={handleAdminLogout}
-                />
-              </Suspense>
+              </div>
+            }>
+              <AdminDashboard
+                squads={squads}
+                fleets={fleets}
+                counters={counters}
+                {...adminHandlers}
+                onLogout={handleAdminLogout}
+              />
+            </ErrorBoundary>
+          </Suspense>
             )}
           </AnimatePresence>
 
@@ -645,10 +660,25 @@ if (firebaseLoading || authLoading || isLoading) {
                 <LoadingIndicator size="md" message="Loading..." />
               </div>
             }>
-              <Auth
-                onLogin={handleAdminLogin}
-                onClose={() => setShowAdminLogin(false)}
-              />
+              <ErrorBoundary fallback={
+                <div className="min-h-screen flex items-center justify-center bg-red-500/10 p-4">
+                  <div className="text-red-400 text-center">
+                    <AlertTriangle className="w-12 h-12 mx-auto mb-4" />
+                    <h1 className="text-xl mb-4">Failed to load authentication module</h1>
+                    <button 
+                      onClick={() => window.location.reload()}
+                      className="px-4 py-2 bg-red-500/20 rounded-lg"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                </div>
+              }>
+                <Auth
+                  onLogin={handleAdminLogin}
+                  onClose={() => setShowAdminLogin(false)}
+                />
+              </ErrorBoundary>
             </Suspense>
           )}
         </div>

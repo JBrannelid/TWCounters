@@ -85,7 +85,8 @@ class FirebaseClient {
 
   private async setupPersistence(): Promise<void> {
     try {
-      await enableIndexedDbPersistence(this._db);
+      await enableIndexedDbPersistence(this._db, {
+      });
       console.log('Offline persistence enabled');
     } catch (error) {
       if (error instanceof Error && 'code' in error) {
@@ -93,7 +94,8 @@ class FirebaseClient {
         
         switch (firebaseError.code) {
           case 'failed-precondition':
-            console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+            // Hantera tysta detta fel då det är förväntat med flera flikar
+            console.debug('Multiple tabs open, persistence enabled in another tab.');
             break;
           case 'unimplemented':
             console.warn('The current browser does not support offline persistence.');
@@ -101,8 +103,6 @@ class FirebaseClient {
           default:
             console.error('Error enabling offline persistence:', error);
         }
-      } else {
-        console.error('Unknown error enabling offline persistence:', error);
       }
     }
   }
@@ -112,9 +112,9 @@ class FirebaseClient {
       this._auth,
       (user) => {
         if (user) {
-          console.log('User is signed in:', user.uid);
+          //console.log('User is signed in:', user.uid);
         } else {
-          console.log('User is signed out');
+          //console.log('User is signed out');
         }
       },
       (error) => {

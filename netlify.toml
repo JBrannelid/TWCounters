@@ -10,12 +10,19 @@
 [[headers]]
   for = "/*.css"
   [headers.values]
-    Content-Type = "text/css"
+    Content-Type = "text/css; charset=utf-8"
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/*.js"
   [headers.values]
-    Content-Type = "application/javascript"
+    Content-Type = "application/javascript; charset=utf-8"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/*"
@@ -27,11 +34,12 @@
     Content-Security-Policy = """
       default-src 'self'; 
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://*.firebaseio.com; 
-      style-src 'self' 'unsafe-inline'; 
-      img-src 'self' data: blob: https://firebasestorage.googleapis.com;
-      font-src 'self' data: fonts.gstatic.com;
-      connect-src 'self' https://*.googleapis.com wss://*.firebaseio.com;
-      frame-ancestors 'none';
+      style-src 'self' 'unsafe-inline' https://twcounters.com/assets/styles/; 
+      img-src 'self' data: blob: https://firebasestorage.googleapis.com; 
+      font-src 'self' data: https://fonts.gstatic.com; 
+      connect-src 'self' https://*.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com;
       base-uri 'self';
       form-action 'self';
-      """
+    """
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Cache-Control = "public, max-age=0, must-revalidate"

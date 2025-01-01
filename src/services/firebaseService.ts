@@ -368,7 +368,7 @@ static async deleteCounter(counterId: string): Promise<void> {
       const querySnapshot = await getDocs(collection(db, 'fleets'));
       return querySnapshot.docs.map(doc => {
         const data = doc.data();
-        console.log('Raw fleet data before processing:', data);
+        //console.log('Raw fleet data before processing:', data);
         
         // Säker hantering av timestamps
         let processedData: Partial<Fleet> = {
@@ -397,7 +397,7 @@ static async deleteCounter(counterId: string): Promise<void> {
           console.warn('Error processing timestamps:', timestampError);
         }
   
-        console.log('Processed fleet data:', processedData);
+        //console.log('Processed fleet data:', processedData);
         return processedData as Fleet;
       });
     } catch (error) {
@@ -416,7 +416,7 @@ static async deleteCounter(counterId: string): Promise<void> {
   
       return querySnapshot.docs.map(doc => {
         const data = doc.data();
-        console.log('Raw squad data before processing:', data);
+        //console.log('Raw squad data before processing:', data);
   
         // Säker hantering av timestamps
         let processedData: Partial<Squad> = {
@@ -445,7 +445,7 @@ static async deleteCounter(counterId: string): Promise<void> {
           console.warn('Error processing timestamps:', timestampError);
         }
   
-        console.log('Processed squad data:', processedData);
+        //console.log('Processed squad data:', processedData);
         return processedData as Squad;
       });
     } catch (error) {

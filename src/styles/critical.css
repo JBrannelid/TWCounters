@@ -1,0 +1,43 @@
+:root {
+    --color-space-black: #0A0D14;
+    --color-space-darker: #12151C;
+    --color-space-dark: #1A1E27;
+  }
+  
+  html {
+    height: 100%;
+    height: -webkit-fill-available;
+    overscroll-behavior-y: none;
+    overflow-x: hidden;
+  }
+  
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-space-black);
+    color: white;
+    font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+    /* Critical font declarations */
+    @font-face {
+    font-family: 'Orbitron';
+    font-display: swap;
+    src: url('/fonts/Orbitron-Regular.ttf') format('truetype');
+  }
+  
+  @font-face {
+    font-family: 'Titillium Web';
+    font-display: swap;
+    src: url('/fonts/TitilliumWeb-Regular.ttf') format('truetype');
+  }

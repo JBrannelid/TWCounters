@@ -70,7 +70,7 @@ export const getUnitImage = async (id: string | undefined, type: ImageType): Pro
 
   // Kontrollera om bilden redan laddas
   if (LOADING_CACHE.has(cacheKey)) {
-    console.log(`[Image Debug] Image already loading for ${id} (${type})`);
+    //console.log(`[Image Debug] Image already loading for ${id} (${type})`);
     return LOADING_CACHE.get(cacheKey)!;
   }
 
@@ -96,7 +96,7 @@ export const getUnitImage = async (id: string | undefined, type: ImageType): Pro
 
       const isLocalAvailable = await new Promise((resolve) => {
         localImage.onload = () => {
-          console.log(`[Image Debug] Local image loaded successfully: ${localPath}`);
+          //console.log(`[Image Debug] Local image loaded successfully: ${localPath}`);
           resolve(true);
         };
         localImage.onerror = () => {
@@ -107,7 +107,7 @@ export const getUnitImage = async (id: string | undefined, type: ImageType): Pro
 
       // Om lokal bild är tillgänglig
       if (isLocalAvailable) {
-        console.log(`[Image Debug] Loaded ${id} (${type}) from local path: ${localPath}`);
+        //console.log(`[Image Debug] Loaded ${id} (${type}) from local path: ${localPath}`);
         IMAGE_CACHE.set(cacheKey, localPath);
         return localPath;
       }

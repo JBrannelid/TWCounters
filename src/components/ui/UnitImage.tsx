@@ -97,8 +97,10 @@ export const UnitImage = memo<UnitImageProps>(({
           isLoading ? 'opacity-0 blur-md' : 'opacity-100',
           hasError ? 'grayscale opacity-50' : ''
         )}
+        width={size} 
+        height={size}
         loading="lazy"
-        onLoad={onLoad}
+        decoding="async"        onLoad={onLoad}
         onError={() => {
           setHasError(true);
           setImageUrl(getPlaceholderDataUrl(size));

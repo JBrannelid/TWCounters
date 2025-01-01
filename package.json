@@ -3,6 +3,10 @@
   "private": true,
   "version": "1.0.1",
   "type": "module",
+  "engines": {
+    "node": ">=18.20.5",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -15,22 +19,23 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "dompurify": "^3.0.8",
-    "firebase": "^11.1.0",
+    "firebase": "^10.8.0",
     "focus-trap": "^7.5.4",
     "focus-trap-react": "^10.2.3",
     "framer-motion": "^11.0.3",
     "lodash": "^4.17.21",
     "lucide-react": "^0.334.0",
+    "netlify-cli": "^17.38.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^4.0.12",
     "react-helmet-async": "^2.0.5",
     "tailwind-merge": "^2.2.1",
-    "tailwindcss-animate": "^1.0.7",
-    "vite-plugin-compression": "^0.5.1"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@types/lodash": "^4.17.13",
+    "@types/dompurify": "^3.0.5",
+    "@types/lodash": "^4.17.13", 
     "@types/node": "^20.11.17",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
@@ -39,12 +44,13 @@
     "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "postcss": "^8.4.35",
-    "rimraf": "^6.0.1",
+    "rimraf": "^5.0.5",
     "tailwindcss": "^3.4.1",
     "terser": "^5.37.0",
     "typescript": "^5.3.3",
-    "vite": "^5.1.1"
+    "vite": "^5.1.1",
+    "vite-plugin-compression": "^0.5.1"
   }
 }

@@ -2,6 +2,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+const fontStyles = `
+  @font-face {
+    font-family: 'Orbitron';
+    font-display: swap;
+    src: url('/fonts/Orbitron-Regular.ttf') format('truetype');
+  }
+`;
+
 interface HeroSectionProps {
   children?: React.ReactNode;
 }
@@ -25,6 +33,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron text-white text-center mb-4"
+          style={{ willChange: 'transform' }}
         >
           SWGOH Territory Wars
         </motion.h1>
