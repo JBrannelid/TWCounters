@@ -61,7 +61,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onClose }) => {
         className="w-full max-w-md bg-space-darker rounded-lg border border-white/10"
       >
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-white mb-6">Admin Login</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Log in</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">

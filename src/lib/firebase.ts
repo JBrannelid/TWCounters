@@ -19,6 +19,8 @@ import {
   FirebaseStorage, 
   connectStorageEmulator 
 } from 'firebase/storage';
+import { getAnalytics, Analytics, initializeAnalytics } from 'firebase/analytics';
+import { m } from 'framer-motion';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -26,7 +28,8 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Validera miljövariabler
@@ -36,6 +39,7 @@ if (!firebaseConfig.projectId) throw new Error('Firebase Project ID is missing')
 if (!firebaseConfig.storageBucket) throw new Error('Firebase Storage Bucket is missing');
 if (!firebaseConfig.messagingSenderId) throw new Error('Firebase Messaging Sender ID is missing');
 if (!firebaseConfig.appId) throw new Error('Firebase App ID is missing');
+if (!firebaseConfig.measurementId) {console.warn('Firebase Measurement ID is missing. Analytics will not work.');}
 
 class FirebaseClient {
   private static instance: FirebaseClient;
@@ -43,34 +47,34 @@ class FirebaseClient {
   private _auth: Auth;
   private _db: Firestore;
   private _storage: FirebaseStorage;
+  private _analytics: Analytics; // Lägg till Analytics här
   private initialized: boolean = false;
   private initError: Error | null = null;
   private initializationPromise: Promise<void>;
 
   private constructor() {
-    // Initialisera alla properties direkt
     this.app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
     this._auth = getAuth(this.app);
-    
-    // Uppdaterad Firestore-initialisering med korrekta typer
     this._db = initializeFirestore(this.app, {
       experimentalForceLongPolling: true,
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
-        cacheSizeBytes: 104857600 // 100 MB
+        cacheSizeBytes: 104857600
       })
     });
-
     this._storage = getStorage(this.app);
     
-    // Initiera promise
+    // Enhetlig analytics-initialisering
+    this._analytics = typeof window !== 'undefined' && process.env.NODE_ENV === 'production'
+      ? initializeAnalytics(this.app)
+      : getAnalytics(this.app);
+
     this.initializationPromise = this.initialize();
 
-    // Anslut till emulatorer i utvecklingsmiljö
     if (process.env.NODE_ENV === 'development') {
       this.connectToEmulators();
     }
-  }
+}
 
   private async initialize(): Promise<void> {
     try {
@@ -158,6 +162,18 @@ class FirebaseClient {
     return this._storage;
   }
 
+  // Getter for Analytics
+  get analytics(): Analytics {
+    if (!this._analytics) {
+      throw new Error('Analytics not initialized');
+    }
+    return this._analytics;
+  }
+
+  get isAnalyticsAvailable(): boolean {
+    return this._analytics !== null;
+  }
+
   public get isInitialized(): boolean {
     return this.initialized && !this.initError;
   }
@@ -189,3 +205,15 @@ export const ensureFirebaseInitialized = () => firebaseClient.waitForInitializat
 export const reconnectFirebase = () => firebaseClient.reconnect();
 
 export default firebaseClient;
+
+export const getFirebaseAnalytics = (): Analytics | null => {
+  try {
+    if (typeof window === 'undefined' || process.env.NODE_ENV !== 'production') {
+      return null;
+    }
+    return firebaseClient.isAnalyticsAvailable ? firebaseClient.analytics : null;
+  } catch (error) {
+    console.warn('Analytics access failed:', error);
+    return null;
+  }
+};

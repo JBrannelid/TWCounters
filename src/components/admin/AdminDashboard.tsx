@@ -257,14 +257,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             >
               <Settings className="w-5 h-5" />
             </button>
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                       bg-red-500/20 text-red-400 hover:bg-red-500/30"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
           </div>
         </div>
 

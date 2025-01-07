@@ -5,6 +5,23 @@ export type Alignment = 'light' | 'dark';
 export type Language = 'en' | 'sv';
 export type UnitType = 'character' | 'ship';
 
+// Cookie consent types
+export interface CookieCategory {
+  id: string;
+  name: string;
+  description: string;
+  required: boolean;
+  enabled: boolean;
+}
+
+export interface CookieConsent {
+  necessary: boolean;
+  preferences: boolean;
+  analytics: boolean;
+  marketing: boolean;
+  timestamp: string;
+}
+
 export interface BaseUnit {
   id: string;
   name: string;
@@ -165,3 +182,4 @@ export interface ChangeHistory {
     new: any;
   };
 }
+

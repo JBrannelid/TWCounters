@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
             [/<script/g, `<script nonce="${nonce}"`],
             [/<style/g, `<style nonce="${nonce}"`],
             [/<link([^>]*?)rel="stylesheet"/g, `<link$1rel="stylesheet" nonce="${nonce}"`],
-            [/<meta[^>]*Content-Security-Policy[^>]*>/, ''], // Ta bort befintlig CSP meta tag
+            [/<meta[^>]*Content-Security-Policy[^>]*>/, ''], 
             ['</head>', `<meta http-equiv="Content-Security-Policy" content="${cspString}">\n</head>`]
           ];
           return transforms.reduce((acc, [pattern, replacement]) => 
@@ -55,6 +55,13 @@ export default defineConfig(({ mode }) => {
         'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
       },
       host: true,
+      proxy: {
+        '/cookie-policy': {
+          target: 'http://localhost:5173',
+          changeOrigin: true,
+          rewrite: (path) => '/index.html'
+        }
+      }
     },
     build: {
       outDir: 'dist',

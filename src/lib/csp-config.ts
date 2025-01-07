@@ -13,40 +13,32 @@ export const generateCSPString = (nonce: string): string => {
       "'unsafe-inline'",
       "'unsafe-eval'",
       "https://cdnjs.cloudflare.com",
-      "https://consent.cookiebot.com",
-      "https://consentcdn.cookiebot.com"
+      "https://www.googletagmanager.com"  
     ],
     'script-src-elem': [
       "'self'",
       "'unsafe-inline'",
-      "https://consent.cookiebot.com",
-      "https://consentcdn.cookiebot.com"
+      "https://www.googletagmanager.com"  
     ],
     'connect-src': [
       "'self'",
       "https://*.googleapis.com",
       "wss://*.firebaseio.com",
       "https://*.firebaseio.com",
-      "https://*.cookiebot.com",
-      "https://consentcdn.cookiebot.com"
+      "https://region1.google-analytics.com"
     ],
     'frame-src': [
-      "'self'",
-      "https://consentcdn.cookiebot.com"
+      "'self'"
     ],
     'style-src': [
       "'self'",
-      "'unsafe-inline'",
-      "https://consent.cookiebot.com"
+      "'unsafe-inline'"
     ],
     'img-src': [
       "'self'",
       "data:",
       "blob:",
-      "https://firebasestorage.googleapis.com",
-      "https://consent.cookiebot.com",
-      "https://imgsct.cookiebot.com",
-      "https://consentcdn.cookiebot.com"
+      "https://firebasestorage.googleapis.com"
     ],
     'font-src': ["'self'", "data:", "https://fonts.gstatic.com"],
     'base-uri': ["'self'"],

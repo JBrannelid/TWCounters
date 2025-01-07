@@ -1,0 +1,124 @@
+// src/components/CookieConsent/CookiePolicy.tsx
+import React from 'react';
+import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CookieManager } from './CookieManager';
+import { COOKIE_CATEGORIES } from './CookieConsentTypes';
+
+export const CookiePolicy: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate('/');
+  };
+
+  const handleManageCookies = () => {
+    CookieManager.clearConsent();
+    navigate('/');
+  };
+
+  return (
+    <div className="min-h-screen bg-space-black">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-space-darker border-b border-white/10">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleBack}
+              className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-xl font-orbitron text-white">Cookie Policy</h1>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-4xl mx-auto px-4 py-8"
+      >
+        <div className="prose prose-invert">
+          <section className="mb-8">
+            <p className="text-white/80">Last updated: January 07, 2025</p>
+            
+            <h2 className="text-2xl font-orbitron text-white mt-8 mb-4">Cookie Policy Overview</h2>
+            <p className="text-white/80">
+              This Cookie Policy explains how SWGOH TW Counter uses cookies and similar tracking 
+              technologies to provide, improve, and protect our services. By using our website, 
+              you consent to the use of cookies as described in this policy.
+            </p>
+
+            <h2 className="text-2xl font-orbitron text-white mt-8 mb-4">Our Cookie Categories</h2>
+            {COOKIE_CATEGORIES.map(category => (
+              <div key={category.id} className="mb-6">
+                <h3 className="text-xl font-orbitron text-white mb-3">{category.name}</h3>
+                <p className="text-white/80 mb-4">{category.description}</p>
+                
+                {category.cookies.length > 0 && (
+                  <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <h4 className="text-lg font-medium text-white mb-3">Cookies in this category:</h4>
+                    {category.cookies.map((cookie, index) => (
+                      <div key={index} className="mb-4 last:mb-0">
+                        <div className="text-blue-400 font-medium mb-1">{cookie.name}</div>
+                        <div className="text-white/70 text-sm mb-1">{cookie.description}</div>
+                        <div className="text-white/50 text-sm">
+                          Duration: {cookie.duration} | Type: {cookie.type}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <h2 className="text-2xl font-orbitron text-white mt-8 mb-4">Your Rights and Choices</h2>
+            <div className="space-y-4">
+              <p className="text-white/80">
+                You have the right to:
+              </p>
+              <ul className="list-disc pl-6 text-white/80 space-y-2">
+                <li>Accept or decline non-essential cookies</li>
+                <li>Change your cookie preferences at any time</li>
+                <li>Request information about the cookies we use</li>
+                <li>Request deletion of your cookie data</li>
+              </ul>
+            </div>
+
+            <h2 className="text-2xl font-orbitron text-white mt-8 mb-4">Technical Storage Information</h2>
+            <p className="text-white/80 mb-4">
+              Our website uses different types of storage mechanisms:
+            </p>
+            <ul className="list-disc pl-6 text-white/80 space-y-2">
+              <li>HTTP Cookies: Traditional browser cookies</li>
+              <li>Local Storage: For persistent data storage</li>
+              <li>Session Storage: For temporary data storage</li>
+              <li>IndexedDB: For structured data storage</li>
+            </ul>
+
+            <h2 className="text-2xl font-orbitron text-white mt-8 mb-4">Managing Your Cookie Preferences</h2>
+            <p className="text-white/80 mb-4">
+              You can manage your cookie preferences at any time. Your choices will be saved and 
+              respected across our website. Essential cookies cannot be disabled as they are 
+              necessary for the website to function properly.
+            </p>
+
+            <div className="mt-8 pt-8 border-t border-white/10">
+              <button
+                onClick={handleManageCookies}
+                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+                         transition-colors flex items-center gap-2"
+              >
+                Manage Cookie Settings
+              </button>
+            </div>
+          </section>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
