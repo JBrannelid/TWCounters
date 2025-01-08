@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, LogOut, Mail } from 'lucide-react';
+import { Settings as SettingsIcon, LogOut, Mail, LogIn } from 'lucide-react';
 import { GlassCard } from './ui/GlassCard';
 import ContactModal from './ContactModal';
-import { Settings } from './settings/Settings'; // Importera nya Settings-komponenten
+import { Settings } from './settings/Settings';
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -44,21 +44,32 @@ export const Header: React.FC<HeaderProps> = ({
             {!isAdmin ? (
               <button
                 onClick={onAdminClick}
-                className="header-button bg-blue-500/20 hover:bg-blue-500/30 text-blue-400"
+                className="header-button bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 
+                         transition-colors duration-200"
                 aria-label="Login"
               >
-                <SettingsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="hidden sm:inline">Log in</span>
               </button>
             ) : (
-              <button
-                onClick={onLogout}
-                className="header-button bg-red-500/20 hover:bg-red-500/30 text-red-400"
-                aria-label="Logout"
-              >
-                <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="hidden sm:inline">Log out</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onAdminClick}
+                  className="header-button bg-blue-500/20 hover:bg-blue-500/30 text-blue-400"
+                  aria-label="Admin Settings"
+                >
+                  <SettingsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Admin</span>
+                </button>
+                <button
+                  onClick={onLogout}
+                  className="header-button bg-red-500/20 hover:bg-red-500/30 text-red-400"
+                  aria-label="Logout"
+                >
+                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Log out</span>
+                </button>
+              </div>
             )}
           </div>
         </div>

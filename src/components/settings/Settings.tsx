@@ -82,11 +82,11 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-orbitron text-white">Settings</h2>
-            <button
+          <h2 className="text-xl font-orbitron text-white drop-shadow-lg">Settings</h2>
+          <button
             onClick={onClose}
-            className="p-2 text-red-500 bg-red-500/10 rounded-lg
-                      transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
+            className="p-2 text-red-500 bg-red-500/20 rounded-lg
+                      transition-colors hover:bg-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-500/50"
             aria-label="Close settings"
           >
             <X className="w-5 h-5" />
@@ -104,10 +104,10 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   key={section.id}
                   onClick={() => setActiveSection(section.comingSoon ? null : section.id)}
                   className={`w-full text-left p-4 rounded-lg transition-all relative group
-                    focus:outline-none focus:ring-2 focus:ring-white/10
+                    focus:outline-none focus:ring-2 focus:ring-white/20
                     ${activeSection === section.id 
-                      ? 'bg-gradient-to-r from-blue-500/20 to-blue-500/10 text-white border border-blue-500/20' 
-                      : 'hover:bg-white/5 text-white/70 hover:text-white border border-transparent'}`}
+                      ? 'bg-gradient-to-r from-blue-500/30 to-blue-500/20 text-white border border-blue-500/40' 
+                      : 'hover:bg-white/10 text-white/70 hover:text-white border border-transparent'}`}
                   disabled={section.comingSoon}
                   aria-selected={activeSection === section.id}
                   role="tab"
@@ -125,7 +125,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   </div>
                   {section.comingSoon && (
                     <span className="absolute right-2 top-2 px-2 py-0.5 rounded-full 
-                                   bg-white/5 text-white/40 text-xs">
+                 bg-yellow-500/10 text-yellow-500 text-xs">
                       Coming Soon
                     </span>
                   )}
@@ -143,7 +143,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="h-full"
+                  className="h-full p-6 bg-black/20 rounded-lg shadow-inner"
                 >
                   <CookieSettingsContent 
                     onSave={() => setActiveSection(null)}

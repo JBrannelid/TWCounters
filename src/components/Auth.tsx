@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, User, EyeOff, Eye, AlertCircle } from 'lucide-react';
+import { LogIn, User, EyeOff, Eye, AlertCircle, X, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -53,16 +53,32 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onClose }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+      onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         className="w-full max-w-md bg-space-darker rounded-lg border border-white/10"
+        onClick={e => e.stopPropagation()}
       >
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-white mb-6">Log in</h2>
+        {/* Header */}
+        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <LogIn className="w-6 h-6 text-blue-400" />
+            <h2 className="text-2xl font-bold text-white">Log in</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            aria-label="Close login dialog"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
+        {/* Content */}
+        <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-white">
@@ -73,8 +89,10 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onClose }) => {
                   type="email"
                   value={credentials.email}
                   onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
-                  placeholder="Enter email"
+                  className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg 
+                           text-white placeholder-white/40 focus:outline-none focus:ring-2 
+                           focus:ring-blue-400/50 focus:border-transparent"
+                  placeholder="Enter your email"
                   required
                   disabled={isLoading}
                 />
@@ -91,8 +109,10 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onClose }) => {
                   type={showPassword ? 'text' : 'password'}
                   value={credentials.password}
                   onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                  className="w-full pl-10 pr-12 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
-                  placeholder="Enter password"
+                  className="w-full pl-10 pr-12 py-2 bg-white/5 border border-white/10 rounded-lg 
+                           text-white placeholder-white/40 focus:outline-none focus:ring-2 
+                           focus:ring-blue-400/50 focus:border-transparent"
+                  placeholder="Enter your password"
                   required
                   disabled={isLoading}
                 />
@@ -128,7 +148,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onClose }) => {
                 type="button"
                 onClick={onClose}
                 className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 
-                         disabled:opacity-50 disabled:cursor-not-allowed"
+                         transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading}
               >
                 Cancel
@@ -137,19 +157,23 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onClose }) => {
                 type="submit"
                 disabled={isLoading || attemptCount >= 5}
                 className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 
-                         disabled:opacity-50 disabled:cursor-not-allowed relative"
+                         transition-colors disabled:opacity-50 disabled:cursor-not-allowed 
+                         flex items-center gap-2"
               >
                 {isLoading ? (
-                  <span className="flex items-center gap-2">
+                  <>
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full"
                     />
-                    Logging in...
-                  </span>
+                    <span>Logging in...</span>
+                  </>
                 ) : (
-                  'Login'
+                  <>
+                    <LogIn className="w-4 h-4" />
+                    <span>Log in</span>
+                  </>
                 )}
               </button>
             </div>
@@ -169,3 +193,5 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onClose }) => {
     </motion.div>
   );
 };
+
+export default Auth;
