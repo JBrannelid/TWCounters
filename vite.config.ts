@@ -4,6 +4,29 @@ import path from 'path';
 import { randomBytes } from 'crypto';
 import { generateCSPString } from './src/lib/csp-config';
 import compression from 'vite-plugin-compression';
+import type { Connect } from 'vite';
+import { IncomingMessage, ServerResponse } from 'http';
+import { NextFunction } from 'connect';
+
+// Helper function to set cache headers
+function setCacheHeaders(): Connect.HandleFunction {
+  return (req: IncomingMessage, res: ServerResponse, next: NextFunction) => {
+    const url = req.url || '';
+    
+    // Set appropriate Cache-Control header based on file type
+    if (url.match(/\.(ico|png|svg|jpg|jpeg|gif|webp)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (url.match(/\.(js|css|woff2|woff|ttf)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (url.match(/\.(html)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    } else if (url.includes('googleapis.com') || url.includes('firebaseio.com')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
+
+    next();
+  };
+}
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
@@ -28,6 +51,12 @@ export default defineConfig(({ mode }) => {
             acc.replace(pattern, replacement as string), html);
         }
       },
+      {
+        name: 'cache-control',
+        configureServer(server) {
+          server.middlewares.use(setCacheHeaders());
+        }
+      },
       compression({
         algorithm: 'gzip',
         ext: '.gz',
@@ -38,6 +67,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        '@styles': path.resolve(__dirname, './src/styles')
       }
     },
     server: {
@@ -46,13 +76,14 @@ export default defineConfig(({ mode }) => {
       headers: {
         'Content-Security-Policy': generateCSPString(nonce),
         'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
+        'X-Frame-Options': 'ALLOW-FROM https://swgoh-tw-guide.firebaseapp.com',
         'Cross-Origin-Resource-Policy': 'same-origin',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
-        'Cache-Control': 'public, max-age=31536000, immutable',
         'Permissions-Policy': "camera=(), microphone=(), geolocation=()",
         'X-XSS-Protection': '1; mode=block',
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'Service-Worker-Allowed': '/',
+        'Cache-Control': 'public, max-age=31536000, immutable'
       },
       host: true,
       proxy: {
@@ -66,7 +97,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
-      cssCodeSplit: false, // This ensures CSS is bundled into one file
+      cssCodeSplit: false,
       sourcemap: !isProduction,
       minify: isProduction ? 'esbuild' : false,
       target: 'es2020',
@@ -77,6 +108,8 @@ export default defineConfig(({ mode }) => {
             firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
             ui: ['@radix-ui/react-tabs', 'framer-motion', 'lucide-react']
           },
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js',
           assetFileNames: (assetInfo) => {
             const name = assetInfo?.name;
             if (!name) {
@@ -90,12 +123,10 @@ export default defineConfig(({ mode }) => {
               return 'assets/fonts/[name]-[hash][extname]';
             }
             return 'assets/[name]-[hash][extname]';
-          },
-          chunkFileNames: 'assets/js/[name]-[hash].js',
-          entryFileNames: 'assets/js/[name]-[hash].js',
-        },
+          }
+        }
       },
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 1000
     },
     optimizeDeps: {
       include: ['react', 'react-dom']
@@ -113,7 +144,7 @@ export default defineConfig(({ mode }) => {
         'Permissions-Policy': "camera=(), microphone=(), geolocation=()",
         'X-XSS-Protection': '1; mode=block',
         'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
-      },
+      }
     }
   };
 

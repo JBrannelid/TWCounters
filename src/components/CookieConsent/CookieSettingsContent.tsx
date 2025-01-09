@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Shield } from 'lucide-react';
+import { Shield, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CookieManager } from './CookieManager';
 import { COOKIE_CATEGORIES } from './CookieConsentTypes';
 
@@ -9,15 +10,15 @@ interface CookieSettingsContentProps {
 
 export const CookieSettingsContent: React.FC<CookieSettingsContentProps> = ({ onSave }) => {
   const [categories, setCategories] = useState(COOKIE_CATEGORIES);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
-  // Load saved consent when component mounts
   useEffect(() => {
     const savedConsent = CookieManager.getStoredConsent();
     if (savedConsent) {
       setCategories(prev => prev.map(category => ({
         ...category,
         enabled: category.required || Boolean(savedConsent[category.id as keyof typeof savedConsent]) || false
-    })));
+      })));
     }
   }, []);
 
@@ -32,6 +33,10 @@ export const CookieSettingsContent: React.FC<CookieSettingsContentProps> = ({ on
     
     CookieManager.setConsent(consent);
     onSave?.();
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategory(current => current === categoryId ? null : categoryId);
   };
 
   return (
@@ -49,6 +54,17 @@ export const CookieSettingsContent: React.FC<CookieSettingsContentProps> = ({ on
                   <span className="px-2 py-0.5 text-sm bg-white/10 rounded-full text-white/60">
                     {category.cookies.length}
                   </span>
+                  <button
+                    onClick={() => toggleCategory(category.id)}
+                    className="p-1 hover:bg-white/5 rounded-lg transition-colors"
+                    aria-label={expandedCategory === category.id ? "Collapse" : "Expand"}
+                  >
+                    <ChevronDown 
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        expandedCategory === category.id ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  </button>
                 </h3>
                 {category.required && (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400
@@ -85,6 +101,65 @@ export const CookieSettingsContent: React.FC<CookieSettingsContentProps> = ({ on
                            peer-checked:after:translate-x-full"></div>
             </label>
           </div>
+
+          <AnimatePresence>
+            {expandedCategory === category.id && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="mt-4 space-y-3 pl-4 border-l border-white/10"
+              >
+{category.cookies.map((cookie, index) => (
+                          <div 
+                            key={index} 
+                            className="group relative bg-gradient-to-r from-space-dark/50 to-transparent
+                                     p-4 rounded-lg border border-white/10 hover:border-white/20 
+                                     transition-all duration-200"
+                          >
+                            {/* Header med namn och typ */}
+                            <div className="flex items-start justify-between gap-4 mb-3">
+                              <div className="flex-1">
+                                <h4 className="text-base font-medium text-white group-hover:text-blue-400 
+                                             transition-colors duration-200 mb-1">
+                                  {cookie.name}
+                                </h4>
+                                {/* Cookie typ badge */}
+                                <div className="flex items-center gap-2">
+                                  <span className={`
+                                    inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    ${cookie.type === 'Local Storage' 
+                                      ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' 
+                                      : cookie.type === 'IndexedDB'
+                                      ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                      : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}
+                                  `}>
+                                    {cookie.type}
+                                  </span>
+                                  {/* Duration badge */}
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full 
+                                                 text-xs font-medium bg-white/5 text-white/60 
+                                                 border border-white/10">
+                                    {cookie.duration}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Description */}
+                            <div className="mt-2">
+                              <p className="text-sm text-white/70 leading-relaxed 
+                                          pl-3 border-l-2 border-white/10 
+                                          group-hover:border-blue-500/50 transition-colors">
+                                {cookie.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       ))}
 

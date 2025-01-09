@@ -9,6 +9,7 @@ import {
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { storage } from '@/services/storage';
+import { AnalyticsService } from '@/services/analyticsService';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -66,9 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    if (!isOnline) {
-      throw new Error('Cannot login while offline');
-    }
+    const analytics = AnalyticsService.getInstance();
 
     try {
       setError(null);

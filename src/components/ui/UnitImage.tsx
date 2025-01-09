@@ -89,6 +89,8 @@ export const UnitImage = memo<UnitImageProps>(({
       <img
         src={imageUrl}
         alt={name}
+        loading="lazy"
+        decoding="async" 
         aria-label={name} // Lägg till aria-label för att göra bilden tillgänglig för skärmläsare
         className={cn(
           'w-full h-full',
@@ -98,9 +100,8 @@ export const UnitImage = memo<UnitImageProps>(({
           hasError ? 'grayscale opacity-50' : ''
         )}
         width={size} 
-        height={size}
-        loading="lazy"
-        decoding="async"        onLoad={onLoad}
+        height={size}       
+        onLoad={onLoad}
         onError={() => {
           setHasError(true);
           setImageUrl(getPlaceholderDataUrl(size));

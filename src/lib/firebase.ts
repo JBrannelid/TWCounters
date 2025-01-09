@@ -1,4 +1,5 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { AnalyticsService } from '@/services/analyticsService';
 import { 
   getAuth, 
   Auth, 
@@ -56,11 +57,11 @@ class FirebaseClient {
     this.app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
     this._auth = getAuth(this.app);
     this._db = initializeFirestore(this.app, {
-      experimentalForceLongPolling: true,
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
-        cacheSizeBytes: 104857600
-      })
+        cacheSizeBytes: CACHE_SIZE_UNLIMITED, // Optional: Unlimited cache size
+      }),
+      experimentalForceLongPolling: false, // Optional: Adjust based on your setup
     });
     this._storage = getStorage(this.app);
     
@@ -71,9 +72,36 @@ class FirebaseClient {
 
     this.initializationPromise = this.initialize();
 
+    this.loadScript('https://apis.google.com/js/api.js', 'din-nonce-sträng')
+  .then(() => console.log('Google API script loaded successfully'))
+  .catch((error) => console.error('Failed to load Google API script:', error));
+
+    // Initialize AnalyticsService here
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      AnalyticsService.initialize(this.app);}
+
     if (process.env.NODE_ENV === 'development') {
       this.connectToEmulators();
     }
+}
+
+private loadScript(src: string, nonce?: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve(); // Skriptet finns redan
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    if (nonce) script.nonce = nonce;
+
+    script.onload = () => resolve();
+    script.onerror = (error) => reject(new Error(`Failed to load script: ${src}`));
+
+    document.head.appendChild(script);
+  });
 }
 
   private async initialize(): Promise<void> {
@@ -89,23 +117,17 @@ class FirebaseClient {
 
   private async setupPersistence(): Promise<void> {
     try {
-      await enableIndexedDbPersistence(this._db, {
+      await initializeFirestore(this.app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager()
+        })
       });
       console.log('Offline persistence enabled');
     } catch (error) {
       if (error instanceof Error && 'code' in error) {
         const firebaseError = error as { code: string };
-        
-        switch (firebaseError.code) {
-          case 'failed-precondition':
-            // Hantera tysta detta fel då det är förväntat med flera flikar
-            console.debug('Multiple tabs open, persistence enabled in another tab.');
-            break;
-          case 'unimplemented':
-            console.warn('The current browser does not support offline persistence.');
-            break;
-          default:
-            console.error('Error enabling offline persistence:', error);
+        if (firebaseError.code === 'failed-precondition') {
+          console.debug('Multiple tabs open, persistence enabled in another tab.');
         }
       }
     }

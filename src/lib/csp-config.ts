@@ -13,12 +13,14 @@ export const generateCSPString = (nonce: string): string => {
       "'unsafe-inline'",
       "'unsafe-eval'",
       "https://cdnjs.cloudflare.com",
-      "https://www.googletagmanager.com"  
+      "https://www.googletagmanager.com",
+      "https://apis.google.com" // Add this line
     ],
     'script-src-elem': [
       "'self'",
       "'unsafe-inline'",
-      "https://www.googletagmanager.com"  
+      "https://www.googletagmanager.com",
+      "https://apis.google.com" // Add this line
     ],
     'connect-src': [
       "'self'",
@@ -28,7 +30,9 @@ export const generateCSPString = (nonce: string): string => {
       "https://region1.google-analytics.com"
     ],
     'frame-src': [
-      "'self'"
+      "'self'",
+      "https://apis.google.com", // Add this line for iframes
+      "https://swgoh-tw-guide.firebaseapp.com"  // Add this line
     ],
     'style-src': [
       "'self'",

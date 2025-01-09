@@ -12,7 +12,11 @@ export const useAnalytics = () => {
     if (isAnalyticsEnabled) {
       try {
         const analytics = firebaseClient.analytics;
-        firebaseLogEvent(analytics, eventName, eventParams);
+        if (analytics) {
+          firebaseLogEvent(analytics, eventName, eventParams);
+        } else {
+          console.warn('Analytics is not initialized, skipping log event:', eventName);
+        }
       } catch (error) {
         console.error('Failed to log analytics event:', error);
       }

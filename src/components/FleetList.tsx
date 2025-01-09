@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Ship, RefreshCw } from 'lucide-react';
-import { Fleet, Counter } from '@/types';
+import { Fleet, Counter, Filters } from '@/types';
 import { FleetCard } from './FleetCard';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -10,10 +10,11 @@ interface FleetListProps {
   filteredFleets: Fleet[];
   selectedFleetId: string | null;
   onSelectFleet: (id: string | null) => void;
-  getCounters: (id: string) => Counter[];
+  getCounters: (id: string, type: 'fleet') => Counter[];
   isAdmin?: boolean;
   onDeleteCounter?: (id: string) => void;
   onViewDetails?: () => void;
+  filters: Filters;
 }
 
 export const FleetList: React.FC<FleetListProps> = ({
@@ -61,15 +62,15 @@ export const FleetList: React.FC<FleetListProps> = ({
           }}
         >
           <FleetCard
-            fleet={fleet}
-            isSelected={selectedFleetId === fleet.id}
-            onSelect={() => handleFleetSelect(fleet.id)}
-            counters={getCounters(fleet.id)}
-            isFiltered={true}
-            isAdmin={isAdmin}
-            onDeleteCounter={onDeleteCounter}
-            onViewDetails={onViewDetails}
-          />
+          fleet={fleet}
+          isSelected={selectedFleetId === fleet.id}
+          onSelect={() => handleFleetSelect(fleet.id)}
+          counters={getCounters(fleet.id, 'fleet')}
+          isFiltered={true}
+          isAdmin={isAdmin}
+          onDeleteCounter={onDeleteCounter}
+          onViewDetails={onViewDetails}
+        />
         </motion.div>
       )),
     [filteredFleets, selectedFleetId, getCounters, isAdmin, onDeleteCounter, onViewDetails]
@@ -121,3 +122,7 @@ export const FleetList: React.FC<FleetListProps> = ({
     </ErrorBoundary>
   );
 };
+function getCountersForUnit(id: string, counters: any, arg2: string, filters: any): Counter[] {
+  throw new Error('Function not implemented.');
+}
+

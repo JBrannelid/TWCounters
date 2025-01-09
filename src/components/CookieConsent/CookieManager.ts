@@ -1,6 +1,6 @@
-// src/components/CookieConsent/CookieManager.ts
-
-import { CookieConsentData, CookieCategory, COOKIE_CATEGORIES } from './CookieConsentTypes';
+import { CookieConsentData } from './CookieConsentTypes';
+import { CookieScanService } from '@/services/CookieScanService';
+import { COOKIE_CATEGORIES } from './CookieConsentTypes';
 
 export class CookieManager {
   private static CONSENT_KEY = 'cookie_consent_state';
@@ -45,7 +45,7 @@ export class CookieManager {
     // Scanna cookies
     document.cookie.split(';').forEach(cookie => {
       const [name, value] = cookie.split('=').map(s => s.trim());
-      cookies[name] = value;
+      if (name) cookies[name] = value;
     });
 
     // Scanna localStorage
@@ -65,6 +65,17 @@ export class CookieManager {
     }
 
     return cookies;
+  }
+
+  // Generera privacy rapport
+  static async generatePrivacyReport(): Promise<string> {
+    try {
+      const scan = await CookieScanService.scanCookies();
+      return JSON.stringify(scan, null, 2);
+    } catch (error) {
+      console.error('Failed to generate privacy report:', error);
+      return JSON.stringify({ error: 'Failed to generate report' });
+    }
   }
 
   // Ta bort icke-nödvändiga cookies
@@ -93,6 +104,17 @@ export class CookieManager {
         this.deleteCookie(name);
       }
     });
+
+    // Rensa IndexedDB om nödvändigt
+    if (!consent.preferences) {
+      indexedDB.databases().then(dbs => {
+        dbs.forEach(db => {
+          if (db.name && !this.isEssentialDatabase(db.name)) {
+            indexedDB.deleteDatabase(db.name);
+          }
+        });
+      });
+    }
   }
 
   // Kontrollera om en cookie är nödvändig
@@ -105,30 +127,33 @@ export class CookieManager {
     return essentialCookies.includes(name);
   }
 
-  // Hämta cookie-kategori
-  private static getCookieCategory(cookieName: string): string | null {
-    for (const category of COOKIE_CATEGORIES) {
-      const cookieNames = category.cookies.map(cookie => cookie.name);
-      if (cookieNames.includes(cookieName)) {
-        return category.id;
-      }
-    }
-    return null;
+  // Kontrollera om en databas är nödvändig
+  private static isEssentialDatabase(name: string): boolean {
+    return [
+      'firebase-heartbeat-database',
+      'CookieConsent'
+    ].includes(name);
   }
 
-  // Ta bort en specifik cookie
+  // Kontrollera om localStorage är nödvändig
+  private static isEssentialStorage(key: string): boolean {
+    return [
+      this.CONSENT_KEY,
+      'theme',
+      'firebase-heartbeat-database'
+    ].includes(key);
+  }
+
+  // Ta bort en cookie
   private static deleteCookie(name: string): void {
-    // Ta bort HTTP cookie
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
     
-    // Ta bort från localStorage
     try {
       localStorage.removeItem(name);
     } catch (e) {
       console.warn(`Failed to remove ${name} from localStorage:`, e);
     }
     
-    // Ta bort från sessionStorage
     try {
       sessionStorage.removeItem(name);
     } catch (e) {
@@ -146,4 +171,24 @@ export class CookieManager {
       typeof consent.timestamp === 'string'
     );
   }
+    // Add this method
+    private static getCookieCategory(cookieName: string): keyof CookieConsentData | null {
+      for (const category of COOKIE_CATEGORIES) {
+        const cookieNames = category.cookies.map(cookie => cookie.name);
+        if (cookieNames.includes(cookieName)) {
+          return category.id as keyof CookieConsentData;
+        }
+      }
+      
+      // Default mappings for known cookies that might not be in categories
+      const cookieMappings: { [key: string]: keyof CookieConsentData } = {
+        'CookieConsent': 'necessary',
+        'firebase-heartbeat-database': 'necessary',
+        'theme': 'necessary',
+        'firebaseLocalStorageDb': 'preferences',
+        'firestore_clients': 'preferences'
+      };
+  
+      return cookieMappings[cookieName] || null;
+    }
 }

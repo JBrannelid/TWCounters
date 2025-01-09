@@ -131,8 +131,8 @@ module.exports = {
 
       // Höjder för mobil och iOS
       height: {
-        'screen-dynamic': '100dvh',
-        'screen-safe': ['100vh', '-webkit-fill-available'],
+        'screen-dynamic': '200dvh',
+        'screen-safe': ['200vh', '-webkit-fill-available'],
         'modal-mobile': ['calc(100vh - 2rem)', 'calc(-webkit-fill-available - 2rem)']
       },
 

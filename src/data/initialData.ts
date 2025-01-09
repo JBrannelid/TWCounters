@@ -5,7 +5,7 @@ const createCharacter = (id: string, name: string, role: string = '', isGalactic
   id,
   name,
   role,
-  isGalacticLegend,
+  isGalacticLegend: isGalacticLegend ?? false, // Default to false if not provided
   alignment
 });
 
@@ -13,14 +13,9 @@ const createShip = (id: string, name: string, isCapital: boolean = false, alignm
   id,
   name,
   type: isCapital ? 'capital' : 'regular',
-  isCapital,
+  isCapital: isCapital ?? false, // Default to false if not provided
   alignment
 });
-
-
-
-// Galactic Legends
-// id(matcha mappning i imageMapping.ts) - name (visningsnamn) - role(karaktärens roll) - isGalacticLegend (true/false)
 
 // Capital Ships
 // id(matcha mappning i imageMapping.ts) - name (visningsnamn) - isCapital (true/false) - callOrder (optional)
@@ -100,14 +95,14 @@ export const ships = {
   xanadu_blood: createShip('xanadublood', 'Xanadu Blood', false, 'dark')
 } as const;
 
-// Characters
-
+// Galactic Legends
+// id(matcha mappning i imageMapping.ts) - name (visningsnamn) - role(karaktärens roll) - isGalacticLegend (true/false) - alignment (light/dark)
 export const characters = {
   triple_zero: createCharacter('triplezero', '0-0-0', 'Support', false, 'dark'),
   fifty_rt: createCharacter('50rt', '50R-T', 'Tank', false, 'light'),
-  arc_trooper: createCharacter('trooperclone_arc', 'ARC Trooper', 'Attacker', false),
-  aayla_secura: createCharacter('aaylasecura', 'Aayla Secura', 'Tank', false),
-  admiral_ackbar: createCharacter('ackbaradmiral', 'Admiral Ackbar', 'Support', false),
+  arc_trooper: createCharacter('trooperclone_arc', 'ARC Trooper', 'Attacker', false, 'light'),
+  aayla_secura: createCharacter('aaylasecura', 'Aayla Secura', 'Tank', false, 'light'),
+  admiral_ackbar: createCharacter('ackbaradmiral', 'Admiral Ackbar', 'Support', false, 'dark'),
   admiral_piett: createCharacter('piett', 'Admiral Piett', 'Support', false),
   admiral_raddus: createCharacter('admiralraddus', 'Admiral Raddus', 'Support', false),
   admiral_trench: createCharacter('admiraltrench', 'Admiral Trench', 'Support', false),
@@ -243,7 +238,7 @@ export const characters = {
   ima_gun_di: createCharacter('imagundi', 'Ima-Gun Di', 'Support', false),
   imperial_probe_droid: createCharacter('probedroid', 'Imperial Probe Droid', 'Support', false),
   imperial_super_commando: createCharacter('imperial_super_commando', 'Imperial Super Commando', 'Attacker', false),
-  jabba_the_hutt: createCharacter('jabbathehutt', 'Jabba the Hutt', 'Support', false),
+  jabba_the_hutt: createCharacter('jabbathehutt', 'Jabba the Hutt', 'Support', true, 'dark'),
   jango_fett: createCharacter('jangofett', 'Jango Fett', 'Attacker', false),
   jar_jar_binks: createCharacter('jarjarbinks', 'Jar Jar Binks', 'Support', false),
   jawa: createCharacter('jawa_jawa', 'Jawa', 'Attacker', false),
@@ -255,8 +250,8 @@ export const characters = {
   jedi_knight_anakin: createCharacter('anakinknight', 'Jedi Knight Anakin', 'Attacker', false),
   jedi_knight_luke: createCharacter('luke_jediknight', 'Jedi Knight Luke Skywalker', 'Attacker', false),
   jedi_knight_revan: createCharacter('jedirevan', 'Jedi Knight Revan', 'Attacker', false),
-  jedi_master_kenobi: createCharacter('globiwan', 'Jedi Master Kenobi', 'Tank', false),
-  jedi_master_luke: createCharacter('luke_jml', 'Jedi Master Luke Skywalker', 'Tank', false),
+  jedi_master_kenobi: createCharacter('globiwan', 'Jedi Master Kenobi', 'Tank', true, 'light'),
+  jedi_master_luke: createCharacter('luke_jml', 'Jedi Master Luke Skywalker', 'Tank', true, 'light'),
   jolee_bindo: createCharacter('joleebindo', 'Jolee Bindo', 'Healer', false),
   juhani: createCharacter('juhani', 'Juhani', 'Tank', false),
   jyn_erso: createCharacter('jyn', 'Jyn Erso', 'Attacker', false),
@@ -272,10 +267,10 @@ export const characters = {
   kylo_ren_unmasked: createCharacter('kylo_unmasked', 'Kylo Ren (Unmasked)', 'Tank', false),
   l3_37: createCharacter('l337', 'L3-37', 'Tank', false),
   lando_calrissian: createCharacter('landobespin', 'Lando Calrissian', 'Attacker', false),
-  leia_organa: createCharacter('leiaendor', 'Leia Organa', 'Attacker', false),
+  leia_organa: createCharacter('leiaendor', 'Leia Organa', 'Attacker', true, 'light'),
   lobot: createCharacter('lobot', 'Lobot', 'Support', false),
   logray: createCharacter('ewok_logray', 'Logray', 'Support', false),
-  lord_vader: createCharacter('lordvader', 'Lord Vader', 'Attacker', false),
+  lord_vader: createCharacter('lordvader', 'Lord Vader', 'Attacker', true, 'dark'),
   luke_farmboy: createCharacter('luke_ep4', 'Luke (Farmboy)', 'Attacker', false),
   luminara_unduli: createCharacter('luminara', 'Luminara Unduli', 'Healer', false),
   luthen_rael: createCharacter('luthenrael', 'Luthen Rael', 'Support', false),
@@ -322,7 +317,7 @@ export const characters = {
   resistance_hero_poe: createCharacter('poe_tros', 'Resistance Hero Poe', 'Attacker', false),
   resistance_pilot: createCharacter('resistancepilot', 'Resistance Pilot', 'Support', false),
   resistance_trooper: createCharacter('resistancetrooper', 'Resistance Trooper', 'Attacker', false),
-  rey_gl: createCharacter('reyjakku', 'Rey (Galactic Legend)', 'Attacker', false),
+  rey_gl: createCharacter('reyjakku', 'Rey (Galactic Legend)', 'Attacker', true, 'light'),
   rey_jedi_training: createCharacter('rey_tlj', 'Rey (Jedi Training)', 'Tank', false),
   rey_scavenger: createCharacter('rey_tros', 'Rey (Scavenger)', 'Tank', false),
   rose_tico: createCharacter('rose', 'Rose Tico', 'Support', false),
@@ -339,7 +334,7 @@ export const characters = {
   shin_hati: createCharacter('shinhati', 'Shin Hati', 'Attacker', false),
   shoretrooper: createCharacter('troopershore', 'Shoretrooper', 'Tank', false),
   sith_assassin: createCharacter('sithassassin', 'Sith Assassin', 'Attacker', false),
-  sith_eternal_emperor: createCharacter('espalpatine_pre', 'Sith Eternal Emperor', 'Attacker', true),
+  sith_eternal_emperor: createCharacter('espalpatine_pre', 'Sith Eternal Emperor', 'Attacker', true, 'dark'),
   sith_empire_trooper: createCharacter('sithtrooper', 'Sith Empire Trooper', 'Tank', false),
   sith_marauder: createCharacter('sithmarauder', 'Sith Marauder', 'Attacker', false),
   sith_trooper: createCharacter('firstorder_sithtrooper', 'Sith Trooper', 'Attacker', false),
@@ -350,7 +345,7 @@ export const characters = {
   stormtrooper: createCharacter('trooperstorm', 'Stormtrooper', 'Tank', false),
   stormtrooper_han: createCharacter('trooperstorm_han', 'Stormtrooper Han', 'Support', false),
   sun_fac: createCharacter('geonosian_sunfac', 'Sun Fac', 'Tank', false),
-  supreme_leader_kylo: createCharacter('kyloren_tros', 'Supreme Leader Kylo Ren', 'Attacker', false),
+  supreme_leader_kylo: createCharacter('kyloren_tros', 'Supreme Leader Kylo Ren', 'Attacker', true, 'dark'),
   t3_m4: createCharacter('t3m4', 'T3-M4', 'Support', false),
   talia: createCharacter('talia', 'Talia', 'Healer', false),
   tarfful: createCharacter('tarfful', 'Tarfful', 'Tank', false),

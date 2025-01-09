@@ -28,12 +28,10 @@
     display: flex;
     flex-direction: column;
   }
-  
-    /* Critical font declarations */
-    @font-face {
-    font-family: 'Orbitron';
-    font-display: swap;
-    src: url('/fonts/Orbitron-Regular.ttf') format('truetype');
+  @font-face {
+  font-family: 'Orbitron';
+  font-display: swap;
+  src: url('/fonts/Orbitron-Regular.ttf') format('truetype');
   }
   
   @font-face {

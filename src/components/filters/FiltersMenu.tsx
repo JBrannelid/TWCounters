@@ -1,8 +1,6 @@
-// src/components/filters/FiltersMenu.tsx
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Filter, X, SunMedium, Moon, Shield, Swords, RefreshCw } from 'lucide-react';
+import { Filter, X, SunMedium, Moon, RefreshCw } from 'lucide-react';
 import { Filters, FilterKey } from '@/types';
 import { createFocusTrap } from 'focus-trap';
 
@@ -57,24 +55,6 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
   // Filter categories with their options
   const filterCategories = useMemo(() => [
     {
-      title: 'Battle Type',
-      id: 'battle-type',
-      options: [
-        { 
-          key: 'battleType' as FilterKey,
-          value: 'team',
-          label: 'Squads',
-          icon: <Swords className="w-4 h-4" aria-hidden="true" />
-        },
-        {
-          key: 'battleType' as FilterKey,
-          value: 'fleet',
-          label: 'Fleets',
-          icon: <Shield className="w-4 h-4" aria-hidden="true" />
-        }
-      ]
-    },
-    {
       title: 'Alignment',
       id: 'alignment',
       options: [
@@ -95,7 +75,6 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
   ], []);
 
   const resetFilters = () => {
-    onFilterChange('battleType', null);
     onFilterChange('alignment', null);
     onFilterChange('showTWOmicronOnly', false);
     onFilterChange('showHardCounters', false);
@@ -123,7 +102,7 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                  bg-gradient-to-br from-space-darker/90 to-space-dark/90 
                  backdrop-blur-xl border-l border-white/10 shadow-2xl 
                  rounded-l-2xl overflow-hidden z-50"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header Section */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
@@ -210,8 +189,8 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                   },
                   {
                     key: 'excludeGL' as FilterKey,
-                    label: 'Exclude Galactic Legends',
-                    description: 'Hide teams with Galactic Legend characters'
+                    label: 'Hide GL Counters',
+                    description: 'Filter out counters that require Galactic Legend characters'
                   }
                 ].map((option) => (
                   <motion.label

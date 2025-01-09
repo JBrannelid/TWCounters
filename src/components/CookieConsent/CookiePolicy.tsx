@@ -1,13 +1,34 @@
 // src/components/CookieConsent/CookiePolicy.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CookieManager } from './CookieManager';
 import { COOKIE_CATEGORIES } from './CookieConsentTypes';
 
+interface ScanReport {
+  timestamp: string;
+  cookies: string[];
+  databases: IDBDatabaseInfo[];
+  localStorage: Record<string, string>;
+}
+
 export const CookiePolicy: React.FC = () => {
   const navigate = useNavigate();
+  const [scanReport, setScanReport] = useState<ScanReport | null>(null);
+
+  useEffect(() => {
+    const loadScanReport = async () => {
+      try {
+        const reportString = await CookieManager.generatePrivacyReport();
+        const report = JSON.parse(reportString) as ScanReport;
+        setScanReport(report);
+      } catch (error) {
+        console.error('Failed to load scan report:', error);
+      }
+    };
+    loadScanReport();
+  }, []);
 
   const handleBack = () => {
     navigate('/');
@@ -16,6 +37,61 @@ export const CookiePolicy: React.FC = () => {
   const handleManageCookies = () => {
     CookieManager.clearConsent();
     navigate('/');
+  };
+
+  const formatScanReport = (report: ScanReport) => {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-medium text-white mb-2">Cookies</h3>
+          <div className="bg-black/20 rounded-lg p-4">
+            <div className="space-y-2">
+              {report.cookies.map((cookie, index) => {
+                const [name, value] = cookie.split('=');
+                return (
+                  <div key={index} className="grid grid-cols-2 gap-4">
+                    <span className="text-blue-400">{name?.trim()}</span>
+                    <span className="text-white/70">{value?.trim()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-medium text-white mb-2">IndexedDB Databases</h3>
+          <div className="bg-black/20 rounded-lg p-4">
+            <div className="space-y-2">
+              {report.databases.map((db, index) => (
+                <div key={index} className="text-white/70">
+                  {db.name} (version {db.version})
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-medium text-white mb-2">Local Storage</h3>
+          <div className="bg-black/20 rounded-lg p-4">
+            <div className="space-y-2">
+              {Object.entries(report.localStorage).map(([key, value], index) => (
+                <div key={index} className="grid grid-cols-2 gap-4">
+                  <span className="text-blue-400">{key}</span>
+                  <span className="text-white/70">{
+                    value.length > 50 ? value.substring(0, 50) + '...' : value
+                  }</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="text-sm text-white/40 italic">
+          Last scan: {new Date(report.timestamp).toLocaleString()}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -43,9 +119,7 @@ export const CookiePolicy: React.FC = () => {
         className="max-w-4xl mx-auto px-4 py-8"
       >
         <div className="prose prose-invert">
-          <section className="mb-8">
-            <p className="text-white/80">Last updated: January 07, 2025</p>
-            
+          <section className="mb-8">            
             <h2 className="text-2xl font-orbitron text-white mt-8 mb-4">Cookie Policy Overview</h2>
             <p className="text-white/80">
               This Cookie Policy explains how SWGOH TW Counter uses cookies and similar tracking 
@@ -89,23 +163,20 @@ export const CookiePolicy: React.FC = () => {
               </ul>
             </div>
 
-            <h2 className="text-2xl font-orbitron text-white mt-8 mb-4">Technical Storage Information</h2>
-            <p className="text-white/80 mb-4">
-              Our website uses different types of storage mechanisms:
-            </p>
-            <ul className="list-disc pl-6 text-white/80 space-y-2">
-              <li>HTTP Cookies: Traditional browser cookies</li>
-              <li>Local Storage: For persistent data storage</li>
-              <li>Session Storage: For temporary data storage</li>
-              <li>IndexedDB: For structured data storage</li>
-            </ul>
-
-            <h2 className="text-2xl font-orbitron text-white mt-8 mb-4">Managing Your Cookie Preferences</h2>
-            <p className="text-white/80 mb-4">
-              You can manage your cookie preferences at any time. Your choices will be saved and 
-              respected across our website. Essential cookies cannot be disabled as they are 
-              necessary for the website to function properly.
-            </p>
+            {/* Scan Report Section */}
+            {scanReport && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-8 p-6 bg-white/5 rounded-lg border border-white/10"
+              >
+                <h2 className="text-2xl font-orbitron text-white mb-4">Current Cookie Usage</h2>
+                <p className="text-white/70 mb-6">
+                  Below is a detailed report of all cookies and storage currently in use on this website:
+                </p>
+                {formatScanReport(scanReport)}
+              </motion.div>
+            )}
 
             <div className="mt-8 pt-8 border-t border-white/10">
               <button

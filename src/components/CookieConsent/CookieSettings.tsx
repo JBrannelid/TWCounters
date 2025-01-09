@@ -28,6 +28,11 @@ export const CookieSettings: React.FC<CookieSettingsProps> = ({ isOpen, onClose 
     }
   }, [isOpen]);
 
+  const [expandedCategory, setExpandedCategory] = React.useState<string | null>(null);
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategory(current => current === categoryId ? null : categoryId);
+  };
+  
   const handleSaveSettings = () => {
     const consent = {
       necessary: true,

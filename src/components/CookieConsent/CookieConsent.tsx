@@ -40,9 +40,9 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
   const scanForCookies = useCallback(() => {
     try {
       const existingCookies = CookieManager.scanCookies();
-      console.log('Detected storage items:', existingCookies);
+     // console.log('Detected storage items:', existingCookies);
     } catch (error) {
-      console.error('Error scanning cookies:', error);
+     // console.error('Error scanning cookies:', error);
     }
   }, []);
 

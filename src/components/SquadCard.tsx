@@ -1,11 +1,12 @@
-import { memo, useRef } from 'react';
+import { memo, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Trash2, ChevronDown, Plus } from 'lucide-react';
-import { Squad, Counter } from '@/types';
+import { Squad, Counter, Filters } from '@/types';
 import { GlassCard } from './ui/GlassCard';
 import { UnitImage } from './ui/UnitImage';
 import { VideoIndicator } from './ui/VideoIndicator';
 import { ErrorBoundary } from 'react-error-boundary';
+import { filterCounters } from './Utils/counterUtils';
 
 interface SquadCardProps {
   squad: Squad;
@@ -17,6 +18,7 @@ interface SquadCardProps {
   onViewDetails?: () => void;
   isFiltered?: boolean;
   onAddCounter?: (squad: Squad) => void;
+  filters: Filters;  // Lägg till denna rad
 }
 
 export const SquadCard = memo<SquadCardProps>(({
@@ -27,7 +29,8 @@ export const SquadCard = memo<SquadCardProps>(({
   isAdmin,
   onDeleteCounter,
   isFiltered = false,
-  onAddCounter
+  onAddCounter,
+  filters  
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +74,11 @@ export const SquadCard = memo<SquadCardProps>(({
       onSelect();
     }
   };
+
+  const filteredCounters = useMemo(() => {
+    if (!counters) return [];
+    return filterCounters(counters, filters);
+}, [counters, filters]);
 
   return (
     <ErrorBoundary 

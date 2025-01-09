@@ -17,6 +17,14 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   filters,
   children
 }) => {
+  // Check if any filter is active
+  const hasActiveFilters = 
+    filters.alignment !== null || 
+    filters.showTWOmicronOnly || 
+    filters.showHardCounters || // Added this check
+    filters.excludeGL ||        // Added this check
+    Boolean(filters.searchTerm);
+
   const buttonBaseClass = `
     flex-1 sm:flex-auto 
     flex items-center justify-center gap-2 
@@ -79,9 +87,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
         <button
           onClick={onOptionsClick}
           className={`${buttonBaseClass} ${
-            filters.alignment || filters.showTWOmicronOnly
-              ? activeClass
-              : inactiveClass
+            hasActiveFilters ? activeClass : inactiveClass
           }`}
           aria-expanded={filters.alignment !== null || filters.showTWOmicronOnly}
           aria-haspopup="dialog"

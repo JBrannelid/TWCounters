@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Users, RefreshCw } from 'lucide-react';
-import { Squad, Counter } from '@/types';
+import { Squad, Counter, Filters } from '@/types';
 import { SquadCard } from './SquadCard';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -10,10 +10,11 @@ interface SquadListProps {
   filteredSquads: Squad[];
   selectedSquadId: string | null;
   onSelectSquad: (id: string | null) => void;
-  getCounters: (id: string) => Counter[];
+  getCounters: (id: string, type: 'squad') => Counter[];
   isAdmin?: boolean;
   onDeleteCounter?: (id: string) => void;
   onViewDetails?: () => void;
+  filters: Filters;
 }
 
 export const SquadList: React.FC<SquadListProps> = ({
@@ -24,7 +25,8 @@ export const SquadList: React.FC<SquadListProps> = ({
   getCounters,
   isAdmin,
   onDeleteCounter,
-  onViewDetails
+  onViewDetails,
+  filters  // Lägg till denna
 }) => {
   const handleSquadSelect = (squadId: string) => {
     if (selectedSquadId === squadId) {
@@ -34,46 +36,52 @@ export const SquadList: React.FC<SquadListProps> = ({
     }
   };
 
-  const renderedSquads = useMemo(() => 
-    filteredSquads.map((squad, index) => (
-      <motion.div
-        key={squad.id}
-        className={`card-wrapper ${selectedSquadId === squad.id ? 'expanded-card' : ''}`}
-        layout
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3 }}
-        style={{ 
-          gridColumn: `span ${selectedSquadId === squad.id ? 1 : 1}`,
-          zIndex: selectedSquadId === squad.id ? 50 : 1
-        }}
-        role="listitem"
-        aria-selected={selectedSquadId === squad.id}
-        aria-label={`Squad ${squad.name}`}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleSquadSelect(squad.id);
-          }
-        }}
-      >
-        <SquadCard
-          squad={squad}
-          isSelected={selectedSquadId === squad.id}
-          onSelect={() => handleSquadSelect(squad.id)}
-          counters={getCounters(squad.id)}
-          isFiltered={true}
-          isAdmin={isAdmin}
-          onDeleteCounter={onDeleteCounter}
-          onViewDetails={onViewDetails}
-        />
-      </motion.div>
-    )),
-    [filteredSquads, selectedSquadId, getCounters, isAdmin, onDeleteCounter, onViewDetails]
-  );
-
+  const renderedSquads = useMemo(() => {
+    //console.log('Filtered Squads:', filteredSquads);
+    return filteredSquads.map((squad) => {
+      const counters = getCounters(squad.id, 'squad');
+      //console.log('Counters for squad:', squad.name, counters);
+  
+      return (
+        <motion.div
+          key={squad.id}
+          className={`card-wrapper ${selectedSquadId === squad.id ? 'expanded-card' : ''}`}
+          layout
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          style={{ 
+            gridColumn: `span ${selectedSquadId === squad.id ? 1 : 1}`,
+            zIndex: selectedSquadId === squad.id ? 50 : 1
+          }}
+          role="listitem"
+          aria-selected={selectedSquadId === squad.id}
+          aria-label={`Squad ${squad.name}`}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleSquadSelect(squad.id);
+            }
+          }}
+        >
+          <SquadCard
+            squad={squad}
+            isSelected={selectedSquadId === squad.id}
+            onSelect={() => handleSquadSelect(squad.id)}
+            counters={counters}
+            isFiltered={true}
+            isAdmin={isAdmin}
+            onDeleteCounter={onDeleteCounter}
+            onViewDetails={onViewDetails}
+            filters={filters}
+          />
+        </motion.div>
+      );
+    });
+  }, [filteredSquads, selectedSquadId, getCounters, isAdmin, onDeleteCounter, onViewDetails]);
+  
   // Förbättrat felmeddelande för när inga squads finns
   if (!squads || squads.length === 0) {
     return (

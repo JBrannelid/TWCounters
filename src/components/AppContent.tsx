@@ -1,5 +1,5 @@
-// 1. Copy these imports from App.tsx
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { Helmet } from 'react-helmet-async'; // Importera Helmet
 import { Squad, Fleet, Counter, Filters, FilterKey } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HeroSection } from '@/components/layouts/HeroSection';
@@ -20,7 +20,9 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import { ensureFirebaseInitialized } from '@/lib/firebase';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useNavigate } from 'react-router-dom';
-
+import { AnalyticsService } from '@/services/analyticsService';
+import { CookieScanService } from '@/services/CookieScanService';
+import { filterCounters } from './Utils/counterUtils';
 
 const AdminDashboard = lazy(() => 
     import('@/components/admin/AdminDashboard').then(module => ({
@@ -40,9 +42,9 @@ const AdminDashboard = lazy(() =>
     }))
   );
 
-function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet)[] {
+  function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet)[] {
     if (!Array.isArray(units)) return [];
-    
+      
     return units.filter(unit => {
       // Search filter
       if (filters.searchTerm) {
@@ -50,7 +52,7 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
         const nameMatch = unit.name.toLowerCase().includes(searchLower);
         
         if ('characters' in unit) {
-          // For squads, search in character names
+          // För squads, sök i character names
           const characterMatch = unit.characters.some(char => 
             char.name.toLowerCase().includes(searchLower)
           );
@@ -58,7 +60,7 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
           
           if (!nameMatch && !characterMatch && !leaderMatch) return false;
         } else if ('capitalShip' in unit) {
-          // For fleets, search in ship names
+          // För fleets, sök i ship names
           const shipMatch = unit.startingLineup.some(ship => 
             ship.name.toLowerCase().includes(searchLower)
           ) || (unit.capitalShip && unit.capitalShip.name.toLowerCase().includes(searchLower));
@@ -83,9 +85,9 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
     });
   }
 
-  
   export const AppContent: React.FC = () => {
     const { logUserAction } = useAnalytics();
+    const [performanceLogged, setPerformanceLogged] = useState(false);
     const { isOnline, isLoading: firebaseLoading } = useFirebase();
     const { isAdmin, loading: authLoading, logout } = useAuth();
     const [error, setError] = useState<string | null>(null);
@@ -139,7 +141,7 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
           await ensureFirebaseInitialized();
           
           // Hämta all data parallellt
-          const { squads, fleets, counters } = await FirebaseService.syncAllData();
+          const { squads = [], fleets = [], counters = [] } = await FirebaseService.syncAllData();
           
           setSquads(squads);
           setFleets(fleets);
@@ -156,6 +158,24 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
       initializeApp();
     }, []);
         
+      // Dynamisk uppdatering av meta-information beroende på aktuell vy
+      const getTitle = () => {
+        if (activeView === 'squads') {
+          return "Best SWGOH Squads for Territory Wars";
+        } else if (activeView === 'fleets') {
+          return "Best SWGOH Fleets for Territory Wars";
+        }
+        return "SWGOH Territory Wars Counter Tool";
+      };
+
+      const getDescription = () => {
+        if (activeView === 'squads') {
+          return "Explore the best squad compositions to counter teams in SWGOH Territory Wars.";
+        } else if (activeView === 'fleets') {
+          return "Explore the best fleet compositions to counter teams in SWGOH Territory Wars.";
+        }
+        return "Find the best counter teams for SWGOH Territory Wars and enhance your strategy with our tool.";
+      };
       // Check if we're on the cookie policy page
       const isCookiePolicyPage = window.location.pathname === '/cookie-policy';
   
@@ -171,30 +191,131 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
         );
       }
     
+      useEffect(() => {
+        try {
+          // Mät sidladdningstid
+          const loadTime = window.performance.now();
+          
+          // Logga sidvisning och prestanda
+          const analytics = AnalyticsService.getInstance();
+          analytics.logPageView('Home Page');
+          analytics.logAppPerformance(loadTime);
+          
+          // Logga när komponenten monteras
+          analytics.logUserInteraction('app_content_mounted');
+          
+          return () => {
+            // Logga när komponenten unmountas
+            analytics.logUserInteraction('app_content_unmounted');
+          };
+        } catch (error) {
+          console.error('Analytics error:', error);
+        }
+      }, []);
+
+      useEffect(() => {
+        try {
+          const analytics = AnalyticsService.getInstance();
+          
+          // Logga besökarinformation
+          analytics.logVisitorInfo();
+          
+          // Logga sessiondata
+          analytics.logSessionData();
+    
+          // Sätt upp prestandamätning efter att sidan har laddats
+          if (!performanceLogged) {
+            window.addEventListener('load', () => {
+              // Vänta lite så att alla prestandamätningar är tillgängliga
+              setTimeout(() => {
+                analytics.logPerformanceMetrics();
+                analytics.logResourceMetrics();
+                setPerformanceLogged(true);
+              }, 0);
+            });
+          }
+    
+          // Sätt upp intervallmätning för användarengagemang
+          const engagementInterval = setInterval(() => {
+            analytics.logUserInteraction('user_engagement', {
+              time_spent: Math.floor((Date.now() - performance.timeOrigin) / 1000)
+            });
+          }, 60000); // Var 60:e sekund
+    
+          return () => {
+            clearInterval(engagementInterval);
+          };
+        } catch (error) {
+          console.error('Analytics error:', error);
+        }
+      }, [performanceLogged]);
+      
+      useEffect(() => {
+        if (process.env.NODE_ENV === 'production') {
+          try {
+            // Vänta med analytics tills Firebase är initialiserad
+            const loadAnalytics = async () => {
+              await ensureFirebaseInitialized();
+              const analytics = AnalyticsService.getInstance();
+              analytics.logPageView('Home Page');
+              analytics.logAppPerformance(window.performance.now());
+            };
+            
+            loadAnalytics().catch(error => {
+              console.warn('Analytics failed:', error);
+            });
+          } catch (error) {
+            console.warn('Analytics disabled:', error);
+          }
+        }
+      }, []);
+      
+      // Separat useEffect för cookie scanning
+      useEffect(() => {
+        if (process.env.NODE_ENV === 'development') {
+          const scanningEnabled = true; // Temporärt inaktiverad
+          if (scanningEnabled) {
+            try {
+              const cleanup = CookieScanService.startPeriodicScanning();
+              return () => {
+                if (cleanup) cleanup();
+                CookieScanService.stopScanning();
+              };
+            } catch (error) {
+              console.warn('Cookie scanning disabled:', error);
+            }
+          }
+        }
+      }, []);
+
     // Filter the units based on current filters
     const filteredSquads = activeView === 'squads' ? filterUnits(squads, filters) as Squad[] : [];
     const filteredFleets = activeView === 'fleets' ? filterUnits(fleets, filters) as Fleet[] : [];
   
     // Get counters for a specific unit
-    const getCountersForUnit = useCallback((unitId: string, type: 'squad' | 'fleet'): Counter[] => {
-      if (!counters || !unitId) return [];
-      
-      return counters.filter(counter => {
-        if (type === 'squad') {
-          const isTargetSquad = counter?.targetSquad?.id === unitId;
-          const isCounterSquad = counter?.counterSquad?.id === unitId;
-          return isTargetSquad || isCounterSquad;
-        } else {
-          const isTargetFleet = counter?.targetSquad?.id === unitId;
-          const isCounterFleet = counter?.counterSquad?.id === unitId;
-          const isTargetCapitalShip = 'capitalShip' in counter.targetSquad && 
-            counter.targetSquad.capitalShip?.id === unitId;
-          
-          return isTargetFleet || isCounterFleet || isTargetCapitalShip;
+    const getCounters = useCallback((defenseId: string, type: 'squad' | 'fleet'): Counter[] => {
+      if (!counters || !Array.isArray(counters) || !defenseId) {
+        return [];
+      }
+    
+      const relevantCounters = counters.filter(counter => {
+        if (!counter || !counter.targetSquad || !counter.counterSquad) {
+          return false;
         }
+    
+        const isTargetDefense = counter.targetSquad?.id === defenseId;
+        const isCounterDefense = counter.counterSquad?.id === defenseId;
+        const isTargetCapitalShip = type === 'fleet' && 
+          'capitalShip' in counter.targetSquad && 
+          counter.targetSquad.capitalShip?.id === defenseId;
+    
+        return isTargetDefense || isCounterDefense || isTargetCapitalShip;
       });
-    }, [counters]);
-  
+    
+      // Filtrera resultaten
+      return filterCounters(relevantCounters, filters);
+    }, [counters, filters]);
+    
     // Save data when it changes
     useEffect(() => {
       if (!isLoading && hasUnsavedChanges) {
@@ -337,7 +458,6 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
           console.error('Error updating squad:', error);
         }
       },
-  
   
       onDeleteSquad: async (id: string) => {
         if (!isOnline) {
@@ -499,7 +619,6 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
       </div>
     );
   }
-  
     // Error handling
     if (error) {
       return (
@@ -525,6 +644,10 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
       );
     }
   
+    function getCountersForUnit(id: string, arg1: string): Counter[] {
+      throw new Error('Function not implemented.');
+    }
+
     return (
         <Layout isAdmin={isAdmin} onLogout={handleAdminLogout} onAdminClick={onAdminClick}>
         <CookieConsent 
@@ -534,7 +657,7 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
         <div className="min-h-screen bg-space-black text-white">
           {!isOnline && (
             <div className="fixed top-0 left-0 right-0 bg-yellow-500/90 text-black py-2 px-4 text-center z-50">
-              Du är offline. Ändringar kommer att synkroniseras när du återansluter.
+              You are offline. Changes will be synchronized when you reconnect.
             </div>
           )}
           <div className="min-h-screen bg-space-gradient bg-fixed">
@@ -546,6 +669,12 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
+                 {/* Dynamisk titel och meta-information via Helmet */}
+                <Helmet>
+                  <title>{getTitle()}</title>
+                  <meta name="description" content={getDescription()} />
+                  <meta name="keywords" content="SWGOH, Territory Wars, Counter Tool, squads, fleets" />
+                </Helmet>
                   <HeroSection>
                     <SearchPanel
                       activeView={activeView}
@@ -599,9 +728,10 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
                               filteredSquads={filteredSquads}
                               selectedSquadId={selectedId}
                               onSelectSquad={setSelectedId}
-                              getCounters={(id) => getCountersForUnit(id, 'squad')}
+                              getCounters={getCounters}  // Notera att vi använder funktionen direkt här
                               isAdmin={isAdmin}
                               onDeleteCounter={handleDeleteCounter}
+                              filters={filters}
                               onViewDetails={() => {}}
                             />
                           ) : (
@@ -610,9 +740,10 @@ function filterUnits(units: Squad[] | Fleet[], filters: Filters): (Squad | Fleet
                               filteredFleets={filteredFleets}
                               selectedFleetId={selectedId}
                               onSelectFleet={setSelectedId}
-                              getCounters={(id) => getCountersForUnit(id, 'fleet')}
+                              getCounters={getCounters}  // Och här
                               isAdmin={isAdmin}
                               onDeleteCounter={handleDeleteCounter}
+                              filters={filters}
                               onViewDetails={() => {}}
                             />
                           )}
