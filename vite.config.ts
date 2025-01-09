@@ -34,6 +34,10 @@ export default defineConfig(({ mode }) => {
 
   const config: UserConfig = {
     base: '/',
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(mode),
+      __VUE_PROD_DEVTOOLS__: false,
+    },
     plugins: [
       react(),
       {
@@ -97,7 +101,8 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
-      cssCodeSplit: false,
+      cssCodeSplit: true,
+      cssMinify: true,
       sourcemap: !isProduction,
       minify: isProduction ? 'esbuild' : false,
       target: 'es2020',
@@ -111,17 +116,25 @@ export default defineConfig(({ mode }) => {
           chunkFileNames: 'assets/[name]-[hash].js',
           entryFileNames: 'assets/[name]-[hash].js',
           assetFileNames: (assetInfo) => {
-            const name = assetInfo?.name;
-            if (!name) {
+            if (!assetInfo?.name) {
               return 'assets/[hash][extname]';
             }
+            
+            const name = assetInfo.name;
             const ext = name.split('.').pop();
+            
             if (ext && /png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(ext)) {
               return 'assets/images/[name]-[hash][extname]';
             }
+            
             if (ext && /woff2?|eot|ttf|otf/i.test(ext)) {
               return 'assets/fonts/[name]-[hash][extname]';
             }
+            
+            if (name.endsWith('.css')) {
+              return 'assets/css/[name]-[hash][extname]';
+            }
+            
             return 'assets/[name]-[hash][extname]';
           }
         }

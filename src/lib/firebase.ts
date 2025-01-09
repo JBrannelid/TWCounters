@@ -40,7 +40,22 @@ if (!firebaseConfig.projectId) throw new Error('Firebase Project ID is missing')
 if (!firebaseConfig.storageBucket) throw new Error('Firebase Storage Bucket is missing');
 if (!firebaseConfig.messagingSenderId) throw new Error('Firebase Messaging Sender ID is missing');
 if (!firebaseConfig.appId) throw new Error('Firebase App ID is missing');
-if (!firebaseConfig.measurementId) {console.warn('Firebase Measurement ID is missing. Analytics will not work.');}
+if (!firebaseConfig.measurementId) {
+  console.warn('Firebase Measurement ID saknas. Analytics kommer att vara inaktiverat.');
+}
+
+// Initialisera Firebase app först
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
+// Sedan initiera analytics om measurementId finns
+if (firebaseConfig.measurementId) {
+  try {
+    const analytics = getAnalytics(app);
+    console.log('Analytics initialiserat framgångsrikt');
+  } catch (error) {
+    console.warn('Kunde inte initiera analytics:', error);
+  }
+}
 
 class FirebaseClient {
   private static instance: FirebaseClient;

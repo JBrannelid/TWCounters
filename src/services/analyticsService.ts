@@ -14,6 +14,9 @@ export class AnalyticsService {
       if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
         this.analytics = getAnalytics(app);
         this.initialized = true;
+      } else {
+        this.initialized = false;
+        console.warn('Analytics not initialized - development mode or missing measurementId');
       }
     } catch (error) {
       console.warn('Analytics initialization failed:', error);

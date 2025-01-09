@@ -16,7 +16,7 @@ export function filterCounters(counters: Counter[], filters: Filters): Counter[]
 
         // Kolla om ledaren är en GL
         if (squad.leader?.isGalacticLegend) {
-          console.log(`Excluding counter due to GL leader: ${squad.leader.name}`);
+          //console.log(`Excluding counter due to GL leader: ${squad.leader.name}`);
           return false;
         }
 
