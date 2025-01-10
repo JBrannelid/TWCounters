@@ -39,6 +39,23 @@ export const CookiePolicy: React.FC = () => {
     navigate('/');
   };
 
+  const formatStorageValue = (value: string): string => {
+    if (typeof value !== 'string') return 'N/A';
+    
+    // Om värdet är för långt, trunkera det på ett snyggt sätt
+    if (value.length > 50) {
+      try {
+        // Försök parsa som JSON för bättre formatering
+        const parsed = JSON.parse(value);
+        return JSON.stringify(parsed, null, 2).slice(0, 100) + '...';
+      } catch {
+        // Om det inte är JSON, trunkera det enkelt
+        return value.slice(0, 50) + '...';
+      }
+    }
+    return value;
+  };
+
   const formatScanReport = (report: ScanReport) => {
     return (
       <div className="space-y-6">
@@ -73,15 +90,15 @@ export const CookiePolicy: React.FC = () => {
         </div>
 
         <div>
-          <h3 className="text-lg font-medium text-white mb-2">Local Storage</h3>
+        <h3 className="text-lg font-medium text-white mb-2">Local Storage</h3>
           <div className="bg-black/20 rounded-lg p-4">
             <div className="space-y-2">
               {Object.entries(report.localStorage).map(([key, value], index) => (
-                <div key={index} className="grid grid-cols-2 gap-4">
-                  <span className="text-blue-400">{key}</span>
-                  <span className="text-white/70">{
-                    value.length > 50 ? value.substring(0, 50) + '...' : value
-                  }</span>
+                <div key={index} className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2 hover:bg-white/5 rounded-lg transition-colors">
+                  <span className="text-blue-400 font-medium break-all">{key}</span>
+                  <span className="text-white/70 break-all font-mono text-sm">
+                    {formatStorageValue(value)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -193,3 +210,5 @@ export const CookiePolicy: React.FC = () => {
     </div>
   );
 };
+
+export default CookiePolicy;

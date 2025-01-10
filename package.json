@@ -18,6 +18,7 @@
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "date-fns": "^4.1.0",
     "dompurify": "^3.0.8",
     "firebase": "^10.8.0",
     "focus-trap": "^7.5.4",

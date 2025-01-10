@@ -9,7 +9,6 @@ import {
 import { 
   Firestore, 
   connectFirestoreEmulator,
-  enableIndexedDbPersistence,
   initializeFirestore,
   CACHE_SIZE_UNLIMITED,
   persistentLocalCache,
@@ -20,8 +19,7 @@ import {
   FirebaseStorage, 
   connectStorageEmulator 
 } from 'firebase/storage';
-import { getAnalytics, Analytics, initializeAnalytics } from 'firebase/analytics';
-import { m } from 'framer-motion';
+import { getAnalytics, Analytics, isSupported } from 'firebase/analytics';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -30,7 +28,7 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || null 
 };
 
 // Validera miljövariabler
@@ -40,22 +38,6 @@ if (!firebaseConfig.projectId) throw new Error('Firebase Project ID is missing')
 if (!firebaseConfig.storageBucket) throw new Error('Firebase Storage Bucket is missing');
 if (!firebaseConfig.messagingSenderId) throw new Error('Firebase Messaging Sender ID is missing');
 if (!firebaseConfig.appId) throw new Error('Firebase App ID is missing');
-if (!firebaseConfig.measurementId) {
-  console.warn('Firebase Measurement ID saknas. Analytics kommer att vara inaktiverat.');
-}
-
-// Initialisera Firebase app först
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-
-// Sedan initiera analytics om measurementId finns
-if (firebaseConfig.measurementId) {
-  try {
-    const analytics = getAnalytics(app);
-    console.log('Analytics initialiserat framgångsrikt');
-  } catch (error) {
-    console.warn('Kunde inte initiera analytics:', error);
-  }
-}
 
 class FirebaseClient {
   private static instance: FirebaseClient;
@@ -63,61 +45,83 @@ class FirebaseClient {
   private _auth: Auth;
   private _db: Firestore;
   private _storage: FirebaseStorage;
-  private _analytics: Analytics; // Lägg till Analytics här
+  private _analytics: Analytics | null = null;
   private initialized: boolean = false;
   private initError: Error | null = null;
   private initializationPromise: Promise<void>;
 
   private constructor() {
     this.app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    this._auth = getAuth(this.app);
+
+    // Initialize Firestore with optimized settings
     this._db = initializeFirestore(this.app, {
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
-        cacheSizeBytes: CACHE_SIZE_UNLIMITED, // Optional: Unlimited cache size
+        cacheSizeBytes: CACHE_SIZE_UNLIMITED
       }),
-      experimentalForceLongPolling: false, // Optional: Adjust based on your setup
-    });
+      experimentalAutoDetectLongPolling: true
+    });    
+    
+    this._auth = getAuth(this.app);
     this._storage = getStorage(this.app);
     
-    // Enhetlig analytics-initialisering
-    this._analytics = typeof window !== 'undefined' && process.env.NODE_ENV === 'production'
-      ? initializeAnalytics(this.app)
-      : getAnalytics(this.app);
+    // Lazy initialize analytics only in production
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+      this.initializeAnalytics();
+    }
 
     this.initializationPromise = this.initialize();
 
-    this.loadScript('https://apis.google.com/js/api.js', 'din-nonce-sträng')
-  .then(() => console.log('Google API script loaded successfully'))
-  .catch((error) => console.error('Failed to load Google API script:', error));
-
-    // Initialize AnalyticsService here
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-      AnalyticsService.initialize(this.app);}
+    // Initialize script loading with improved error handling
+    this.loadScript('https://apis.google.com/js/api.js')
+      .then(() => console.log('Google API script loaded successfully'))
+      .catch((error) => console.warn('Google API script load warning:', error));
 
     if (process.env.NODE_ENV === 'development') {
       this.connectToEmulators();
     }
-}
+  }
 
-private loadScript(src: string, nonce?: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) {
-      resolve(); // Skriptet finns redan
-      return;
+  private async initializeAnalytics(): Promise<void> {
+    try {
+      const analyticsSupported = await isSupported();
+      if (analyticsSupported) {
+        this._analytics = getAnalytics(this.app);
+        AnalyticsService.initialize(this.app);
+      }
+    } catch (error) {
+      console.warn('Analytics initialization warning:', error);
     }
+  }
 
-    const script = document.createElement('script');
-    script.src = src;
-    script.async = true;
-    if (nonce) script.nonce = nonce;
+  private loadScript(src: string, nonce?: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
 
-    script.onload = () => resolve();
-    script.onerror = (error) => reject(new Error(`Failed to load script: ${src}`));
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      if (nonce) script.nonce = nonce;
 
-    document.head.appendChild(script);
-  });
-}
+      const timeoutId = setTimeout(() => {
+        reject(new Error(`Script load timeout: ${src}`));
+      }, 10000); // 10 second timeout
+
+      script.onload = () => {
+        clearTimeout(timeoutId);
+        resolve();
+      };
+      script.onerror = (error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      };
+
+      document.head.appendChild(script);
+    });
+  }
 
   private async initialize(): Promise<void> {
     try {
@@ -132,18 +136,17 @@ private loadScript(src: string, nonce?: string): Promise<void> {
 
   private async setupPersistence(): Promise<void> {
     try {
-      await initializeFirestore(this.app, {
-        localCache: persistentLocalCache({
-          tabManager: persistentMultipleTabManager()
-        })
-      });
-      console.log('Offline persistence enabled');
-    } catch (error) {
-      if (error instanceof Error && 'code' in error) {
-        const firebaseError = error as { code: string };
-        if (firebaseError.code === 'failed-precondition') {
-          console.debug('Multiple tabs open, persistence enabled in another tab.');
-        }
+      // Persistence is configured through initializeFirestore
+      // Let's just verify if IndexedDB is available as a basic check
+      if (!window.indexedDB) {
+        console.warn('Persistence may not be fully supported in this browser (IndexedDB not available)');
+        return;
+      }
+
+      console.debug('Local persistence configured through initializeFirestore');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.warn('Persistence setup warning:', error.message);
       }
     }
   }
@@ -153,9 +156,9 @@ private loadScript(src: string, nonce?: string): Promise<void> {
       this._auth,
       (user) => {
         if (user) {
-          //console.log('User is signed in:', user.uid);
+          console.debug('Auth state: signed in');
         } else {
-          //console.log('User is signed out');
+          console.debug('Auth state: signed out');
         }
       },
       (error) => {
@@ -185,29 +188,25 @@ private loadScript(src: string, nonce?: string): Promise<void> {
   }
 
   public get auth(): Auth {
-    if (this.initError) throw this.initError;
+    if (!this.initialized && this.initError) throw this.initError;
     return this._auth;
   }
 
   public get db(): Firestore {
-    if (this.initError) throw this.initError;
+    if (!this.initialized && this.initError) throw this.initError;
     return this._db;
   }
 
   public get storage(): FirebaseStorage {
-    if (this.initError) throw this.initError;
+    if (!this.initialized && this.initError) throw this.initError;
     return this._storage;
   }
 
-  // Getter for Analytics
-  get analytics(): Analytics {
-    if (!this._analytics) {
-      throw new Error('Analytics not initialized');
-    }
+  public get analytics(): Analytics | null {
     return this._analytics;
   }
 
-  get isAnalyticsAvailable(): boolean {
+  public get isAnalyticsAvailable(): boolean {
     return this._analytics !== null;
   }
 
@@ -229,28 +228,26 @@ private loadScript(src: string, nonce?: string): Promise<void> {
   }
 }
 
-// Skapa och exportera en singleton-instans
+// Create and export singleton instance
 const firebaseClient = FirebaseClient.getInstance();
 
-// Exportera service-instanser
+// Export service instances
 export const auth = firebaseClient.auth;
 export const db = firebaseClient.db;
 export const storage = firebaseClient.storage;
 
-// Exportera hjälpfunktioner
+// Export helper functions
 export const ensureFirebaseInitialized = () => firebaseClient.waitForInitialization();
 export const reconnectFirebase = () => firebaseClient.reconnect();
 
 export default firebaseClient;
 
+// Safely export analytics
 export const getFirebaseAnalytics = (): Analytics | null => {
   try {
-    if (typeof window === 'undefined' || process.env.NODE_ENV !== 'production') {
-      return null;
-    }
     return firebaseClient.isAnalyticsAvailable ? firebaseClient.analytics : null;
   } catch (error) {
-    console.warn('Analytics access failed:', error);
+    console.warn('Analytics access warning:', error);
     return null;
   }
 };

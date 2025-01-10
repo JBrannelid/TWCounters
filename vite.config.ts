@@ -109,9 +109,20 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            vendor: ['react', 'react-dom'],
-            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-            ui: ['@radix-ui/react-tabs', 'framer-motion', 'lucide-react']
+            // Core app dependencies
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            // Firebase chunks
+            'firebase-core': ['firebase/app', 'firebase/auth'],
+            'firebase-features': [
+              'firebase/firestore', 
+              'firebase/storage', 
+              'firebase/analytics'
+            ],
+            // UI related chunks
+            'ui-core': ['@radix-ui/react-tabs', 'framer-motion'],
+            'ui-icons': ['lucide-react'],
+            // Utility libraries
+            'utils': ['lodash', 'date-fns']
           },
           chunkFileNames: 'assets/[name]-[hash].js',
           entryFileNames: 'assets/[name]-[hash].js',
@@ -142,7 +153,8 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1000
     },
     optimizeDeps: {
-      include: ['react', 'react-dom']
+      include: ['react', 'react-dom'],
+      exclude: ['firebase']
     },
     preview: {
       port: 5173,

@@ -12,6 +12,11 @@ export class AnalyticsService {
   private constructor(app: FirebaseApp) {
     try {
       if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+        const analyticsConfig = {
+          config: {
+            measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+          }
+        };
         this.analytics = getAnalytics(app);
         this.initialized = true;
       } else {

@@ -823,3 +823,5 @@ const AdminDashboard = lazy(() =>
     </Layout>
     );
   }
+
+  export default AppContent;

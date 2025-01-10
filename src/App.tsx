@@ -9,14 +9,15 @@ import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { HelmetProvider } from 'react-helmet-async';
 import ErrorBoundary from './components/ErrorBoundary';
-import { AppContent } from '@/components/AppContent';
 
 // Lazy load components
-const CookiePolicyPage = React.lazy(() => 
-  import('@/components/CookieConsent/CookiePolicy').then((module) => ({
-    default: module.CookiePolicy
-  }))
-);
+const AppContent = React.lazy(() => import('./components/AppContent').then(module => ({
+  default: module.AppContent
+})));
+
+const CookiePolicy = React.lazy(() => import('./components/CookieConsent/CookiePolicy').then(module => ({
+  default: module.CookiePolicy
+})));
 
 const App: React.FC = () => {
   return (
@@ -60,7 +61,7 @@ const App: React.FC = () => {
                     >
                       <Routes>
                         <Route path="/" element={<AppContent />} />
-                        <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+                        <Route path="/cookie-policy" element={<CookiePolicy />} />
                       </Routes>
                     </Suspense>
                   </CounterProvider>
