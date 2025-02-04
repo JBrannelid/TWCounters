@@ -1,65 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <style nonce="jpVPa9mEsth4EDdPVdwyrQ==">:root {
-    --color-space-black: #0A0D14;
-    --color-space-darker: #12151C;
-    --color-space-dark: #1A1E27;
-  }
-  
-  html {
-    height: 100%;
-    height: -webkit-fill-available;
-    overscroll-behavior-y: none;
-    overflow-x: hidden;
-  }
-  
-  body {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: var(--color-space-black);
-    color: white;
-    font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  
-  #root {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  @font-face {
-  font-family: 'Orbitron';
-  font-display: swap;
-  src: url('/fonts/Orbitron-Regular.ttf') format('truetype');
-  }
-  
-  @font-face {
-    font-family: 'Titillium Web';
-    font-display: swap;
-    src: url('/fonts/TitilliumWeb-Regular.ttf') format('truetype');
-  }
-    </style>
-
-      <!-- Preload important fonts -->
-      <link 
-      rel="preload" 
-      href="/fonts/Orbitron-Regular.ttf" 
-      as="font" 
-      type="font/ttf" 
-      crossorigin="anonymous" 
-    />
-    <link 
-      rel="preload" 
-      href="/fonts/TitilliumWeb-Regular.ttf" 
-      as="font" 
-      type="font/ttf" 
-      crossorigin="anonymous" 
-    />
+    <!-- Preload importent fonts -->
+    <link rel="preload" href="/fonts/Orbitron-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+    <link rel="preload" href="/fonts/TitilliumWeb-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+    <link rel="preload" href="data:application/octet-stream;base64,aW1wb3J0IHsgU3RyaWN0TW9kZSB9IGZyb20gJ3JlYWN0JzsNCmltcG9ydCB7IGNyZWF0ZVJvb3QgfSBmcm9tICdyZWFjdC1kb20vY2xpZW50JzsNCmltcG9ydCAnLi9zdHlsZXMvY3JpdGljYWwuY3NzJzsNCmltcG9ydCAnLi9pbmRleC5jc3MnOw0KaW1wb3J0IEFwcCBmcm9tICcuL0FwcCc7DQoNCmNvbnN0IGNvbnRhaW5lciA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyb290Jyk7DQppZiAoIWNvbnRhaW5lcikgdGhyb3cgbmV3IEVycm9yKCdGYWlsZWQgdG8gZmluZCB0aGUgcm9vdCBlbGVtZW50Jyk7DQoNCmNvbnN0IHJvb3QgPSBjcmVhdGVSb290KGNvbnRhaW5lcik7DQoNCnJvb3QucmVuZGVyKA0KICA8U3RyaWN0TW9kZT4NCiAgICA8QXBwIC8+DQogIDwvU3RyaWN0TW9kZT4NCik7" as="script" />
 
     <title>SWGOH Territory Wars Best Counter Tool | TW Counters Tool</title>
 
@@ -89,17 +34,19 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="manifest" href="/site.webmanifest" />
 
+    <!-- Favicon för olika format -->
     <link rel="icon" href="data:," />
-    <!-- Standard Favicon -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
     <!-- Favicon för olika storlekar -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
     <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <!-- Structured Data (Schema Markup) -->
-    <script nonce="jpVPa9mEsth4EDdPVdwyrQ==" type="application/ld+json">
+    <script nonce="VNOk5ldmj193mK+yljYe1w==" type="application/ld+json">
       {
         "@context": "http://schema.org",
         "@type": "WebSite",
@@ -123,13 +70,13 @@
 
     <!-- CSP config-->
       
-    <script nonce="jpVPa9mEsth4EDdPVdwyrQ==" type="module" crossorigin src="/assets/index-a2tUKkib.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/react-vendor-D3PVcPov.js">
-    <link rel="modulepreload" crossorigin href="/assets/ui-core-DV-dpoR0.js">
+    <script nonce="VNOk5ldmj193mK+yljYe1w==" type="module" crossorigin src="/assets/index-jnQUVsp8.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/react-vendor-DPW29TBp.js">
+    <link rel="modulepreload" crossorigin href="/assets/ui-core-Cs1JyTWA.js">
     <link rel="modulepreload" crossorigin href="/assets/firebase-core-K8OHrWqs.js">
     <link rel="modulepreload" crossorigin href="/assets/firebase-features-B2Q9gLlJ.js">
-    <link rel="modulepreload" crossorigin href="/assets/ui-icons-CZxz-uQ3.js">
-    <link rel="stylesheet" nonce="jpVPa9mEsth4EDdPVdwyrQ==" crossorigin href="/assets/css/index-b1e6J-3s.css">
+    <link rel="modulepreload" crossorigin href="/assets/ui-icons-CDxCj_Tm.js">
+    <link rel="stylesheet" nonce="VNOk5ldmj193mK+yljYe1w==" crossorigin href="/assets/css/index-BA6z5Rdh.css">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://www.googletagmanager.com https://apis.google.com; script-src-elem 'self' 'unsafe-inline' https://www.googletagmanager.com https://apis.google.com; connect-src 'self' https://*.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com https://region1.google-analytics.com; frame-src 'self' https://apis.google.com https://swgoh-tw-guide.firebaseapp.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://firebasestorage.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; base-uri 'self'; form-action 'self'; manifest-src 'self'">
 </head>
 
