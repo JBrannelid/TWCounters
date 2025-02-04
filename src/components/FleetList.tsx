@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Ship, RefreshCw } from 'lucide-react';
 import { Fleet, Counter, Filters } from '@/types';
@@ -13,20 +13,23 @@ interface FleetListProps {
   getCounters: (id: string, type: 'fleet') => Counter[];
   isAdmin?: boolean;
   onDeleteCounter?: (id: string) => void;
+  onEditCounter?: (counter: Counter) => void;  
   onViewDetails?: () => void;
   filters: Filters;
 }
 
-export const FleetList: React.FC<FleetListProps> = ({
-  fleets,
-  filteredFleets,
-  selectedFleetId,
-  onSelectFleet,
-  getCounters,
-  isAdmin,
-  onDeleteCounter,
-  onViewDetails,
-}) => {
+    export const FleetList: React.FC<FleetListProps> = ({
+      fleets,
+      filteredFleets,
+      selectedFleetId,
+      onSelectFleet,
+      getCounters,
+      isAdmin,
+      onDeleteCounter,
+      onEditCounter,   
+      onViewDetails,   
+      filters
+    }) => {
   const handleFleetSelect = (fleetId: string) => {
     if (selectedFleetId === fleetId) {
       onSelectFleet(null);
@@ -34,6 +37,7 @@ export const FleetList: React.FC<FleetListProps> = ({
       onSelectFleet(fleetId);
     }
   };
+
 
   const renderedFleets = useMemo(
     () =>
@@ -53,30 +57,23 @@ export const FleetList: React.FC<FleetListProps> = ({
           role="listitem"
           aria-selected={selectedFleetId === fleet.id}
           aria-label={`Fleet ${fleet.name}`}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              handleFleetSelect(fleet.id);
-            }
-          }}
         >
-          <FleetCard
-          fleet={fleet}
-          isSelected={selectedFleetId === fleet.id}
-          onSelect={() => handleFleetSelect(fleet.id)}
-          counters={getCounters(fleet.id, 'fleet')}
-          isFiltered={true}
-          isAdmin={isAdmin}
-          onDeleteCounter={onDeleteCounter}
-          onViewDetails={onViewDetails}
-        />
+<FleetCard
+  fleet={fleet}
+  isSelected={selectedFleetId === fleet.id}
+  onSelect={() => handleFleetSelect(fleet.id)}
+  counters={getCounters(fleet.id, 'fleet')}
+  isFiltered={true}
+  isAdmin={isAdmin}
+  onDeleteCounter={onDeleteCounter}
+  onEditCounter={onEditCounter}  
+/>
         </motion.div>
       )),
-    [filteredFleets, selectedFleetId, getCounters, isAdmin, onDeleteCounter, onViewDetails]
+      // depencies for useMemo hook
+    [filteredFleets, selectedFleetId, getCounters, isAdmin, onDeleteCounter, onEditCounter, onViewDetails, handleFleetSelect] 
   );
-
-  // Förbättrat felmeddelande för när inga flottor finns
+  // if there are no fleets, show a message to the user
   if (!fleets || fleets.length === 0) {
     return (
       <div
@@ -89,6 +86,15 @@ export const FleetList: React.FC<FleetListProps> = ({
       </div>
     );
   }
+
+  // log the props received by the FleetList component
+  // useEffect(() => {
+  //   console.log('FleetList received props:', {
+  //     isAdmin,
+  //     hasEditCounter: Boolean(onEditCounter),
+  //     hasDeleteCounter: Boolean(onDeleteCounter)
+  //   });
+  // }, [isAdmin, onEditCounter, onDeleteCounter]);
 
   return (
     <ErrorBoundary

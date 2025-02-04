@@ -1,10 +1,8 @@
-// src/lib/counterUtils.ts
-
 import { Character, Counter, Filters, Squad } from '@/types';
 
 export function filterCounters(counters: Counter[], filters: Filters): Counter[] {
   return counters.filter(counter => {
-    // Kontrollera Hard Counter-filter
+    // check for hard counter filter
     if (filters.showHardCounters && counter.counterType !== 'hard') {
       return false;
     }
@@ -47,12 +45,16 @@ export function getCountersForUnit(
   type: 'squad' | 'fleet',
   filters: Filters
 ): Counter[] {
-  // Först hitta alla relevanta counters för enheten
+  // find all counters where either the target or counter squad is the unit
   const relevantCounters = allCounters.filter(counter => {
+    if (!counter || !counter.targetSquad || !counter.counterSquad) {
+      return false;
+    }
+
     const isTargetUnit = counter.targetSquad.id === unitId;
     const isCounterUnit = counter.counterSquad.id === unitId;
     
-    // Specialhantering för capital ships i fleet counters
+    // special handling for capital ships
     const isTargetCapitalShip = type === 'fleet' && 
       'capitalShip' in counter.targetSquad && 
       counter.targetSquad.capitalShip?.id === unitId;
@@ -60,6 +62,6 @@ export function getCountersForUnit(
     return isTargetUnit || isCounterUnit || isTargetCapitalShip;
   });
 
-  // Applicera sedan filtreringen
+  // apply filters to the relevant counters
   return filterCounters(relevantCounters, filters);
 }

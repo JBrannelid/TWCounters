@@ -2,6 +2,8 @@ import React from 'react';
 import { ChangeHistory } from '../types';
 import { Clock, Edit, Trash, Plus } from 'lucide-react';
 
+// ChangeHistoryViewer component that displays a list of changes with details and revert button
+// Found in the entity details page to show the history of changes made to the entity 
 interface ChangeHistoryViewerProps {
   history: ChangeHistory[];
   onRevert?: (change: ChangeHistory) => void;

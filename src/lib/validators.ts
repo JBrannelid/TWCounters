@@ -1,5 +1,6 @@
 import { Squad, Fleet, Character, Ship } from '@/types';
 
+// Validators for squads and fleets to ensure they have the correct structure
 export const squadValidators = {
   validateSquadStructure: (squad: Squad): boolean => {
     return Boolean(
@@ -30,24 +31,29 @@ export const squadValidators = {
       members: squad.characters
     });
 
+    // Check if the squad has a name
     if (!squad.name?.trim()) {
       return { isValid: false, error: 'Squad name is required' };
     }
 
+    // Check if the squad has a leader
     if (!squad.leader) {
       console.log('Leader validation failed:', squad.leader);
       return { isValid: false, error: 'Squad must have a leader' };
     }
 
+    // Check if the squad has members
     if (!squad.characters?.length) {
       return { isValid: false, error: 'Squad must have at least one member' };
     }
 
-    return { isValid: true, error: null };
+    return { isValid: true, error: null }; // Squad is valid
   }
 };
 
+// Validators for fleets to ensure they have the correct structure and ships are valid 
 export const fleetValidators = {
+  // Validate the structure of a fleet
   validateFleetStructure: (fleet: Fleet): boolean => {
     return Boolean(
       fleet.id &&
@@ -57,8 +63,9 @@ export const fleetValidators = {
     );
   },
 
+  // Validate the ships in a fleet  
   validateShips: (ships: Ship[]): boolean => {
-    return ships.every(ship => 
+    return ships.every(ship => // Check if every ship has an id, name, and alignment
       Boolean(ship.id && ship.name && ship.alignment)
     );
   }

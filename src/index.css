@@ -134,7 +134,7 @@ body {
   background: radial-gradient(circle at center, rgba(239,68,68,0.5), transparent 70%);
 }
 
-/* Mobile styles */
+/* Mobile query */
 @media (max-width: 640px) {
   .container {
     padding-left: 1rem;

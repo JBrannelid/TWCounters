@@ -1,5 +1,6 @@
 import { Variants } from 'framer-motion';
 
+// Variants for animations in the app using Framer Motion library 
 export const cardVariants: Variants = {
   hidden: {
     opacity: 0,
@@ -32,6 +33,7 @@ export const cardVariants: Variants = {
   },
 };
 
+// Variants for animations in the app using Framer Motion library
 export const expandVariants: Variants = {
   hidden: {
     height: 0,
@@ -60,6 +62,7 @@ export const expandVariants: Variants = {
   }
 };
 
+// Variants for animations in the app using Framer Motion library 
 export const listItemVariants: Variants = {
   hidden: {
     opacity: 0,

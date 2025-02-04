@@ -1,41 +1,61 @@
+/* Critical CSS preloads for a faster dom load*/
 :root {
-    --color-space-black: #0A0D14;
-    --color-space-darker: #12151C;
-    --color-space-dark: #1A1E27;
-  }
-  
-  html {
-    height: 100%;
-    height: -webkit-fill-available;
-    overscroll-behavior-y: none;
-    overflow-x: hidden;
-  }
-  
-  body {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: var(--color-space-black);
-    color: white;
-    font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  
-  #root {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  @font-face {
-  font-family: 'Orbitron';
+    /* Defining base colors for the theme */
+  --color-space-black: #0A0D14; /* Dark background color */
+  --color-space-darker: #12151C; /* Slightly lighter dark color */
+  --color-space-dark: #1A1E27; /* A dark tone for elements */
+}
+
+/* Preload important fonts */
+@font-face {
+  font-family: 'Titillium Web';
   font-display: swap;
-  src: url('/fonts/Orbitron-Regular.ttf') format('truetype');
+  src: local('Titillium Web'), url('/fonts/TitilliumWeb-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap; /* Ensures text is visible while loading the font */
+}
+
+html {
+  height: 100%;
+  height: -webkit-fill-available; /* For webkit-based browsers to ensure full height */
+  overscroll-behavior-y: none; /* Prevents scrolling past the top or bottom of the page */
+  overflow-x: hidden; /* Disables horizontal scrolling */
+}
+
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; /* Improves font rendering on Firefox */
+  background-color: var(--color-space-black);
+  color: white;
+  font-family: 'Titillium Web', system-ui, -apple-system, sans-serif; /* Fallback font stack */
+  margin: 0;
+  padding: 0;
+}
+
+/* Direct style for hero text to avoid FOUC (Flash of Unstyled Content) */
+.hero-text {
+  font-family: 'Titillium Web', system-ui, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  margin-bottom: 2rem;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Media queries to adjust hero text size for different screen sizes */
+@media (min-width: 640px) {
+  .hero-text {
+      font-size: 1.25rem;
   }
-  
-  @font-face {
-    font-family: 'Titillium Web';
-    font-display: swap;
-    src: url('/fonts/TitilliumWeb-Regular.ttf') format('truetype');
+}
+
+@media (min-width: 1024px) {
+  .hero-text {
+      font-size: 1.5rem;
   }
+}

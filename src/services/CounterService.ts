@@ -7,7 +7,7 @@ export class CounterService {
     try {
       const defenseRef = doc(db, defense.type === 'squad' ? 'squads' : 'fleets', defense.id);
       
-      // Lägg till counter i defense dokumentet
+      // add the counter to the defense's counters array in Firestore
       await updateDoc(defenseRef, {
         counters: arrayUnion({
           ...counter,
@@ -16,7 +16,7 @@ export class CounterService {
         })
       });
 
-      // Skapa nytt counter-dokument
+      // create a reference to the counter document in Firestore
       const counterRef = doc(db, 'counters', counter.id);
       await updateDoc(counterRef, {
         targetDefenseId: defense.id,
@@ -30,6 +30,7 @@ export class CounterService {
     }
   }
 
+  // remove a counter from a defense squad or fleet
   static async removeCounter(defense: Squad | Fleet, counterId: string) {
     try {
       const defenseRef = doc(db, defense.type === 'squad' ? 'squads' : 'fleets', defense.id);

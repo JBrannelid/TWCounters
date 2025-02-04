@@ -1,5 +1,6 @@
 import { generateCSPString } from './src/lib/csp-config';
 
+// This function generates the default headers for the server
 export function getDefaultHeaders(nonce) {
   const csp = generateCSPString(nonce).replace(/\s+/g, ' ').trim();
   return {

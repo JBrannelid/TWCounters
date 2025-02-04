@@ -42,10 +42,10 @@ export const CounterProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
     
     try {
-      // Implementera Firebase counter update logic
-      await FirebaseService.addOrUpdateCounter(counter);  // Använder counter parametern
+      // Implements Firebase counter update logic
+      await FirebaseService.addOrUpdateCounter(counter);  // Use counter parametern
       
-      // Uppdatera lokalt state om det behövs
+      // Update local state if nessesary after Firebase update
       setState(prev => ({
         ...prev,
         editingCounter: null // Reset editing state efter uppdatering

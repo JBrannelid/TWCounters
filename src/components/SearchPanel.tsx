@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { Users, Ship, Settings } from 'lucide-react';
 import { Filters } from '@/types';
 
+// SearchPanel component to display the search bar and view selection buttons 
 interface SearchPanelProps {
   activeView: 'squads' | 'fleets';
   onViewChange: (view: 'squads' | 'fleets') => void;
@@ -21,10 +22,11 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   const hasActiveFilters = 
     filters.alignment !== null || 
     filters.showTWOmicronOnly || 
-    filters.showHardCounters || // Added this check
-    filters.excludeGL ||        // Added this check
+    filters.showHardCounters || 
+    filters.excludeGL ||        
     Boolean(filters.searchTerm);
 
+  // Define the base styles for the buttons and the active/inactive classes
   const buttonBaseClass = `
     flex-1 sm:flex-auto 
     flex items-center justify-center gap-2 
@@ -34,8 +36,8 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
     focus:ring-offset-space-darker
   `;
 
-  const activeClass = 'bg-blue-500 text-white';
-  const inactiveClass = 'bg-white/5 text-white hover:bg-white/10';
+  const activeClass = 'bg-blue-500 text-white'; // Active button styles 
+  const inactiveClass = 'bg-white/5 text-white hover:bg-white/10'; // Inactive button styles
 
   return (
     <div 

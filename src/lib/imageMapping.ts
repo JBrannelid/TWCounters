@@ -1,5 +1,3 @@
-// Main exports
-
 // Character ID Mappings
 export const characterMappings = {
   'triple_zero': 'triplezero',
@@ -345,7 +343,7 @@ export const shipMappings = {
   'rebel_y_wing': 'ywing'
 } as const;
 
-// Debug mode för loggning
+// Debug mode for loggning
 const DEBUG = true;
 
 const logDebug = (message: string, ...args: any[]) => {
@@ -354,19 +352,21 @@ const logDebug = (message: string, ...args: any[]) => {
   }
 };
 
-// Funktion för att normalisera ID
+// arrow function for normalizing ID 
 export const normalizeId = (name: string): string => {
-  if (!name) return '';
+  if (!name) return ''; // if no name is provided, return empty string
   
+  // return normalized name if name is provided. Usfull for removing special characters and spaces in mapping names 
   return name
+    // regex for removing special characters and spaces in mapping names
     .toLowerCase()
-    .replace(/[']/g, '') // Ta bort apostrofer
-    .replace(/[^a-z0-9_\s-]/g, '') // Behåll bara bokstäver, siffror, _, mellanslag och -
+    .replace(/[']/g, '') // remove apostrophes
+    .replace(/[^a-z0-9_\s-]/g, '') // keep only letters, numbers, spaces, and hyphens
     .trim()
-    .replace(/[\s-]+/g, '_'); // Ersätt mellanslag och - med _
+    .replace(/[\s-]+/g, '_'); // replace spaces and hyphens with underscores
 };
 
-// Funktion för att hämta filnamn
+// function for getting image file name. If no ID is provided, return empty string
 export function getImageFileName(id: string, type: string): string {
   if (!id) {
     logDebug('No ID provided for image');
@@ -376,10 +376,10 @@ export function getImageFileName(id: string, type: string): string {
   const normalizedId = normalizeId(id);
   logDebug(`Normalized ID: ${normalizedId} from ${id}`);
   
-  // Välj rätt mappning
+  // Check if the type is ship or character and get the mappings
   const mappings = type.includes('ship') ? shipMappings : characterMappings;
   
-  // Hämta filnamn från mappning
+  // Check if the normalized ID is in the mappings and return the file name if found 
   const fileName = mappings[normalizedId as keyof typeof mappings];
   
   if (!fileName) {

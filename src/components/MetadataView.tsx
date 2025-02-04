@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { X, Clock, Calendar } from 'lucide-react';
 import { Squad, Fleet } from '@/types';
 
+// Define the props for the MetadataView that will be used to display metadata for a Squad or Fleet 
 interface MetadataViewProps {
   isOpen: boolean;
   onClose: () => void;
@@ -14,23 +15,23 @@ export const MetadataView: React.FC<MetadataViewProps> = ({
   onClose,
   data
 }) => {
-  if (!isOpen) return null;
+  if (!isOpen) return null; // if the modal is not open, return null
 
   const formatDate = (timestamp: number | string | undefined) => {
     try {
       if (!timestamp) return 'Not available';
   
-      // Om det är ett nummer (timestamp i millisekunder)
+      // if timestamp is a number, convert to date
       if (typeof timestamp === 'number') {
         return new Date(timestamp).toLocaleString();
       }
   
-      // Om det är en ISO-sträng, konvertera till datum
+      // if timestamp is a string, convert to date
       if (typeof timestamp === 'string') {
         return new Date(timestamp).toLocaleString();
       }
   
-      // Om timestamp inte är definierad eller i fel format
+      // if timestamp is not a number or string, return 'Not available'
       return 'Not available';
     } catch (error) {
       console.log('Date formatting error:', error, typeof timestamp);
@@ -38,6 +39,7 @@ export const MetadataView: React.FC<MetadataViewProps> = ({
     }
   };  
 
+  // Return the modal with the metadata for the Squad or Fleet that was passed as props 
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -53,7 +55,7 @@ export const MetadataView: React.FC<MetadataViewProps> = ({
         className="relative bg-space-darker w-full max-w-xs rounded-lg border border-white/10 m-4"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Stängknapp */}
+        {/* close */}
         <button
           onClick={onClose}
           className="absolute right-2 top-2 p-1 text-white/60 hover:text-white hover:bg-white/5 rounded-lg"

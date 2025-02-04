@@ -8,12 +8,12 @@ import type { Connect } from 'vite';
 import { IncomingMessage, ServerResponse } from 'http';
 import { NextFunction } from 'connect';
 
-// Helper function to set cache headers
+// Helper function to set cache headers based on file type
 function setCacheHeaders(): Connect.HandleFunction {
   return (req: IncomingMessage, res: ServerResponse, next: NextFunction) => {
     const url = req.url || '';
     
-    // Set appropriate Cache-Control header based on file type
+    // Set appropriate Cache-Control header based on file type, origin, path, etc.
     if (url.match(/\.(ico|png|svg|jpg|jpeg|gif|webp)$/)) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     } else if (url.match(/\.(js|css|woff2|woff|ttf)$/)) {
@@ -27,7 +27,7 @@ function setCacheHeaders(): Connect.HandleFunction {
     next();
   };
 }
-
+// Vite configuration
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
   const nonce = randomBytes(16).toString('base64');
@@ -133,7 +133,7 @@ export default defineConfig(({ mode }) => {
             
             const name = assetInfo.name;
             const ext = name.split('.').pop();
-            
+            // Set custom asset paths based on file type
             if (ext && /png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(ext)) {
               return 'assets/images/[name]-[hash][extname]';
             }

@@ -1,4 +1,3 @@
-// src/components/layouts/Layout.tsx
 import React from 'react';
 import { Header } from '../Header';
 
@@ -17,11 +16,14 @@ export const Layout: React.FC<LayoutProps> = ({
 }) => {
   return (
     <div className="min-h-screen bg-space-black">
-      <Header 
-        isAdmin={isAdmin}
-        onLogout={onLogout}
-        onAdminClick={onAdminClick}
-      />
+      {/* Show header when not in admin menu */}
+      {!isAdmin && (
+        <Header 
+          isAdmin={isAdmin}
+          onLogout={onLogout}
+          onAdminClick={onAdminClick}
+        />
+      )}
       {children}
     </div>
   );

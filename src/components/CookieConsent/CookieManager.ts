@@ -5,7 +5,7 @@ import { COOKIE_CATEGORIES } from './CookieConsentTypes';
 export class CookieManager {
   private static CONSENT_KEY = 'cookie_consent_state';
 
-  // Hämta sparade cookie-inställningar
+  // Fetch cookie-consent from localStorage 
   static getStoredConsent(): CookieConsentData | null {
     try {
       const stored = localStorage.getItem(this.CONSENT_KEY);
@@ -15,40 +15,40 @@ export class CookieManager {
     }
   }
 
-  // Spara cookie-inställningar
+  // save cookie-settings
   static setConsent(consent: CookieConsentData): void {
     localStorage.setItem(this.CONSENT_KEY, JSON.stringify({
       ...consent,
       timestamp: new Date().toISOString()
     }));
 
-    // Uppdatera cookies baserat på samtycke
+    // update cookies base on consent  
     this.updateCookiesBasedOnConsent(consent);
   }
 
-  // Rensa cookie-inställningar
+  // Clean cookie-settings
   static clearConsent(): void {
     localStorage.removeItem(this.CONSENT_KEY);
     this.deleteNonEssentialCookies();
   }
 
-  // Kontrollera samtycke för en specifik kategori
+  // Check consent for a specific category
   static hasConsent(category: keyof CookieConsentData): boolean {
     const consent = this.getStoredConsent();
     return consent ? Boolean(consent[category]) : false;
   }
 
-  // Skanna efter existerande cookies
+  // scan after existing cookies
   static scanCookies(): { [key: string]: any } {
     const cookies: { [key: string]: any } = {};
     
-    // Scanna cookies
+    // Scann cookies
     document.cookie.split(';').forEach(cookie => {
       const [name, value] = cookie.split('=').map(s => s.trim());
       if (name) cookies[name] = value;
     });
 
-    // Scanna localStorage
+    // Scann localStorage
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key) {
@@ -56,7 +56,7 @@ export class CookieManager {
       }
     }
 
-    // Scanna sessionStorage
+    // Scann sessionStorage
     for (let i = 0; i < sessionStorage.length; i++) {
       const key = sessionStorage.key(i);
       if (key) {
@@ -67,7 +67,7 @@ export class CookieManager {
     return cookies;
   }
 
-  // Generera privacy rapport
+  // Generate privacy repports
   static async generatePrivacyReport(): Promise<string> {
     try {
       const scan = await CookieScanService.scanCookies();
@@ -78,7 +78,7 @@ export class CookieManager {
     }
   }
 
-  // Ta bort icke-nödvändiga cookies
+  // Remove non-essential cookies
   static deleteNonEssentialCookies(): void {
     const cookies = this.scanCookies();
     Object.keys(cookies).forEach(name => {
@@ -88,15 +88,15 @@ export class CookieManager {
     });
   }
 
-  // Uppdatera cookies baserat på samtycke
+  // Uppdate cookies based on consent
   private static updateCookiesBasedOnConsent(consent: CookieConsentData): void {
-    // Om nödvändiga cookies inte är accepterade, ta bort alla förutom consent-cookie
+    // if necessary cookies are not allowed, delete all non-essential cookies
     if (!consent.necessary) {
       this.deleteNonEssentialCookies();
       return;
     }
 
-    // Hantera övriga cookie-kategorier
+    // handle cookies based on category consent and cookie mappings as needed 
     const cookies = this.scanCookies();
     Object.keys(cookies).forEach(name => {
       const category = this.getCookieCategory(name);
@@ -105,7 +105,7 @@ export class CookieManager {
       }
     });
 
-    // Rensa IndexedDB om nödvändigt
+    // Clear all non-essential databases if preferences are not allowed
     if (!consent.preferences) {
       indexedDB.databases().then(dbs => {
         dbs.forEach(db => {
@@ -117,7 +117,7 @@ export class CookieManager {
     }
   }
 
-  // Kontrollera om en cookie är nödvändig
+  // Check if cookie is necessary
   private static isEssentialCookie(name: string): boolean {
     const essentialCookies = [
       this.CONSENT_KEY,
@@ -127,7 +127,7 @@ export class CookieManager {
     return essentialCookies.includes(name);
   }
 
-  // Kontrollera om en databas är nödvändig
+  // Check id db is necessary
   private static isEssentialDatabase(name: string): boolean {
     return [
       'firebase-heartbeat-database',
@@ -135,7 +135,7 @@ export class CookieManager {
     ].includes(name);
   }
 
-  // Kontrollera om localStorage är nödvändig
+  // Check if local storage is necessary
   private static isEssentialStorage(key: string): boolean {
     return [
       this.CONSENT_KEY,
@@ -144,16 +144,18 @@ export class CookieManager {
     ].includes(key);
   }
 
-  // Ta bort en cookie
+  // Remove a cookie
   private static deleteCookie(name: string): void {
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
     
+    // Remove from localStorage and sessionStorage
     try {
       localStorage.removeItem(name);
     } catch (e) {
       console.warn(`Failed to remove ${name} from localStorage:`, e);
     }
     
+    // Remove from sessionStorage
     try {
       sessionStorage.removeItem(name);
     } catch (e) {
@@ -161,7 +163,7 @@ export class CookieManager {
     }
   }
 
-  // Validera samtycke
+  // validate consent
   static validateConsent(consent: CookieConsentData): boolean {
     return (
       typeof consent.necessary === 'boolean' &&
@@ -171,7 +173,7 @@ export class CookieManager {
       typeof consent.timestamp === 'string'
     );
   }
-    // Add this method
+    // Get cookie category
     private static getCookieCategory(cookieName: string): keyof CookieConsentData | null {
       for (const category of COOKIE_CATEGORIES) {
         const cookieNames = category.cookies.map(cookie => cookie.name);

@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, Ship, Users } from 'lucide-react';
 import { BattleType, Filters } from '../types';
 
+// FilterBar component that displays search input and battle type filter buttons. Found in the header of the squads and fleets page
 interface FilterBarProps {
   filters: Filters;
   onFilterChange: (key: keyof Filters, value: any) => void;

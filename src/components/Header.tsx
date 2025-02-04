@@ -4,6 +4,7 @@ import { GlassCard } from './ui/GlassCard';
 import ContactModal from './ContactModal';
 import { Settings } from './settings/Settings';
 
+//  Display the header within the application that will contain the navigation links and user actions
 interface HeaderProps {
   isAdmin: boolean;
   onLogout: () => void;

@@ -1,11 +1,14 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
+// ErrorBoundary component that catches errors in the component tree and displays a fallback UI
+// user-friendly error message that does not crash the entire application
 interface Props {
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }
 
+// State for ErrorBoundary component
 interface State {
   hasError: boolean;
   error: Error | null;
@@ -17,22 +20,27 @@ class ErrorBoundary extends React.Component<Props, State> {
     this.state = { hasError: false, error: null };
   }
 
+  // Catch errors in the component tree and update state
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
+  // Log error to console
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('Error caught by boundary:', error, info);
   }
 
+  // Reset error state
   private handleReset = () => {
     this.setState({ hasError: false, error: null });
   };
 
+  // Refresh the page
   private handleRefresh = () => {
     window.location.reload();
   };
 
+  // Render fallback UI if error occurred
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {

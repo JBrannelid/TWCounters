@@ -23,10 +23,11 @@ import { useNavigate } from 'react-router-dom';
 import { AnalyticsService } from '@/services/analyticsService';
 import { CookieScanService } from '@/services/CookieScanService';
 import { filterCounters } from './Utils/counterUtils';
+import { characters, ships } from '@/data/initialData';
 
-const AdminDashboard = lazy(() => 
-    import('@/components/admin/AdminDashboard').then(module => ({
-      default: module.AdminDashboard
+const AdminDashboards = lazy(() => 
+    import('@/components/adminmenu/AdminDashboards').then(module => ({
+      default: module.AdminDashboards
     }))
   );
   
@@ -52,7 +53,7 @@ const AdminDashboard = lazy(() =>
         const nameMatch = unit.name.toLowerCase().includes(searchLower);
         
         if ('characters' in unit) {
-          // För squads, sök i character names
+          // for squads, search in character names and leader name
           const characterMatch = unit.characters.some(char => 
             char.name.toLowerCase().includes(searchLower)
           );
@@ -60,7 +61,7 @@ const AdminDashboard = lazy(() =>
           
           if (!nameMatch && !characterMatch && !leaderMatch) return false;
         } else if ('capitalShip' in unit) {
-          // För fleets, sök i ship names
+          // for fleets, search in ship names and capital ship name
           const shipMatch = unit.startingLineup.some(ship => 
             ship.name.toLowerCase().includes(searchLower)
           ) || (unit.capitalShip && unit.capitalShip.name.toLowerCase().includes(searchLower));
@@ -98,6 +99,9 @@ const AdminDashboard = lazy(() =>
     const [squads, setSquads] = useState<Squad[]>([]);
     const [fleets, setFleets] = useState<Fleet[]>([]);
     const [counters, setCounters] = useState<Counter[]>([]);
+    const [selectedDefense, setSelectedDefense] = useState<Squad | Fleet | null>(null);
+    const [showCounterEditor, setShowCounterEditor] = useState(false);
+    const [editingCounter, setEditingCounter] = useState<Counter | null>(null);  
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const navigate = useNavigate();
 
@@ -117,7 +121,7 @@ const AdminDashboard = lazy(() =>
     useEffect(() => {
     const hasConsent = localStorage.getItem('cookie_consent_state');
     if (!hasConsent) {
-        // Tvinga fram cookie consent banner om användaren inte har gjort ett val
+        // force show cookie banner if no consent has been given 
         const cookieBanner = document.querySelector('[data-cookiebanner]');
         if (cookieBanner) {
         (cookieBanner as HTMLElement).style.display = 'block';
@@ -137,10 +141,10 @@ const AdminDashboard = lazy(() =>
         setError(null);
         
         try {
-          // Vänta på Firebase-initialisering
+          // await firebase initialization before proceeding
           await ensureFirebaseInitialized();
           
-          // Hämta all data parallellt
+          // collect all data from Firebase and update state
           const { squads = [], fleets = [], counters = [] } = await FirebaseService.syncAllData();
           
           setSquads(squads);
@@ -158,7 +162,7 @@ const AdminDashboard = lazy(() =>
       initializeApp();
     }, []);
         
-      // Dynamisk uppdatering av meta-information beroende på aktuell vy
+      // Dynamic title and meta information via Helmet 
       const getTitle = () => {
         if (activeView === 'squads') {
           return "Best SWGOH Squads for Territory Wars";
@@ -190,22 +194,37 @@ const AdminDashboard = lazy(() =>
           </Suspense>
         );
       }
+
+      const getAvailableUnits = useCallback(() => {
+        const squadUnits = squads.flatMap(squad => [
+          squad.leader,
+          ...squad.characters
+        ].filter(Boolean));
+      
+        const fleetUnits = fleets.flatMap(fleet => [
+          fleet.capitalShip,
+          ...fleet.startingLineup,
+          ...fleet.reinforcements
+        ].filter(Boolean));
+      
+        return activeView === 'squads' ? squadUnits : fleetUnits;
+      }, [squads, fleets, activeView]);
     
       useEffect(() => {
         try {
-          // Mät sidladdningstid
+          // measure load time for the page for performance tracking, google analytics etc.
           const loadTime = window.performance.now();
           
-          // Logga sidvisning och prestanda
+          // log page view and performance data
           const analytics = AnalyticsService.getInstance();
           analytics.logPageView('Home Page');
           analytics.logAppPerformance(loadTime);
           
-          // Logga när komponenten monteras
+          // log user interaction for page mount with analytics 
           analytics.logUserInteraction('app_content_mounted');
           
           return () => {
-            // Logga när komponenten unmountas
+            // log user interaction for page unmount with analytics
             analytics.logUserInteraction('app_content_unmounted');
           };
         } catch (error) {
@@ -217,16 +236,16 @@ const AdminDashboard = lazy(() =>
         try {
           const analytics = AnalyticsService.getInstance();
           
-          // Logga besökarinformation
+          // track visitor info
           analytics.logVisitorInfo();
           
-          // Logga sessiondata
+          // log session data for tracking user session duration 
           analytics.logSessionData();
     
-          // Sätt upp prestandamätning efter att sidan har laddats
+          // log performance metrics and resource timings and prevent multiple logs
           if (!performanceLogged) {
             window.addEventListener('load', () => {
-              // Vänta lite så att alla prestandamätningar är tillgängliga
+              // await for the load event to ensure all resources are loaded
               setTimeout(() => {
                 analytics.logPerformanceMetrics();
                 analytics.logResourceMetrics();
@@ -235,25 +254,25 @@ const AdminDashboard = lazy(() =>
             });
           }
     
-          // Sätt upp intervallmätning för användarengagemang
+          // interval to log user engagement every 60 seconds
           const engagementInterval = setInterval(() => {
             analytics.logUserInteraction('user_engagement', {
               time_spent: Math.floor((Date.now() - performance.timeOrigin) / 1000)
             });
-          }, 60000); // Var 60:e sekund
+          }, 60000); // every 60 seconds
     
           return () => {
-            clearInterval(engagementInterval);
+            clearInterval(engagementInterval); // clear interval on unmount
           };
         } catch (error) {
           console.error('Analytics error:', error);
         }
-      }, [performanceLogged]);
+      }, [performanceLogged]); // only run once on mount
       
       useEffect(() => {
         if (process.env.NODE_ENV === 'production') {
           try {
-            // Vänta med analytics tills Firebase är initialiserad
+            // await for firebase initialization before proceeding with analytics
             const loadAnalytics = async () => {
               await ensureFirebaseInitialized();
               const analytics = AnalyticsService.getInstance();
@@ -270,10 +289,10 @@ const AdminDashboard = lazy(() =>
         }
       }, []);
       
-      // Separat useEffect för cookie scanning
+      // Seperate effect for cookie scanning service for development
       useEffect(() => {
         if (process.env.NODE_ENV === 'development') {
-          const scanningEnabled = true; // Temporärt inaktiverad
+          const scanningEnabled = true; // enable cookie scanning in development
           if (scanningEnabled) {
             try {
               const cleanup = CookieScanService.startPeriodicScanning();
@@ -312,7 +331,7 @@ const AdminDashboard = lazy(() =>
         return isTargetDefense || isCounterDefense || isTargetCapitalShip;
       });
     
-      // Filtrera resultaten
+      // filter counters based on current filters
       return filterCounters(relevantCounters, filters);
     }, [counters, filters]);
     
@@ -373,7 +392,7 @@ const AdminDashboard = lazy(() =>
       setShowAdminLogin(true);
     };
   
-    // Cookie consent hanterare
+    // Cookie consent handlers
     const handleCookieAccept = useCallback((consent: CookieConsentData) => {
       if (consent.analytics) {
         logUserAction('cookie_consent_given', {
@@ -411,9 +430,29 @@ const AdminDashboard = lazy(() =>
   
     const handleSuggestionSelect = (item: Squad | Fleet) => {
       setSelectedId(item.id);
-      // VIKTIGT: Gör INTE setSearchTerm('') här
-      // Behåll searchTerm och filters oförändrade
     };
+
+// Counter handlers for user interface that will be passed down to child components 
+const handleEditCounter = async (counter: Counter) => {
+  console.log('AppContent handleEditCounter called with:', counter);
+  if (!isOnline) {
+    setError('Cannot edit counter while offline');
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+    console.log('Opening counter editor for:', counter);
+    setEditingCounter(counter);
+    setSelectedDefense(counter.targetSquad);
+    setShowCounterEditor(true);
+  } catch (error) {
+    console.error('Error editing counter:', error);
+    setError(error instanceof Error ? error.message : 'Failed to edit counter');
+  } finally {
+    setIsLoading(false);
+  }
+};
   
     const handleDeleteCounter = async (counterId: string) => {
       if (!isOnline) {
@@ -458,6 +497,9 @@ const AdminDashboard = lazy(() =>
           console.error('Error updating squad:', error);
         }
       },
+      availableCharacters: Object.values(characters),
+      availableShips: Object.values(ships),
+      isLoading: false,
   
       onDeleteSquad: async (id: string) => {
         if (!isOnline) {
@@ -466,22 +508,18 @@ const AdminDashboard = lazy(() =>
         }
     
         try {
-          // Först ta bort alla relaterade counters
           const relatedCounters = counters.filter(c => 
             (c?.targetSquad?.id === id || c?.counterSquad?.id === id) && c?.id
           );
           
-          // Ta bort counters först
           await Promise.all(
             relatedCounters.map(counter => 
               FirebaseService.deleteCounter(counter.id)
             )
           );
     
-          // Sedan ta bort squad
           await FirebaseService.deleteSquad(id);
     
-          // Uppdatera local state
           setCounters(prev => 
             prev.filter(c => 
               c?.targetSquad?.id !== id && c?.counterSquad?.id !== id
@@ -519,7 +557,6 @@ const AdminDashboard = lazy(() =>
         }
     
         try {
-          // Först ta bort alla relaterade counters
           const relatedCounters = counters.filter(c => 
             (c?.targetSquad?.id === id || 
              c?.counterSquad?.id === id || 
@@ -527,17 +564,14 @@ const AdminDashboard = lazy(() =>
              c?.id
           );
           
-          // Ta bort counters först
           await Promise.all(
             relatedCounters.map(counter => 
               FirebaseService.deleteCounter(counter.id)
             )
           );
     
-          // Sedan ta bort fleet
           await FirebaseService.deleteFleet(id);
     
-          // Uppdatera local state
           setCounters(prev => 
             prev.filter(c => 
               c?.targetSquad?.id !== id && 
@@ -578,7 +612,6 @@ const AdminDashboard = lazy(() =>
           console.log('Starting delete counter process for:', counterId);
           await FirebaseService.deleteCounter(counterId);
           
-          // Uppdatera lokalt state efter lyckad borttagning
           setCounters(prevCounters => prevCounters.filter(c => c.id !== counterId));
           console.log('Counter deleted and state updated');
         } catch (error) {
@@ -606,9 +639,6 @@ const AdminDashboard = lazy(() =>
       },
     };
   
-  // Combined loading state
-  // I App.tsx
-  // Under combined loading state
   if (firebaseLoading || authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-space-black flex items-center justify-center">
@@ -669,7 +699,7 @@ const AdminDashboard = lazy(() =>
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                 {/* Dynamisk titel och meta-information via Helmet */}
+                 {/* Dynamic title by react helmet */}
                 <Helmet>
                   <title>{getTitle()}</title>
                   <meta name="description" content={getDescription()} />
@@ -687,12 +717,12 @@ const AdminDashboard = lazy(() =>
                         onChange={handleSearchChange}
                         onClear={() => {
                           handleSearchChange('');
-                          setSelectedId(null); // Återställ vald post när sökningen rensas
+                          setSelectedId(null); 
                         }}
                         suggestions={activeView === 'squads' ? filteredSquads : filteredFleets}
                         onSelectSuggestion={(item) => {
                           handleSuggestionSelect(item);
-                          // Behåll söktermen och filtreringen
+                          // ceep the search term in the input field
                           setSearchTerm(searchTerm);
                         }}
                         placeholder={`Search ${activeView === 'squads' ? 'teams' : 'fleets'}...`}
@@ -722,31 +752,31 @@ const AdminDashboard = lazy(() =>
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                         >
-                          {activeView === 'squads' ? (
-                            <SquadList
-                              squads={squads}
-                              filteredSquads={filteredSquads}
-                              selectedSquadId={selectedId}
-                              onSelectSquad={setSelectedId}
-                              getCounters={getCounters}  // Notera att vi använder funktionen direkt här
-                              isAdmin={isAdmin}
-                              onDeleteCounter={handleDeleteCounter}
-                              filters={filters}
-                              onViewDetails={() => {}}
-                            />
-                          ) : (
-                            <FleetList
-                              fleets={fleets}
-                              filteredFleets={filteredFleets}
-                              selectedFleetId={selectedId}
-                              onSelectFleet={setSelectedId}
-                              getCounters={getCounters}  // Och här
-                              isAdmin={isAdmin}
-                              onDeleteCounter={handleDeleteCounter}
-                              filters={filters}
-                              onViewDetails={() => {}}
-                            />
-                          )}
+                        {activeView === 'squads' ? (
+                          <SquadList
+                            squads={squads}
+                            filteredSquads={filteredSquads}
+                            selectedSquadId={selectedId}
+                            onSelectSquad={setSelectedId}
+                            getCounters={getCounters}
+                            isAdmin={isAdmin}
+                            onDeleteCounter={handleDeleteCounter}
+                            onEditCounter={handleEditCounter}
+                            filters={filters}
+                          />
+                        ) : (
+                          <FleetList
+                            fleets={fleets}
+                            filteredFleets={filteredFleets}
+                            selectedFleetId={selectedId}
+                            onSelectFleet={setSelectedId}
+                            getCounters={getCounters}
+                            isAdmin={isAdmin}
+                            onDeleteCounter={handleDeleteCounter}
+                            onEditCounter={handleEditCounter}
+                            filters={filters}
+                          />
+                        )}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -779,13 +809,14 @@ const AdminDashboard = lazy(() =>
                   </div>
                 </div>
               }>
-                <AdminDashboard
-                  squads={squads}
-                  fleets={fleets}
-                  counters={counters}
-                  {...adminHandlers}
-                  onLogout={handleAdminLogout}
-                />
+              <AdminDashboards
+                squads={squads}
+                fleets={fleets}
+                counters={counters}
+                isAdmin={isAdmin} 
+                onLogout={handleAdminLogout}
+                {...adminHandlers}
+              />
               </ErrorBoundary>
             </Suspense>
               )}

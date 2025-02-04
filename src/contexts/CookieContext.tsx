@@ -1,12 +1,11 @@
-// src/contexts/CookieContext.tsx
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Analytics, logEvent } from 'firebase/analytics';
 import { CookieManager } from '@/components/CookieConsent/CookieManager';
 import { CookieConsentData } from '@/components/CookieConsent/CookieConsentTypes';
-import firebaseClient from '@/lib/firebase'; // Ändrad import
+import firebaseClient from '@/lib/firebase'; 
 import { getFirebaseAnalytics } from '@/lib/firebase';
 
+// Define the context type for the cookie consent 
 interface CookieContextType {
   consent: CookieConsentData | null;
   updateConsent: (newConsent: CookieConsentData) => void;
@@ -14,6 +13,7 @@ interface CookieContextType {
   isAnalyticsEnabled: boolean;
 }
 
+// Create the context and set the default value to undefined
 const CookieContext = createContext<CookieContextType | undefined>(undefined);
 
 export const CookieProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,7 +32,7 @@ export const CookieProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (consent?.analytics) {
       try {
-        const analyticsInstance = getFirebaseAnalytics(); // Använd helper-funktionen
+        const analyticsInstance = getFirebaseAnalytics(); // Use the getFirebaseAnalytics function to get the analytics instance
         if (analyticsInstance) {
           setAnalytics(analyticsInstance);
         }
@@ -44,6 +44,7 @@ export const CookieProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [consent?.analytics]);
 
+  // Function to update the consent state
   const updateConsent = (newConsent: CookieConsentData) => {
     CookieManager.setConsent(newConsent);
     setConsent(newConsent);
@@ -60,11 +61,13 @@ export const CookieProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  // Function to reset the consent state
   const resetConsent = () => {
     CookieManager.clearConsent();
     setConsent(null);
   };
 
+  // Value to be provided by the context
   const value = {
     consent,
     updateConsent,
@@ -79,6 +82,7 @@ export const CookieProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   );
 };
 
+// Custom hook to use the cookie consent context in components 
 export const useCookieConsent = () => {
   const context = useContext(CookieContext);
   if (context === undefined) {

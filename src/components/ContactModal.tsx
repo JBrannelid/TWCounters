@@ -3,6 +3,8 @@ import { X, Heart, Coffee, Database } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createFocusTrap } from 'focus-trap';
 
+// ContactModal component that displays a contact form in a modal dialog
+// The form is submitted to a Netlify API endpoint for email notifications
 interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;

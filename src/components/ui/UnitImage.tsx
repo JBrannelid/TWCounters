@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 export type ImageType = 'character' | 'squad-leader' | 'squad-member' | 'ship' | 'capital-ship';
 
-// Behåll image cache
+// Cache the image URLs to avoid unnecessary network requests
 const imageCache: Record<string, string> = {};
 
 interface UnitImageProps {
@@ -91,7 +91,7 @@ export const UnitImage = memo<UnitImageProps>(({
         alt={name}
         loading="lazy"
         decoding="async" 
-        aria-label={name} // Lägg till aria-label för att göra bilden tillgänglig för skärmläsare
+        aria-label={name} // Aria-label for accessibility
         className={cn(
           'w-full h-full',
           'object-cover rounded-full',
@@ -106,14 +106,14 @@ export const UnitImage = memo<UnitImageProps>(({
           setHasError(true);
           setImageUrl(getPlaceholderDataUrl(size));
         }}
-        role="img"  // För att säkerställa att bilden är korrekt semantisk
+        role="img"  // ensure screen readers announce the image for semantic accessibility
       />
       {(isLeader || isCapital) && (
         <div 
           className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full 
                    flex items-center justify-center text-white text-xs font-bold
                    shadow-md"
-          aria-label={isLeader ? 'Squad Leader' : 'Capital Ship'} // Lägg till en aria-label för ledare och kapital
+          aria-label={isLeader ? 'Squad Leader' : 'Capital Ship'} // aria-label for accessibility leader/capital
         >
           {isLeader ? 'L' : 'C'}
         </div>

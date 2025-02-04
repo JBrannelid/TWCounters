@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video } from 'lucide-react';  // Ändra från Youtube till Video
+import { Video } from 'lucide-react'; 
 
 interface VideoIndicatorProps {
   videoUrl: string;
@@ -17,7 +17,7 @@ export const VideoIndicator: React.FC<VideoIndicatorProps> = ({ videoUrl }) => {
       className="flex items-center gap-2 px-2 py-1 rounded-full bg-red-500/20 text-red-400 
                  hover:bg-red-500/30 transition-colors text-sm"
     >
-      <Video className="w-4 h-4" />  {/* Använder Video istället för Youtube */}
+      <Video className="w-4 h-4" />  
       <span>Watch Guide</span>
     </button>
   );

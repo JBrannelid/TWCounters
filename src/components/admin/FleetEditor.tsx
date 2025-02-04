@@ -27,12 +27,14 @@ interface EditModalProps {
 interface FleetEditorProps {
   fleets: Fleet[];
   counters: Counter[];
-  availableUnits: Ship[];
+  availableUnits: any[];
   onUpdate: (fleet: Fleet) => void;
   onDelete: (id: string) => void;
   onAddCounter: (fleet: Fleet) => void;
   onEditCounter: (counter: Counter) => void;
-  onDeleteCounter: (counterId: string) => void;
+  onDeleteCounter: (id: string) => void;
+  isOnline: boolean;
+  saving: boolean;
 }
 
 const EditModal: React.FC<EditModalProps> = ({

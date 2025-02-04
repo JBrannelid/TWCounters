@@ -1,6 +1,6 @@
-import { memo, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ship, Trash2, ChevronDown, Plus } from 'lucide-react';
+import { Ship, Trash2, ChevronDown, Plus, Edit } from 'lucide-react';
 import { Fleet, Counter } from '@/types';
 import { GlassCard } from './ui/GlassCard';
 import { UnitImage } from './ui/UnitImage';
@@ -17,6 +17,7 @@ interface FleetCardProps {
   onViewDetails?: () => void;
   isFiltered?: boolean;
   onAddCounter?: (fleet: Fleet) => void;
+  onEditCounter?: (counter: Counter) => void;  
 }
 
 export const FleetCard = memo<FleetCardProps>(({
@@ -26,6 +27,7 @@ export const FleetCard = memo<FleetCardProps>(({
   counters,
   isAdmin,
   onDeleteCounter,
+  onEditCounter,
   isFiltered = false,
   onAddCounter
 }) => {
@@ -72,6 +74,24 @@ export const FleetCard = memo<FleetCardProps>(({
     }
   };
 
+  const handleEditCounter = useCallback((e: React.MouseEvent<HTMLButtonElement>, counter: Counter) => {
+    console.log('FleetCard: Edit button clicked for counter:', counter);
+    e.preventDefault();
+    e.stopPropagation();
+  
+    try {
+      console.log('Attempting to edit counter:', counter);
+      if (onEditCounter) {
+        onEditCounter(counter);
+        console.log('Successfully called onEditCounter');
+      } else {
+        console.warn('onEditCounter is undefined');
+      }
+    } catch (error) {
+      console.error('Error in handleEditCounter:', error);
+    }
+  }, [onEditCounter]);
+
   const fleetCounters = counters.filter(counter => {
     const isTargetFleet = counter.targetSquad.id === fleet.id;
     const isCounterFleet = counter.counterSquad.id === fleet.id;
@@ -80,6 +100,14 @@ export const FleetCard = memo<FleetCardProps>(({
     return isTargetFleet || isCounterFleet || isTargetCapitalShip;
   });
 
+  useEffect(() => {
+    console.log('FleetCard received props:', {
+      isAdmin,
+      hasEditCounter: Boolean(onEditCounter),
+      hasDeleteCounter: Boolean(onDeleteCounter)
+    });
+  }, [isAdmin, onEditCounter, onDeleteCounter]);
+  
   return (
     <ErrorBoundary 
       fallback={
@@ -168,7 +196,7 @@ export const FleetCard = memo<FleetCardProps>(({
                 exit="exit"
               />
               <motion.div 
-                className="fixed inset-0 flex items-start sm:items-center justify-center p-4 overflow-y-auto"  // Ny flexbox-justering
+                className="fixed inset-0 flex items-start sm:items-center justify-center p-4 overflow-y-auto" 
                 variants={cardVariants}
                 initial="initial"
                 animate="animate"
@@ -176,13 +204,13 @@ export const FleetCard = memo<FleetCardProps>(({
               >
                 <div
                   ref={contentRef}
-                  className="w-full max-w-xl mx-auto"  // Simplified
+                  className="w-full max-w-xl mx-auto"  
                   onClick={(e) => e.stopPropagation()}
                 >
                     <GlassCard
                       variant="dark"
                       glowColor={fleet.alignment === 'light' ? 'blue' : 'red'}
-                      className="min-h-[50vh] max-h-[90vh] overflow-hidden" // Justerad max-height
+                      className="min-h-[50vh] max-h-[90vh] overflow-hidden"
                       >
                      {/* Content wrapper */}
                      <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
@@ -294,14 +322,29 @@ export const FleetCard = memo<FleetCardProps>(({
                                         </span>
                                         {counter.video_url && <VideoIndicator videoUrl={counter.video_url} />}
                                       </div>
-                                      {isAdmin && onDeleteCounter && (
+
+                                      {isAdmin && (
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={(e) => handleEditCounter(e, counter)}
+                                        className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg"
+                                        aria-label="Edit counter"
+                                      >
+                                        <Edit className="w-4 h-4" />
+                                      </button>
+                                      {onDeleteCounter && (
                                         <button
-                                          onClick={() => onDeleteCounter(counter.id)}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDeleteCounter(counter.id);
+                                          }}
                                           className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg"
                                         >
                                           <Trash2 className="w-4 h-4" />
                                         </button>
                                       )}
+                                    </div>
+                                  )}
                                     </div>
 
                                     <p className="text-white/70">{counter.description}</p>
@@ -351,9 +394,10 @@ export const FleetCard = memo<FleetCardProps>(({
                 e.stopPropagation();
                 onAddCounter(fleet);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg 
-                       bg-green-500/20 text-green-400 hover:bg-green-500/30"
-            >
+              className="flex items-center gap-2 px-4 py-2 w-full justify-center
+                          rounded-lg bg-green-500/20 text-green-400 
+                          hover:bg-green-500/30 transition-all"
+              >
               <Plus className="w-4 h-4" />
               Add Counter
             </button>

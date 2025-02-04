@@ -1,4 +1,3 @@
-// SithEmpireIcon.tsx
 import React from 'react';
 
 export const SithEmpireIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (

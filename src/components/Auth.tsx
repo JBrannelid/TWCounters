@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LogIn, User, EyeOff, Eye, AlertCircle, X, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthProps {
   onLogin: (success: boolean) => void;
@@ -18,6 +19,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onClose }) => {
   const { login, error: authError } = useAuth();
   const [localError, setLocalError] = useState<string | null>(null);
   const [attemptCount, setAttemptCount] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (authError) {
@@ -30,20 +32,22 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onClose }) => {
     setLocalError(null);
     setIsLoading(true);
 
+    // Maximum of 5 login attempts
     try {
-      if (attemptCount >= 5) {
+      if (attemptCount >= 5) { 
         throw new Error('Too many login attempts. Please try again later.');
       }
 
-      await login(credentials.email, credentials.password);
+      await login(credentials.email, credentials.password); // Login with email and password
       onLogin(true);
-      onClose();
+      navigate('/admin'); // Redirect to admin page
+      onClose(); // Close the dialog on success
     } catch (error) {
       console.error('Login error:', error);
-      setAttemptCount(prev => prev + 1);
+      setAttemptCount(prev => prev + 1); // Increment attempt count
       setLocalError(error instanceof Error ? error.message : 'Failed to login');
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Reset loading state after login attempt is complete 
     }
   };
 

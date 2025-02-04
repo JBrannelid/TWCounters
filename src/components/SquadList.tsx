@@ -5,6 +5,7 @@ import { Squad, Counter, Filters } from '@/types';
 import { SquadCard } from './SquadCard';
 import ErrorBoundary from './ErrorBoundary';
 
+// SquadList component to display a list of squads with counters and details for each squad 
 interface SquadListProps {
   squads: Squad[];
   filteredSquads: Squad[];
@@ -12,7 +13,8 @@ interface SquadListProps {
   onSelectSquad: (id: string | null) => void;
   getCounters: (id: string, type: 'squad') => Counter[];
   isAdmin?: boolean;
-  onDeleteCounter?: (id: string) => void;
+  onDeleteCounter?: (id: string) => Promise<void>;
+  onEditCounter?: (counter: Counter) => Promise<void>;  
   onViewDetails?: () => void;
   filters: Filters;
 }
@@ -25,8 +27,9 @@ export const SquadList: React.FC<SquadListProps> = ({
   getCounters,
   isAdmin,
   onDeleteCounter,
+  onEditCounter,  
   onViewDetails,
-  filters  // Lägg till denna
+  filters
 }) => {
   const handleSquadSelect = (squadId: string) => {
     if (selectedSquadId === squadId) {
@@ -66,23 +69,24 @@ export const SquadList: React.FC<SquadListProps> = ({
             }
           }}
         >
-          <SquadCard
-            squad={squad}
-            isSelected={selectedSquadId === squad.id}
-            onSelect={() => handleSquadSelect(squad.id)}
-            counters={counters}
-            isFiltered={true}
-            isAdmin={isAdmin}
-            onDeleteCounter={onDeleteCounter}
-            onViewDetails={onViewDetails}
-            filters={filters}
-          />
+        <SquadCard
+          squad={squad}
+          isSelected={selectedSquadId === squad.id}
+          onSelect={() => handleSquadSelect(squad.id)}
+          counters={counters}
+          isFiltered={true}
+          isAdmin={isAdmin}
+          onDeleteCounter={onDeleteCounter}
+          onEditCounter={onEditCounter}  
+          onViewDetails={onViewDetails}
+          filters={filters}
+        />
         </motion.div>
       );
     });
-  }, [filteredSquads, selectedSquadId, getCounters, isAdmin, onDeleteCounter, onViewDetails]);
+  }, [filteredSquads, selectedSquadId, getCounters, isAdmin, onDeleteCounter, onEditCounter, onViewDetails]);
   
-  // Förbättrat felmeddelande för när inga squads finns
+  // Show a message if no squads are found for the filters
   if (!squads || squads.length === 0) {
     return (
       <div 

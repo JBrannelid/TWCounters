@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Squad, Fleet } from '@/types';
 import { UnitImage } from './ui/UnitImage';
 
+// SearchBar component that allows searching for squads and fleets with suggestions and keyboard navigation support 
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;

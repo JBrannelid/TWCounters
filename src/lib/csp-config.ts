@@ -6,6 +6,7 @@
 export const generateCSPString = (nonce: string): string => {
   const isDevelopment = process.env.NODE_ENV === 'development';
 
+  // In development, allow 'unsafe-eval' for hot reloading
   const directives = {
     'default-src': ["'self'"],
     'script-src': [
@@ -14,13 +15,13 @@ export const generateCSPString = (nonce: string): string => {
       "'unsafe-eval'",
       "https://cdnjs.cloudflare.com",
       "https://www.googletagmanager.com",
-      "https://apis.google.com" // Add this line
+      "https://apis.google.com" 
     ],
     'script-src-elem': [
       "'self'",
       "'unsafe-inline'",
       "https://www.googletagmanager.com",
-      "https://apis.google.com" // Add this line
+      "https://apis.google.com" 
     ],
     'connect-src': [
       "'self'",
@@ -31,8 +32,8 @@ export const generateCSPString = (nonce: string): string => {
     ],
     'frame-src': [
       "'self'",
-      "https://apis.google.com", // Add this line for iframes
-      "https://swgoh-tw-guide.firebaseapp.com"  // Add this line
+      "https://apis.google.com", 
+      "https://swgoh-tw-guide.firebaseapp.com"  
     ],
     'style-src': [
       "'self'",
@@ -55,18 +56,19 @@ export const generateCSPString = (nonce: string): string => {
       if (!values || !values.length) return key;
       return `${key} ${values.join(' ')}`;
     })
-    .join('; ');
+    .join('; '); // Join all the directives with a semicolon for the CSP header
 };
 
-// Helper functions for nonces
+// Helper functions for nonces and CSP headers in Express 
 export const applyNonceToElement = (element: HTMLElement, nonce: string): void => {
-  if (element.hasAttribute('src') || element.hasAttribute('href')) {
-    element.setAttribute('nonce', nonce);
+  if (element.hasAttribute('src') || element.hasAttribute('href')) { // Check if the element has a src or href attribute
+    element.setAttribute('nonce', nonce); // Add a nonce attribute to the element
   }
 };
 
+// Helper function to create a script element with a nonce attribute 
 export const createScriptElement = (src: string, nonce: string): HTMLScriptElement => {
-  const script = document.createElement('script');
+  const script = document.createElement('script'); // Create a new script element 
   script.src = src;
   script.nonce = nonce;
   return script;

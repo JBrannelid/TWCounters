@@ -1,5 +1,3 @@
-// src/components/CookieConsent/CookieConsentTypes.ts
-
 export interface Cookie {
   name: string;
   description: string;

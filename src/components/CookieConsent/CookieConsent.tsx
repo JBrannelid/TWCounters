@@ -1,5 +1,3 @@
-// src/components/CookieConsent/CookieConsent.tsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, X, Check, Shield, ChevronRight, Lock, ChevronDown } from 'lucide-react';
@@ -28,7 +26,7 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
     e.preventDefault();
     navigate('/cookie-policy');
   };
-  // Kontrollera om cookie consent redan finns
+  // check if user has already accepted cookies
   useEffect(() => {
     const savedConsent = CookieManager.getStoredConsent();
     if (savedConsent) {
@@ -36,7 +34,7 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
     }
   }, []);
 
-  // Skanna efter existerande cookies
+  // scan for existing cookies 
   const scanForCookies = useCallback(() => {
     try {
       const existingCookies = CookieManager.scanCookies();
@@ -50,7 +48,7 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
     scanForCookies();
   }, [scanForCookies]);
 
-  // Hantera acceptans av alla cookies
+  // handle accept all cookies 
   const handleAcceptAll = () => {
     const consent: CookieConsentData = {
       necessary: true,
@@ -65,7 +63,7 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
     setShowBanner(false);
   };
 
-  // Hantera avböjande av cookies
+  // Handle decline all cookies
   const handleDecline = () => {
     const consent: CookieConsentData = {
       necessary: true,
@@ -80,7 +78,7 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
     setShowBanner(false);
   };
 
-  // Hantera sparande av inställningar
+  // Handle seperate cookie settings
   const handleSaveSettings = () => {
     const consent: CookieConsentData = {
       necessary: true,
@@ -96,7 +94,7 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
     setShowBanner(false);
   };
 
-  // Växla kategori
+  // Change category status
   const toggleCategory = (categoryId: string) => {
     setCategories(prev => 
       prev.map(cat => 
@@ -107,14 +105,14 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
     );
   };
 
-  // Växla expanderad kategori
+  // Change expanded category
   const toggleExpandCategory = (categoryId: string) => {
     setExpandedCategory(current => current === categoryId ? null : categoryId);
   };
 
   if (!showBanner) return null;
 
-  // JSX för banner
+  // JSX for banner and settings view 
   return (
     <AnimatePresence>
       <motion.div
@@ -127,7 +125,6 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
         
         <div className="relative max-w-7xl mx-auto p-6">
           {!showSettings ? (
-            // Huvudbanner
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 rounded-xl border border-white/10 p-6 bg-gray-900/90">
               <div className="flex-shrink-0 p-3 bg-blue-500/10 rounded-full">
                 <Lock className="w-6 h-6 text-blue-400" />
@@ -183,7 +180,6 @@ export const CookieConsentBanner: React.FC<CookieConsentProps> = ({
               </div>
             </div>
  ) : (
-  // Inställningar vy
   <motion.div 
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}

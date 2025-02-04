@@ -1,34 +1,33 @@
-// src/lib/security/sanitizer.ts
-
 import DOMPurify from 'dompurify';
 
+// function for sanitizing user input
 export function sanitizeInput(input: string): string {
   return DOMPurify.sanitize(input, {
-    ALLOWED_TAGS: [], // Tillåt inga HTML-taggar
-    ALLOWED_ATTR: [], // Tillåt inga HTML-attribut
+    ALLOWED_TAGS: [], // don't allow any HTML tags
+    ALLOWED_ATTR: [], // don't allow any attributes
   });
 }
 
 export function sanitizeHTML(html: string): string {
   return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a'], // Begränsa till säkra taggar
-    ALLOWED_ATTR: ['href'], // Begränsa till säkra attribut
-    ALLOW_DATA_ATTR: false, // Tillåt inte data- attribut
-    ADD_ATTR: ['target'], // Lägg till target="_blank" för länkar
-    FORBID_TAGS: ['style', 'script', 'iframe'],
-    FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick'],
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a'], // reduce the allowed tags to a small subset
+    ALLOWED_ATTR: ['href'], // reduce the allowed attributes to a small subset
+    ALLOW_DATA_ATTR: false, // reduce the allowed data attributes to a small subset
+    ADD_ATTR: ['target'], // reduce the allowed attributes to a small subset
+    FORBID_TAGS: ['style', 'script', 'iframe'], // forbid the use of style, script, and iframe tags
+    FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick'], // frobid the use of style, onerror, onload, and onclick attributes
   });
 }
 
-// Funktion för att validera och sanitera URL:er
+// function for sanitizing URLs
 export function sanitizeUrl(url: string): string {
   const sanitized = DOMPurify.sanitize(url);
   const urlObject = new URL(sanitized, window.location.origin);
   
-  // Tillåt endast vissa protokoll
+  // Allow only 'http:' and 'https:' protocols in URLs for security reasons
   if (!['http:', 'https:'].includes(urlObject.protocol)) {
     throw new Error('Invalid URL protocol');
   }
   
-  return urlObject.toString();
+  return urlObject.toString(); // return the sanitized URL
 }

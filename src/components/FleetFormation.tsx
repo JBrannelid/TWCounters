@@ -3,6 +3,7 @@ import { Fleet, Ship } from '@/types';
 import { UnitImage } from './ui/UnitImage';
 import { AlertTriangle } from 'lucide-react';
 
+// FleetFormation component that displays the formation of a fleet with capital ship, starting lineup, reinforcements, and call order strategy in fleet card
 interface FleetFormationProps {
   fleet: Fleet;
   showWarnings?: boolean;

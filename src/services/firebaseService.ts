@@ -20,6 +20,7 @@ export class FirebaseService {
     return navigator.onLine;
   }
 
+  // Helper method to handle Firestore operations and error handling 
   private static async handleOperation<T>(
     operation: () => Promise<T>,
     errorMessage: string
@@ -36,7 +37,7 @@ export class FirebaseService {
     }
   }
 
-  // Helper för att rensa data innan det sparas till Firestore
+  // helper method to clean data before saving to Firestore
   private static cleanDataForFirestore(obj: any): any {
     console.log('cleanDataForFirestore called with:', {
       type: typeof obj,
@@ -44,17 +45,18 @@ export class FirebaseService {
       value: obj
     });
 
+    // if the value is null or undefined, return null to remove it from the object
     if (obj === null || obj === undefined) {
       return null;
     }
 
-    // Specialhantering för arrays - behåll dem även om de är tomma
+    // special handling for arrays - process each item in the array
     if (Array.isArray(obj)) {
       console.log('Processing array with length:', obj.length);
       return obj.map(item => this.cleanDataForFirestore(item));
     }
 
-    // Hantering av objekt
+    // special handling for objects - keep only fields that have a value, or are important fields
     if (typeof obj === 'object') {
       console.log('Processing object with keys:', Object.keys(obj));
       const cleanedObj: any = {};
@@ -68,7 +70,7 @@ export class FirebaseService {
 
         const cleanedValue = this.cleanDataForFirestore(value);
         
-        // Behåll viktiga fält även om de är tomma
+        // Keep fields that have a value, or are important fields
         const isImportantField = [
           'characters',
           'leader',
@@ -77,6 +79,7 @@ export class FirebaseService {
           'capitalShip'
         ].includes(key);
 
+        // If the value is not null or undefined, or if it's an important field, save it
         if (cleanedValue !== null || isImportantField) {
           cleanedObj[key] = cleanedValue;
           console.log(`Saved value for "${key}":`, cleanedValue);
@@ -89,7 +92,7 @@ export class FirebaseService {
     return obj;
   }
 
-  // Loggar ändringar
+  // Log a change record to Firestore for audit purposes
   private static async logChange(change: Omit<ChangeRecord, 'id' | 'timestamp'> & { userId: string }): Promise<void> {
     try {
       const changeRef = doc(collection(db, 'changes'));
@@ -112,12 +115,13 @@ export class FirebaseService {
     }
   }
 
+  // Add or update squad in Firestore and create a change log entry
   static async deleteSquad(squadId: string): Promise<void> {
     try {
       const batch = writeBatch(db);
       const userId = await this.getCurrentUserId();
       
-      // Ta bort squad
+      // Remove squad 
       const squadRef = doc(db, 'squads', squadId);
       const squadDoc = await getDoc(squadRef);
       if (!squadDoc.exists()) {
@@ -126,7 +130,7 @@ export class FirebaseService {
 
       batch.delete(squadRef);
 
-      // Ta bort relaterade counters
+      // Remove related counters
       const countersQuery = query(
         collection(db, 'counters'),
         where('targetSquad.id', '==', squadId)
@@ -138,6 +142,7 @@ export class FirebaseService {
 
       await batch.commit();
 
+      // Create change log entry for deleted squad
       await this.logChange({
         entityId: squadId,
         entityType: 'squad',
@@ -153,6 +158,7 @@ export class FirebaseService {
     }
   }
 
+  // Add or update squad in Firestore and create a change log entry
   static async addOrUpdateSquad(squad: Squad): Promise<void> {
     return this.handleOperation(
       async () => {
@@ -160,47 +166,50 @@ export class FirebaseService {
         if (!validation.isValid) {
           throw new Error(validation.error || 'Invalid squad data');
         }
-  
+
+        // Get current user ID to set as updatedBy field in Firestore document 
         const userId = await this.getCurrentUserId();
         const isUpdate = await this.documentExists('squads', squad.id);
-        const now = Date.now(); // Använd millisekundstidsstämpel
+        const now = Date.now(); // use millisecond timestamp
   
-        // Om det är en ny squad, sätt createdAt till nuvarande tid
+        // if it's an new squad, set createdAt to now, otherwise keep the existing value
         const normalizedSquad = {
           ...squad,
-          lastUpdated: now, // Använd nuvarande tidpunkt för lastUpdated
-          createdAt: isUpdate ? squad.createdAt : now, // Sätt createdAt till nu om det är en ny post
+          lastUpdated: now, // use current time as lastUpdated
+          createdAt: isUpdate ? squad.createdAt : now, // set createdAt to now if it's a new squad
           updatedBy: userId,
-          type: 'squad' // Säkerställ att type alltid är satt
+          type: 'squad' // ensure type is set to 'squad'
         };
   
-        // Om createdAt är undefined (vilket skulle kunna hända för en uppdatering), ta bort den från dataobjektet
+        // if createdAt is undefined, remove it from the object before saving
         if (normalizedSquad.createdAt === undefined) {
           delete normalizedSquad.createdAt;
         }
   
         const docRef = doc(db, 'squads', squad.id);
-        // Här kan vi använda merge för att uppdatera dokumentet utan att skriva över hela dokumentet
+        // use merge: true to update only the fields that are provided in the data object
         await setDoc(docRef, normalizedSquad, { merge: true });
   
-        // Logga för att verifiera data
         console.log('Saving squad with timestamps:', normalizedSquad);
       },
       'Failed to save squad'
     );
   }  
   
+  // Validate fleet data before saving to Firestore
   private static validateFleetData(fleet: Fleet): boolean {
     const hasValidShips = fleet.startingLineup?.every(ship => 
       ship.id && ship.name && ship.alignment
     );
     
+    // Capital ship is optional, but if it exists, it must have valid data
     const hasValidCapital = !fleet.capitalShip || (
       fleet.capitalShip.id && 
       fleet.capitalShip.name && 
       fleet.capitalShip.alignment
     );
 
+    // Fleet must have an id, name, alignment, valid ships and valid capital ship
     return Boolean(
       fleet.id &&
       fleet.name &&
@@ -209,7 +218,7 @@ export class FirebaseService {
       hasValidCapital
     );
   }
-
+  // Add or update fleet in Firestore and create a change log entry
   static async addOrUpdateFleet(fleet: Fleet): Promise<void> {
     return SyncLock.withLock('fleet-sync', async () => {
       return this.handleOperation(
@@ -218,9 +227,10 @@ export class FirebaseService {
             throw new Error('Invalid fleet data structure');
           }
   
+          // Validate that all ships in the starting lineup have valid data
           const userId = await this.getCurrentUserId();
           const isUpdate = await this.documentExists('fleets', fleet.id);
-          const now = Date.now(); // Använd timestamp i millisekunder
+          const now = Date.now(); // use millisecond timestamp
           
           const normalizedFleet = {
             ...fleet,
@@ -233,7 +243,6 @@ export class FirebaseService {
           const docRef = doc(db, 'fleets', fleet.id);
           await setDoc(docRef, normalizedFleet, { merge: true });
   
-          // Logga för att verifiera data
           console.log('Saving fleet with timestamps:', normalizedFleet);
         },
         'Failed to save fleet'
@@ -241,12 +250,13 @@ export class FirebaseService {
     });
   }
 
+  // Delete fleet from Firestore by id and create a change log entry
   static async deleteFleet(fleetId: string): Promise<void> {
     try {
       const batch = writeBatch(db);
       const userId = await this.getCurrentUserId();
       
-      // Ta bort fleet
+      // remove fleet 
       const fleetRef = doc(db, 'fleets', fleetId);
       const fleetDoc = await getDoc(fleetRef);
       if (!fleetDoc.exists()) {
@@ -255,7 +265,7 @@ export class FirebaseService {
 
       batch.delete(fleetRef);
 
-      // Ta bort relaterade counters
+      // remove related counters
       const countersQuery = query(
         collection(db, 'counters'),
         where('targetSquad.id', '==', fleetId)
@@ -282,7 +292,7 @@ export class FirebaseService {
     }
   }
 
-  // Counter operations
+  // Counter operations for Firestore 
   static async addOrUpdateCounter(counter: Counter): Promise<Counter> {
     return SyncLock.withLock('counter-sync', async () => {
       return this.handleOperation(
@@ -291,7 +301,7 @@ export class FirebaseService {
           const isUpdate = await this.documentExists('counters', counterId);
           const timestamp = serverTimestamp();
           const userId = await this.getCurrentUserId();
-          
+
           const counterWithId = { 
             ...counter, 
             id: counterId,
@@ -300,6 +310,7 @@ export class FirebaseService {
             updatedBy: userId
           };
           
+          // Save counter to Firestore 
           const docRef = doc(db, 'counters', counterId);
           await setDoc(docRef, this.cleanDataForFirestore(counterWithId));
 
@@ -311,7 +322,7 @@ export class FirebaseService {
   }
 
 
-// In firebaseService.ts - Update deleteCounter method
+// delete counter from Firestore by id and create a change log entry  
 static async deleteCounter(counterId: string): Promise<void> {
   return this.handleOperation(
     async () => {
@@ -326,10 +337,11 @@ static async deleteCounter(counterId: string): Promise<void> {
         console.log(`Counter ${counterId} already deleted or doesn't exist`);
         return;
       }
-
+      // Get counter data before deleting it to create a change log 
       const counterData = counterDoc.data();
       console.log('Found counter data:', counterData);
 
+      // Create batch operation to delete counter and create change log entry in one go 
       const batch = writeBatch(db);
       
       // Delete counter
@@ -339,6 +351,7 @@ static async deleteCounter(counterId: string): Promise<void> {
       const changeRef = doc(collection(db, 'changes'));
       const userId = await this.getCurrentUserId();
       
+      // Create change log entry for deleted counter 
       batch.set(changeRef, {
         id: changeRef.id,
         entityId: counterId,
@@ -362,7 +375,7 @@ static async deleteCounter(counterId: string): Promise<void> {
   );
 }
 
-  // Fetch operations
+  // Fetch operations for fleets
   static async getFleets(): Promise<Fleet[]> {
     try {
       const querySnapshot = await getDocs(collection(db, 'fleets'));
@@ -370,26 +383,26 @@ static async deleteCounter(counterId: string): Promise<void> {
         const data = doc.data();
         //console.log('Raw fleet data before processing:', data);
         
-        // Säker hantering av timestamps
+        // safe handling of timestamps
         let processedData: Partial<Fleet> = {
           ...data,
           id: doc.id,
         };
   
-        // Försök konvertera timestamps om de finns
+        // testa att konvertera timestamps om de finns
         try {
           if (data.createdAt) {
-            if (data.createdAt instanceof Timestamp) { // Om det är ett Firestore Timestamp
+            if (data.createdAt instanceof Timestamp) { // if it's a Firestore Timestamp 
               processedData.createdAt = data.createdAt.toDate().toISOString();
-            } else if (typeof data.createdAt === 'number') { // Om det är en millisekundstidsstämpel
+            } else if (typeof data.createdAt === 'number') { // if it's a millisecond timestamp
               processedData.createdAt = new Date(data.createdAt).toISOString();
             }
           }
   
           if (data.lastUpdated) {
-            if (data.lastUpdated instanceof Timestamp) { // Om det är ett Firestore Timestamp
+            if (data.lastUpdated instanceof Timestamp) { // if it's a Firestore Timestamp
               processedData.lastUpdated = data.lastUpdated.toDate().toISOString();
-            } else if (typeof data.lastUpdated === 'number') { // Om det är en millisekundstidsstämpel
+            } else if (typeof data.lastUpdated === 'number') { // if it's a millisecond timestamp
               processedData.lastUpdated = new Date(data.lastUpdated).toISOString();
             }
           }
@@ -406,6 +419,7 @@ static async deleteCounter(counterId: string): Promise<void> {
     }
   }
   
+  // fetch squads from Firestore and return as an array of Squad objects 
   static async getSquads(): Promise<Squad[]> {
     try {
       const querySnapshot = await getDocs(collection(db, 'squads'));
@@ -418,26 +432,26 @@ static async deleteCounter(counterId: string): Promise<void> {
         const data = doc.data();
         //console.log('Raw squad data before processing:', data);
   
-        // Säker hantering av timestamps
+        // safe handling of timestamps 
         let processedData: Partial<Squad> = {
           ...data,
           id: doc.id,
         };
   
-        // Försök konvertera timestamps om de finns
+        // Try to convert timestamps if they exist  
         try {
           if (data.createdAt) {
-            if (data.createdAt instanceof Timestamp) { // Om det är ett Firestore Timestamp
+            if (data.createdAt instanceof Timestamp) { // if it's a Firestore Timestamp
               processedData.createdAt = data.createdAt.toDate().toISOString();
-            } else if (typeof data.createdAt === 'number') { // Om det är en millisekundstidsstämpel
+            } else if (typeof data.createdAt === 'number') { // if it's a millisecond timestamp
               processedData.createdAt = new Date(data.createdAt).toISOString();
             }
           }
   
           if (data.lastUpdated) {
-            if (data.lastUpdated instanceof Timestamp) { // Om det är ett Firestore Timestamp
+            if (data.lastUpdated instanceof Timestamp) { // if it's a Firestore Timestamp
               processedData.lastUpdated = data.lastUpdated.toDate().toISOString();
-            } else if (typeof data.lastUpdated === 'number') { // Om det är en millisekundstidsstämpel
+            } else if (typeof data.lastUpdated === 'number') { // if it's a millisecond timestamp
               processedData.lastUpdated = new Date(data.lastUpdated).toISOString();
             }
           }
@@ -454,6 +468,7 @@ static async deleteCounter(counterId: string): Promise<void> {
     }
   }
 
+// Fetch counters from Firestore and return as an array of Counter objects
 static async getCounters(): Promise<Counter[]> {
   try {
     const querySnapshot = await getDocs(collection(db, 'counters'));
@@ -467,14 +482,14 @@ static async getCounters(): Promise<Counter[]> {
   }
 }
 
-  // Helper method för att kolla om dokument existerar
+  // Helper method to check if a document exists in a collection
   private static async documentExists(collectionName: string, id: string): Promise<boolean> {
     const docRef = doc(db, collectionName, id);
     const docSnap = await getDoc(docRef);
     return docSnap.exists();
   }
 
-  // Synkronisera alla data
+  // syncronize all data from firestore to local storage and return it as an object with timestamp
   static async syncAllData() {
     try {
       const [squads, fleets, counters] = await Promise.all([

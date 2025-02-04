@@ -1,9 +1,8 @@
-// src/services/analyticsService.ts
-
 import { getAnalytics, logEvent, setUserProperties } from 'firebase/analytics';
 import { FirebaseApp } from 'firebase/app';
 import { User } from 'firebase/auth';
 
+// AnalyticsService class to handle all analytics events and user properties in the app using Firebase Analytics SDK 
 export class AnalyticsService {
   private static instance: AnalyticsService | null = null;
   private analytics: ReturnType<typeof getAnalytics> | null = null;
@@ -11,16 +10,18 @@ export class AnalyticsService {
 
   private constructor(app: FirebaseApp) {
     try {
+      // Initialize Firebase Analytics if not already initialized
       if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
         const analyticsConfig = {
           config: {
             measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
           }
         };
+        // Initialize Firebase Analytics with the app instance and set initialized flag to true if successful 
         this.analytics = getAnalytics(app);
         this.initialized = true;
       } else {
-        this.initialized = false;
+        this.initialized = false; // set initialized flag to false if not in production or missing measurementId with warning
         console.warn('Analytics not initialized - development mode or missing measurementId');
       }
     } catch (error) {
@@ -29,6 +30,7 @@ export class AnalyticsService {
     }
   }
 
+  // Initialize the AnalyticsService with a Firebase app instance and return the instance 
   public static initialize(app: FirebaseApp): AnalyticsService {
     if (!AnalyticsService.instance) {
       AnalyticsService.instance = new AnalyticsService(app);
@@ -36,6 +38,7 @@ export class AnalyticsService {
     return AnalyticsService.instance;
   }
 
+  // Get the existing instance of AnalyticsService or return a dummy instance if not initialized
   public static getInstance(): AnalyticsService {
     if (!AnalyticsService.instance) {
       console.warn('Analytics not initialized, returning dummy instance');
@@ -49,6 +52,7 @@ export class AnalyticsService {
     return AnalyticsService.instance;
   }
 
+  // Private method to check if analytics is initialized and available 
   private ensureInitialized(): boolean {
     if (!this.initialized || !this.analytics) {
       return false;
@@ -56,7 +60,7 @@ export class AnalyticsService {
     return true;
   }
 
-  // Existing methods with safety checks
+  // Existing methods with safety checks to log analytics events and user properties
   public logPageView(pageName: string, additionalParams?: Record<string, any>): void {
     if (!this.ensureInitialized()) return;
 
@@ -72,10 +76,12 @@ export class AnalyticsService {
     }
   }
 
+  // log user interactions with action name and optional parameters 
   public logUserInteraction(actionName: string, actionParams?: Record<string, any>): void {
     if (!this.ensureInitialized()) return;
 
     try {
+      // Log user interaction event with action name and additional parameters if available 
       logEvent(this.analytics!, 'user_interaction', {
         action_name: actionName,
         ...actionParams
@@ -87,9 +93,11 @@ export class AnalyticsService {
 
   // Keep all existing analytics methods
   public logVisitorInfo(): void {
+    // Check if analytics is initialized before logging visitor info
     if (!this.ensureInitialized()) return;
 
     try {
+      // Log visitor info with browser language, user agent, screen resolution, timezone, and session start time
       logEvent(this.analytics!, 'visitor_info', {
         language: navigator.language,
         userAgent: navigator.userAgent,
@@ -102,14 +110,17 @@ export class AnalyticsService {
     }
   }
 
+  // Log performance metrics like DNS time, connection time, TTFB, DOM load time, full page load, and paint timings
   public logPerformanceMetrics(): void {
     if (!this.ensureInitialized()) return;
 
     try {
+      // Check if performance API is available in the browser
       if ('performance' in window) {
         const navigationTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
         const paintTiming = performance.getEntriesByType('paint');
         
+        // Log performance metrics 
         const metrics = {
           dns_time: navigationTiming.domainLookupEnd - navigationTiming.domainLookupStart,
           connection_time: navigationTiming.connectEnd - navigationTiming.connectStart,
@@ -127,6 +138,7 @@ export class AnalyticsService {
     }
   }
 
+  // Log resource metrics like resource name, duration, transfer size, and initiator type
   public logResourceMetrics(): void {
     if (!this.ensureInitialized()) return;
 
@@ -156,6 +168,7 @@ export class AnalyticsService {
     }
   }
 
+  // Log session data with session ID, start time, referrer, landing page, user agent, viewport size, device memory, and connection type
   public logSessionData(): void {
     if (!this.ensureInitialized()) return;
 
@@ -177,6 +190,7 @@ export class AnalyticsService {
     }
   }
 
+  // Log app performance with load time and component name (default to 'app' if not provided)
   public logAppPerformance(loadTime: number, componentName?: string): void {
     if (!this.ensureInitialized()) return;
 
@@ -190,6 +204,7 @@ export class AnalyticsService {
     }
   }
 
+  // Log error events with error message, stack trace, and error
   public setUserProperties(user: User | null): void {
     if (!this.ensureInitialized() || !user) return;
 
@@ -209,7 +224,7 @@ export class AnalyticsService {
     }
   }
 
-  // Helper method to check if analytics is available
+  // Helper method to check if analytics is available and initialized 
   public isAvailable(): boolean {
     return this.initialized && this.analytics !== null;
   }

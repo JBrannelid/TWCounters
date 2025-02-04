@@ -14,6 +14,7 @@ export interface CookieCategory {
   enabled: boolean;
 }
 
+// Cookie consent types
 export interface CookieConsent {
   necessary: boolean;
   preferences: boolean;
@@ -22,23 +23,27 @@ export interface CookieConsent {
   timestamp: string;
 }
 
+// unit types
 export interface BaseUnit {
   id: string;
   name: string;
   alignment: Alignment;
 }
 
+// unit types
 export interface Character extends BaseUnit {
   role: string;
   isGalacticLegend?: boolean;
 }
 
+// ship types
 export interface Ship extends BaseUnit {
   type: 'capital' | 'regular';
   isCapital: boolean;
   callOrder?: string;
 }
 
+// document types
 export interface BaseDocument {
   lastFetchedBy?: string;
   updatedBy?: string;
@@ -47,6 +52,7 @@ export interface BaseDocument {
   createdAt?: any;
 }
 
+// squad types
 export interface Squad extends BaseUnit, BaseDocument {
   type: BattleType;
   alignment: Alignment;
@@ -56,6 +62,7 @@ export interface Squad extends BaseUnit, BaseDocument {
   twOmicronRequired?: boolean;
 }
 
+// fleet types
 export interface Fleet extends BaseDocument {
   id: string;
   type: 'fleet';
@@ -69,18 +76,21 @@ export interface Fleet extends BaseDocument {
   description?: string;
 }
 
+// counter types
 export interface CounterStrategy {
   key: string;
   description: string;
   priority?: number;
 }
 
+// counter types
 export interface Requirement {
   type: RequirementType;
   description: string;
   priority: 'required' | 'recommended' | 'optional';
 }
 
+// counter types 
 export interface Counter extends BaseDocument {
   id: string;
   targetSquad: Squad | Fleet;
@@ -105,6 +115,7 @@ export interface Counter extends BaseDocument {
   notes?: string[];
 }
 
+// filter types for counters
 export interface Filters {
   battleType: BattleType | null;
   alignment: Alignment | null;
@@ -114,8 +125,10 @@ export interface Filters {
   searchTerm: string;
 }
 
+// filter types for counters
 export type FilterKey = keyof Filters;
 
+// mod requirement types for counters
 export interface ModRequirement {
   character: string;
   sets: string[];
@@ -129,28 +142,33 @@ export interface ModRequirement {
   };
 }
 
+// Language types (not in use atm)
 export interface Settings {
   language: Language;
 }
 
+// response types for squads and fleets
 export interface DefenseResponse {
   success: boolean;
   error?: string;
   data?: Squad | Fleet;
 }
 
+// Response types for counters
 export interface CounterResponse {
   success: boolean;
   error?: string;
   data?: Counter;
 }
 
+// User settings types for language (not in use) and theme
 export interface UserSettings {
   language: Language;
   theme: 'light' | 'dark';
   showGLWarning: boolean;
 }
 
+// User types for authentication
 export interface AdminUser {
   uid: string;
   email: string;
@@ -159,6 +177,7 @@ export interface AdminUser {
   lastLogin?: string;
 }
 
+// User types for authentication 
 export interface ChangeRecord {
   id: string;
   timestamp: string;
@@ -172,6 +191,7 @@ export interface ChangeRecord {
   }>;
 }
 
+// User types for crud operations
 export interface ChangeHistory {
   id: string;
   changeType: 'create' | 'update' | 'delete';
@@ -183,3 +203,5 @@ export interface ChangeHistory {
   };
 }
 
+// User types omicron data
+export type CounterInput = Omit<Counter, "id">;

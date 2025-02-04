@@ -3,19 +3,20 @@ import { Fleet, Ship } from '@/types';
 import { AlignmentDropdown } from './AlignmentDropdown';
 import { ShipSelector } from './ShipSelector';
 import { normalizeId } from '@/lib/imageMapping';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 
 interface NewFleetFormProps {
   onSave: (fleet: Fleet) => void;
   onCancel: () => void;
   availableUnits: Ship[];
+  isLoading?: boolean;
 }
 
 export const NewFleetForm: React.FC<NewFleetFormProps> = ({
   onSave,
   onCancel,
-  availableUnits
+  availableUnits,
+  isLoading = false
 }) => {
   const [name, setName] = useState('');
   const [alignment, setAlignment] = useState<'light' | 'dark'>('light');
@@ -61,24 +62,26 @@ export const NewFleetForm: React.FC<NewFleetFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="w-4 h-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <div className="flex items-center gap-2 text-red-400">
+            <AlertTriangle className="w-4 h-4" />
+            <span className="text-sm">{error}</span>
+          </div>
+        </div>
       )}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-titillium text-white mb-2">
+          <label className="block text-sm font-medium text-white mb-2">
             Fleet Name
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white font-titillium"
+            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
             placeholder="Enter fleet name"
+            disabled={isLoading}
           />
         </div>
         <div>
@@ -137,6 +140,7 @@ export const NewFleetForm: React.FC<NewFleetFormProps> = ({
           className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white resize-none"
           rows={3}
           placeholder="Add any notes or description..."
+          disabled={isLoading}
         />
       </div>
 
@@ -145,12 +149,14 @@ export const NewFleetForm: React.FC<NewFleetFormProps> = ({
           type="button"
           onClick={onCancel}
           className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
+          disabled={isLoading}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600"
+          className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+          disabled={isLoading}
         >
           Create Fleet
         </button>

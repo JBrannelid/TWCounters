@@ -8,6 +8,7 @@ interface DefenseOperation {
   data?: any;
 }
 
+// DefenseService class with static methods for adding, updating, and deleting defense squads and fleets
 export class DefenseService {
   private static validateSquad(squad: Squad): boolean {
     return !!(
@@ -101,29 +102,22 @@ export class DefenseService {
         ...defense,
         id: normalizeId(defense.name)
       };
-
+  
       const isValid = type === 'squad' 
         ? this.validateSquad(normalizedDefense as Squad)
         : this.validateFleet(normalizedDefense as Fleet);
-
+  
       if (!isValid) {
         throw new Error('Invalid defense data');
       }
-
+  
+      // use Firebase directly instead of storage
       if (type === 'squad') {
-        const currentSquads = storage.getSquads();
-        const updatedSquads = currentSquads.map(s => 
-          s.id === normalizedDefense.id ? normalizedDefense as Squad : s
-        );
-        await storage.saveSquads(updatedSquads);
+        await FirebaseService.addOrUpdateSquad(normalizedDefense as Squad);
       } else {
-        const currentFleets = storage.getFleets();
-        const updatedFleets = currentFleets.map(f => 
-          f.id === normalizedDefense.id ? normalizedDefense as Fleet : f
-        );
-        await storage.saveFleets(updatedFleets);
+        await FirebaseService.addOrUpdateFleet(normalizedDefense as Fleet);
       }
-
+  
       console.log('Defense updated successfully:', normalizedDefense);
       return { success: true, data: normalizedDefense };
     } catch (error) {
@@ -134,6 +128,28 @@ export class DefenseService {
       };
     }
   }
+
+  static async updateCounter(counter: Counter): Promise<DefenseOperation> {
+    try {
+      console.log('Updating counter:', counter);
+      
+      if (!this.validateCounter(counter)) {
+        throw new Error('Invalid counter data');
+      }
+  
+      // use Firebase directly instead of storage
+      await FirebaseService.addOrUpdateCounter(counter);
+  
+      console.log('Counter updated successfully:', counter);
+      return { success: true, data: counter };
+    } catch (error) {
+      console.error('Error updating counter:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update counter'
+      };
+    }
+  }  
 
   static async deleteDefense(
     id: string,
@@ -237,8 +253,12 @@ export class DefenseService {
     type: 'squad' | 'fleet'
   ): Promise<Counter[]> {
     try {
-      const allCounters = storage.getCounters();
+      const allCounters = await FirebaseService.getCounters();
       return allCounters.filter((counter: Counter) => {
+        if (!counter || !counter.targetSquad || !counter.counterSquad) {
+          return false;
+        }
+  
         const isTargetDefense = counter.targetSquad.id === defenseId;
         const isCounterDefense = counter.counterSquad.id === defenseId;
         

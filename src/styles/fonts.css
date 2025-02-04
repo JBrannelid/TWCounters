@@ -1,5 +1,4 @@
-/* src/styles/fonts.css */
-/* Orbitron */
+/* Orbitron fonts */
 @font-face {
     font-family: 'Orbitron';
     font-style: normal;
@@ -48,7 +47,7 @@
     src: url('/fonts/Orbitron-Black.ttf') format('truetype');
   }
   
-  /* Titillium Web */
+  /* Titillium Web fonts */
   @font-face {
     font-family: 'Titillium Web';
     font-style: normal;

@@ -10,7 +10,7 @@ interface GlassCardProps extends HTMLMotionProps<"div"> {
   isSelected?: boolean;
   className?: string;
   onClick?: (e: React.MouseEvent) => void;
-  ariaLabel?: string;  // För att lägga till aria-label om knappen är interaktiv
+  ariaLabel?: string; 
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
@@ -38,21 +38,22 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   };
 
   const containerClasses = cn(
-    // Basklasser
+    // base-classes
     'rounded-lg transition-all duration-300',
     'relative flex flex-col',
     'w-full',
-    
-    // Mobil-specifika klasser
+    "p-4", 
+
+    // Mobile specific classes
     'min-h-0 h-full',
     'sm:min-h-screen-small',
     'overflow-hidden',
     
-    // Variant och glow
+    // Variant and glow
     variantClasses[variant],
     glowColor !== 'none' && glowClasses[glowColor],
     
-    // Custom klasser
+    // Custom classes
     className
   );
 
@@ -60,13 +61,13 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     <motion.div
       onClick={onClick}
       className={containerClasses}
-      role={isInteractive ? 'button' : undefined} // Lägg till role="button" om det är interaktivt
-      aria-label={ariaLabel || (isInteractive ? "Interactive GlassCard" : undefined)} // Om aria-label inte skickas, sätt ett standardvärde
+      role={isInteractive ? 'button' : undefined} // add role="button" if interactive
+      aria-label={ariaLabel || (isInteractive ? "Interactive GlassCard" : undefined)} // IF ariaLabel is provided, use it, otherwise use default
       aria-selected={isSelected}
-      tabIndex={isInteractive ? 0 : -1}  // Gör det tabbbar om interaktivt
+      tabIndex={isInteractive ? 0 : -1}
       {...motionProps}
     >
-      {/* Innehållscontainer */}
+      {/* Content container */}
       <div className="relative flex flex-col flex-1 w-full h-full">
         {children}
         

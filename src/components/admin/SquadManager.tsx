@@ -277,6 +277,7 @@ const EditModal: React.FC<EditModalProps> = ({
                 <CounterButton
                   defense={squad}
                   onAddCounter={() => onAddCounter(squad)}
+                  disabled={!isOnline || saving}
                 />
               </div>
 
@@ -377,7 +378,7 @@ const EditModal: React.FC<EditModalProps> = ({
   );
 };
 
-export const SquadManager: React.FC<SquadEditorProps> = ({
+const SquadManager: React.FC<SquadEditorProps> = ({
   squads,
   counters,
   availableUnits,
@@ -390,7 +391,15 @@ export const SquadManager: React.FC<SquadEditorProps> = ({
   const { isOnline, isLoading } = useFirebase();
   const [saving, setSaving] = useState(false);
   const [editingSquad, setEditingSquad] = useState<Squad | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);  // Se till att denna finns
+
+  const handleAddCounter = (squad: Squad) => {
+    if (!isOnline) {
+      setError('Cannot add counter while offline');
+      return;
+    }
+    onAddCounter(squad);
+  };
 
   const handleUpdateSquad = async (squad: Squad) => {
     if (!isOnline) {
@@ -498,11 +507,6 @@ export const SquadManager: React.FC<SquadEditorProps> = ({
 
             {/* Actions */}
             <div className="flex gap-2">
-              <CounterButton
-                defense={squad}
-                onAddCounter={() => onAddCounter(squad)}
-                disabled={!isOnline}
-              />
               <button
                 onClick={() => setEditingSquad(squad)}
                 className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg"

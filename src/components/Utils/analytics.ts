@@ -1,4 +1,3 @@
-// src/utils/analytics.ts
 export const shouldEnableAnalytics = (): boolean => {
     // Only enable in production and browser environment
     if (typeof window === 'undefined' || process.env.NODE_ENV !== 'production') {

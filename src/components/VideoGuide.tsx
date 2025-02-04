@@ -7,6 +7,7 @@ interface VideoGuideProps {
   autoplay?: boolean;
 }
 
+// Component to display a video guide with a thumbnail and play button that expands to full screen when clicked
 export const VideoGuide: React.FC<VideoGuideProps> = ({
   videoUrl,
   title,
@@ -23,7 +24,7 @@ export const VideoGuide: React.FC<VideoGuideProps> = ({
 
   const videoId = getYouTubeId(videoUrl);
 
-  if (!videoId) return null;
+  if (!videoId) return null; // Return null if the video ID is not found
 
   const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 

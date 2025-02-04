@@ -1,4 +1,3 @@
-// src/components/CookieConsent/CookiePolicy.tsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
@@ -42,14 +41,14 @@ export const CookiePolicy: React.FC = () => {
   const formatStorageValue = (value: string): string => {
     if (typeof value !== 'string') return 'N/A';
     
-    // Om värdet är för långt, trunkera det på ett snyggt sätt
+    // if value is too long, truncate it and add ellipsis
     if (value.length > 50) {
       try {
-        // Försök parsa som JSON för bättre formatering
+        // pars value as JSON and format for readability
         const parsed = JSON.parse(value);
         return JSON.stringify(parsed, null, 2).slice(0, 100) + '...';
       } catch {
-        // Om det inte är JSON, trunkera det enkelt
+        // if value is not JSON, truncate it and add ellipsis 
         return value.slice(0, 50) + '...';
       }
     }

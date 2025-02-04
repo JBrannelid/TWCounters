@@ -2,6 +2,7 @@ import { Squad, Fleet, Counter } from '@/types';
 import { SyncQueue, DebounceSync } from '@/components/Utils/SyncUtils';
 import { FirebaseService } from './firebaseService';
 
+// Define the storage keys and version
 const STORAGE_KEYS = {
   SQUADS: 'swgoh-tw-squads',
   FLEETS: 'swgoh-tw-fleets',
@@ -14,6 +15,7 @@ class StorageService {
     return Array.isArray(data) && data.every(item => typeof item === 'object' && item !== null);
   }
 
+  // Updated saveData method to handle errors better and add versioning to the data   
   private async saveData<T>(key: string, data: T[]): Promise<void> {
     try {
       console.log(`Saving data to ${key}:`, data);
@@ -36,6 +38,7 @@ class StorageService {
     }
   }
 
+  // Updated getData method to handle legacy data formats and errors better 
   private getData<T>(key: string, defaultValue: T[] = []): T[] {
     try {
       console.log(`Getting data from ${key}`);
@@ -100,6 +103,7 @@ class StorageService {
     });
   }
 
+  // Updated getCounters method
   public getCounters(): Counter[] {
     return this.getData<Counter>(STORAGE_KEYS.COUNTERS, []);
   }

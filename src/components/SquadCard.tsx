@@ -1,6 +1,6 @@
 import { memo, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Trash2, ChevronDown, Plus } from 'lucide-react';
+import { Users, Trash2, ChevronDown, Plus, Edit } from 'lucide-react';
 import { Squad, Counter, Filters } from '@/types';
 import { GlassCard } from './ui/GlassCard';
 import { UnitImage } from './ui/UnitImage';
@@ -8,6 +8,7 @@ import { VideoIndicator } from './ui/VideoIndicator';
 import { ErrorBoundary } from 'react-error-boundary';
 import { filterCounters } from './Utils/counterUtils';
 
+// SquadCard component to display a single squad with counters and details 
 interface SquadCardProps {
   squad: Squad;
   isSelected: boolean;
@@ -15,10 +16,11 @@ interface SquadCardProps {
   counters: Counter[];
   isAdmin?: boolean;
   onDeleteCounter?: (id: string) => void;
+  onEditCounter?: (counter: Counter) => void;  
   onViewDetails?: () => void;
   isFiltered?: boolean;
   onAddCounter?: (squad: Squad) => void;
-  filters: Filters;  // Lägg till denna rad
+  filters: Filters;
 }
 
 export const SquadCard = memo<SquadCardProps>(({
@@ -28,13 +30,14 @@ export const SquadCard = memo<SquadCardProps>(({
   counters,
   isAdmin,
   onDeleteCounter,
+  onEditCounter,  
   isFiltered = false,
   onAddCounter,
-  filters  
+  filters
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Animation variants
+  // Animation variants for overlay and card 
   const overlayVariants = {
     initial: { opacity: 0 },
     animate: { 
@@ -47,6 +50,7 @@ export const SquadCard = memo<SquadCardProps>(({
     }
   };
 
+  // Card animation variants for expand/collapse effect 
   const cardVariants = {
     initial: { scale: 0.95, opacity: 0 },
     animate: { 
@@ -66,6 +70,7 @@ export const SquadCard = memo<SquadCardProps>(({
     }
   };
 
+  // Handle click outside to close the card 
   const handleClickOutside = (e: React.MouseEvent | React.TouchEvent) => {
     const contentElement = contentRef.current;
     const target = e.target as Node;
@@ -75,6 +80,7 @@ export const SquadCard = memo<SquadCardProps>(({
     }
   };
 
+  // Filter counters based on the selected filters 
   const filteredCounters = useMemo(() => {
     if (!counters) return [];
     return filterCounters(counters, filters);
@@ -188,7 +194,7 @@ export const SquadCard = memo<SquadCardProps>(({
                   <GlassCard
                     variant="dark"
                     glowColor={squad.alignment === 'light' ? 'blue' : 'red'}
-                    className="min-h-[50vh] max-h-[90vh] overflow-hidden" // Justerad max-height
+                    className="min-h-[50vh] max-h-[90vh] overflow-hidden" 
                     >
                     {/* Content */}
                     <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
@@ -286,16 +292,25 @@ export const SquadCard = memo<SquadCardProps>(({
                                     )}
                                     {counter.video_url && <VideoIndicator videoUrl={counter.video_url} />}
                                   </div>
-                                  {isAdmin && onDeleteCounter && (
-                                        <button
-                                        onClick={() => onDeleteCounter(counter.id)}
-                                        className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg"
+                                  {isAdmin && (
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        onClick={() => onEditCounter?.(counter)}
+                                        className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg"
                                       >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Edit className="w-4 h-4" />
                                       </button>
+                                      {onDeleteCounter && (
+                                        <button
+                                          onClick={() => onDeleteCounter(counter.id)}
+                                          className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      )}
+                                    </div>
                                   )}
                                 </div>
-
                                 <p className="text-white/70">{counter.description}</p>
 
                                 {counter?.counterSquad && 'leader' in counter.counterSquad && (
@@ -354,6 +369,6 @@ export const SquadCard = memo<SquadCardProps>(({
   );
 });
 
-SquadCard.displayName = 'SquadCard';
+SquadCard.displayName = 'SquadCard'; // Tell React DevTools the component name 
 
 export default SquadCard;
