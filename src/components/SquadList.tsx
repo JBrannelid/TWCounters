@@ -1,22 +1,23 @@
 import React, { useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Users, RefreshCw } from 'lucide-react';
-import { Squad, Counter, Filters } from '@/types';
+import { Squad, Counter, Filters, Fleet } from '@/types';
 import { SquadCard } from './SquadCard';
 import ErrorBoundary from './ErrorBoundary';
 
-// SquadList component to display a list of squads with counters and details for each squad 
 interface SquadListProps {
   squads: Squad[];
   filteredSquads: Squad[];
   selectedSquadId: string | null;
   onSelectSquad: (id: string | null) => void;
-  getCounters: (id: string, type: 'squad') => Counter[];
-  isAdmin?: boolean;
-  onDeleteCounter?: (id: string) => Promise<void>;
-  onEditCounter?: (counter: Counter) => Promise<void>;  
-  onViewDetails?: () => void;
+  getCounters: (id: string, type?: 'squad' | 'fleet') => Counter[];
+  isAdmin: boolean;
+  onDeleteCounter: (id: string) => Promise<void>;
+  onEditCounter: (counter: Counter) => void;
   filters: Filters;
+  onEdit: (defense: Squad | Fleet) => Promise<void>;
+  onAddCounter: (defense: Squad | Fleet) => void;
+  onDelete?: (defense: Squad | Fleet) => Promise<void>;
 }
 
 export const SquadList: React.FC<SquadListProps> = ({
@@ -27,9 +28,11 @@ export const SquadList: React.FC<SquadListProps> = ({
   getCounters,
   isAdmin,
   onDeleteCounter,
-  onEditCounter,  
-  onViewDetails,
-  filters
+  onEditCounter,
+  filters,
+  onEdit,
+  onAddCounter,
+  onDelete  
 }) => {
   const handleSquadSelect = (squadId: string) => {
     if (selectedSquadId === squadId) {
@@ -40,10 +43,8 @@ export const SquadList: React.FC<SquadListProps> = ({
   };
 
   const renderedSquads = useMemo(() => {
-    //console.log('Filtered Squads:', filteredSquads);
     return filteredSquads.map((squad) => {
-      const counters = getCounters(squad.id, 'squad');
-      //console.log('Counters for squad:', squad.name, counters);
+      const counters = getCounters(squad.id);
   
       return (
         <motion.div
@@ -69,24 +70,37 @@ export const SquadList: React.FC<SquadListProps> = ({
             }
           }}
         >
-        <SquadCard
-          squad={squad}
-          isSelected={selectedSquadId === squad.id}
-          onSelect={() => handleSquadSelect(squad.id)}
-          counters={counters}
-          isFiltered={true}
-          isAdmin={isAdmin}
-          onDeleteCounter={onDeleteCounter}
-          onEditCounter={onEditCounter}  
-          onViewDetails={onViewDetails}
-          filters={filters}
-        />
+          <SquadCard
+            squad={squad}
+            isSelected={selectedSquadId === squad.id}
+            onSelect={() => handleSquadSelect(squad.id)}
+            counters={counters}
+            isFiltered={true}
+            isAdmin={isAdmin}
+            onDeleteCounter={onDeleteCounter}
+            onEditCounter={onEditCounter}
+            filters={filters}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onAddCounter={onAddCounter}
+          />
         </motion.div>
       );
     });
-  }, [filteredSquads, selectedSquadId, getCounters, isAdmin, onDeleteCounter, onEditCounter, onViewDetails]);
+  }, [
+    filteredSquads, 
+    selectedSquadId, 
+    getCounters, 
+    isAdmin, 
+    onDeleteCounter, 
+    onEditCounter,
+    onEdit,
+    onDelete,
+    onAddCounter,
+    handleSquadSelect,
+    filters
+  ]);
   
-  // Show a message if no squads are found for the filters
   if (!squads || squads.length === 0) {
     return (
       <div 

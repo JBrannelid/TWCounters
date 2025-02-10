@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Filter, X, SunMedium, Moon, RefreshCw } from 'lucide-react';
 import { Filters, FilterKey } from '@/types';
 import { createFocusTrap } from 'focus-trap';
+import { sanitizeInput } from '@/lib/security/Sanitizer';
 
 interface FiltersMenuProps {
   isOpen: boolean;
@@ -18,6 +19,16 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
   onFilterChange
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+
+    // Safe Sanitize input on change
+    const handleFilterChange = (key: FilterKey, value: Filters[FilterKey]) => {
+      if (typeof value === 'string') {
+        const sanitizedValue = sanitizeInput(value);
+        onFilterChange(key, sanitizedValue);
+      } else {
+        onFilterChange(key, value);
+      }
+    };
 
   // Hantera tangentbordsnavigering
   useEffect(() => {
@@ -144,7 +155,7 @@ export const FiltersMenu: React.FC<FiltersMenuProps> = ({
                       key={option.value}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => onFilterChange(
+                      onClick={() => handleFilterChange(
                         option.key,
                         filters[option.key] === option.value ? null : option.value
                       )}

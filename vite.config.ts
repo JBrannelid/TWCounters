@@ -75,7 +75,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      port: 5173,
+      port: 5174,
       strictPort: true,
       headers: {
         'Content-Security-Policy': generateCSPString(nonce),
@@ -92,7 +92,7 @@ export default defineConfig(({ mode }) => {
       host: true,
       proxy: {
         '/cookie-policy': {
-          target: 'http://localhost:5173',
+          target: 'http://localhost:5174',
           changeOrigin: true,
           rewrite: (path) => '/index.html'
         }
@@ -157,7 +157,7 @@ export default defineConfig(({ mode }) => {
       exclude: ['firebase']
     },
     preview: {
-      port: 5173,
+      port: 5174,
       strictPort: true,
       headers: {
         'Content-Security-Policy': generateCSPString(nonce),

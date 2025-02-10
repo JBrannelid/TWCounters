@@ -26,22 +26,36 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
   onDelete,
   availableUnits
 }) => {
+  useEffect(() => {
+    console.log('CounterEditor mounted with props:', {
+        targetDefense,
+        existingCounter,
+        hasAvailableUnits: availableUnits?.length
+    });
+}, [targetDefense, existingCounter, availableUnits]);
+
   const isFleet = targetDefense.type === 'fleet';
   const [selectedUnits, setSelectedUnits] = useState<(Character | Ship)[]>(() => {
-    if (!existingCounter) return [];
-    
-    if (!isFleet) {
-      const squad = existingCounter.counterSquad as Squad;
-      return [squad.leader, ...(squad.characters || [])].filter((unit): unit is Character => unit !== null);
-    } else {
-      const fleet = existingCounter.counterSquad as Fleet;
-      return [
-        fleet.capitalShip,
-        ...fleet.startingLineup,
-        ...fleet.reinforcements
-      ].filter((unit): unit is Ship => unit !== null);
+    if (!existingCounter?.counterSquad) return [];
+
+    try {
+        if (targetDefense.type === 'squad') {
+            const squad = existingCounter.counterSquad as Squad;
+            return [squad.leader, ...(squad.characters || [])]
+                .filter((unit): unit is Character => unit !== null);
+        } else {
+            const fleet = existingCounter.counterSquad as Fleet;
+            return [
+                fleet.capitalShip,
+                ...fleet.startingLineup,
+                ...fleet.reinforcements
+            ].filter((unit): unit is Ship => unit !== null);
+        }
+    } catch (error) {
+        console.error('Error initializing units:', error);
+        return [];
     }
-  });
+});
 
   const [counterType, setCounterType] = useState<'hard' | 'soft' | 'risky'>(
     existingCounter?.counterType || 'hard'
@@ -50,12 +64,12 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showSelector, setShowSelector] = useState(false);
   const [selectorMode, setSelectorMode] = useState<'capital' | 'starting' | 'reinforcement' | 'leader' | 'member'>(
-    isFleet ? 'capital' : 'leader'
+      isFleet ? 'capital' : 'leader'
   );
   const [saving, setSaving] = useState(false);
   const [twOmicron, setTwOmicron] = useState({
-    required: existingCounter?.twOmicronRequired || false,
-    comment: existingCounter?.twOmicronComment || ''
+      required: existingCounter?.twOmicronRequired || false,
+      comment: existingCounter?.twOmicronComment || ''
   });
   const [videoUrl, setVideoUrl] = useState(existingCounter?.video_url || '');
 
@@ -65,61 +79,67 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
       
       if (selectedUnits.length === 0) {
         setError('Please select counter units');
+        setSaving(false);
+        return;
+      }
+  
+      if (!description.trim()) {
+        setError('Please provide a description');
+        setSaving(false);
         return;
       }
   
       let counterData: Counter;
       
-      // Base counter data shared between new and existing counters
+      // Base counter data
       const baseCounter = {
         id: existingCounter?.id || `counter-${Date.now()}`,
         counterType,
         description: description.trim(),
         video_url: videoUrl || undefined,
         strategy: existingCounter?.strategy || [],
-        lastUpdated: Date.now() 
+        lastUpdated: Date.now(),
+        targetSquad: targetDefense, 
+        counterSquad: {},
+        requirements: existingCounter?.requirements || [], 
       };
   
-      // If we edit an existing counter, update the counter data
       if (existingCounter) {
         console.log('Updating existing counter:', existingCounter.id);
         
         if (isFleet) {
           const fleetUnits = selectedUnits as Ship[];
           counterData = {
-            ...existingCounter, 
-            ...baseCounter, 
+            ...baseCounter,
             counterSquad: {
-              ...existingCounter.counterSquad,
+              id: existingCounter.counterSquad.id,
+              type: 'fleet',
+              name: `Counter for ${targetDefense.name}`,
+              alignment: targetDefense.alignment,
               capitalShip: fleetUnits[0],
               startingLineup: fleetUnits.slice(1, 4),
               reinforcements: fleetUnits.slice(4),
-            } as Fleet,
-            requirements: existingCounter.requirements || [] 
+            } as Fleet
           };
         } else {
           counterData = {
-            ...existingCounter,
-            ...baseCounter, 
+            ...baseCounter,
             counterSquad: {
-              ...existingCounter.counterSquad,
+              id: existingCounter.counterSquad.id,
+              type: 'squad',
+              name: `Counter for ${targetDefense.name}`,
+              alignment: targetDefense.alignment,
               leader: selectedUnits[0] as Character,
               characters: selectedUnits.slice(1) as Character[],
-            } as Squad,
-            twOmicronRequired: twOmicron.required,
-            twOmicronComment: twOmicron.comment,
-            requirements: existingCounter.requirements || [] 
+            } as Squad
           };
         }
       } else {
-        // Create new counter
-        console.log('Creating new counter');
-        
+        // Skapa ny counter
         if (isFleet) {
           const fleetUnits = selectedUnits as Ship[];
           counterData = {
             ...baseCounter,
-            targetSquad: targetDefense as Fleet,
             counterSquad: {
               id: `fleet-${Date.now()}`,
               type: 'fleet',
@@ -128,13 +148,11 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
               capitalShip: fleetUnits[0],
               startingLineup: fleetUnits.slice(1, 4),
               reinforcements: fleetUnits.slice(4),
-            } as Fleet,
-            requirements: []
+            } as Fleet
           };
         } else {
           counterData = {
             ...baseCounter,
-            targetSquad: targetDefense as Squad,
             counterSquad: {
               id: `squad-${Date.now()}`,
               type: 'squad',
@@ -142,32 +160,14 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
               alignment: targetDefense.alignment,
               leader: selectedUnits[0] as Character,
               characters: selectedUnits.slice(1) as Character[],
-            } as Squad,
-            twOmicronRequired: twOmicron.required,
-            twOmicronComment: twOmicron.comment,
-            requirements: []
+            } as Squad
           };
         }
       }
   
-      // Valdidate counter data before saving 
-      if (!counterData.targetSquad || !counterData.counterSquad) {
-        throw new Error('Invalid counter data: Missing target or counter squad');
-      }
-  
       console.log('Saving counter data:', counterData);
-  
-      // Use DefenseService to save the counter
-      const result = existingCounter 
-        ? await DefenseService.updateCounter(counterData)
-        : await DefenseService.addCounter(counterData);
-  
-      if (result.success) {
-        await onSave(counterData);
-        onCancel();
-      } else {
-        throw new Error(result.error || 'Failed to save counter');
-      }
+      await onSave(counterData);
+      onCancel();
     } catch (error) {
       console.error('Error saving counter:', error);
       setError(error instanceof Error ? error.message : 'Failed to save counter');
@@ -381,21 +381,34 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={onCancel}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
-                disabled={saving}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 
-                         disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? 'Saving...' : (existingCounter ? 'Update Counter' : 'Save Counter')}
-              </button>
+                {existingCounter && onDelete && (
+                    <button
+                        onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this counter?')) {
+                                onDelete(existingCounter.id);
+                            }
+                        }}
+                        className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                        disabled={saving}
+                    >
+                        Delete Counter
+                    </button>
+                )}
+                <button
+                    onClick={onCancel}
+                    className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
+                    disabled={saving}
+                >
+                    Cancel
+                </button>
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 
+                            disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {saving ? 'Saving...' : (existingCounter ? 'Update Counter' : 'Save Counter')}
+                </button>
             </div>
           </div>
         </div>

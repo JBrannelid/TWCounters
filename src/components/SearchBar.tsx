@@ -3,6 +3,7 @@ import { Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Squad, Fleet } from '@/types';
 import { UnitImage } from './ui/UnitImage';
+import { sanitizeInput, sanitizeSearchQuery } from '@/lib/security/Sanitizer';
 
 // SearchBar component that allows searching for squads and fleets with suggestions and keyboard navigation support 
 interface SearchBarProps {
@@ -32,16 +33,22 @@ export const SearchBar = memo<SearchBarProps>(({
   const containerRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
+  // Safe Sanitize input on change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
+    onChange(sanitizedValue);
+  };
+
   // Filter suggestions based on search value and limit to 30
   const filteredSuggestions = useMemo(() => {
-    if (value.trim() === '') {
+    const sanitizedValue = sanitizeInput(value.trim());
+    if (sanitizedValue === '') {
       return suggestions.slice(0, 30);
     }
     return suggestions
-      .filter(item => item.name.toLowerCase().includes(value.toLowerCase()))
+      .filter(item => item.name.toLowerCase().includes(sanitizedValue.toLowerCase()))
       .slice(0, 4);
   }, [suggestions, value]);
-
   // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     switch (e.key) {
@@ -112,7 +119,7 @@ export const SearchBar = memo<SearchBarProps>(({
           ref={inputRef}
           type="text"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleInputChange}
           onFocus={() => {
             setIsFocused(true);
             onFocus?.();
@@ -124,6 +131,8 @@ export const SearchBar = memo<SearchBarProps>(({
           aria-label="Search"
           role="searchbox"
           aria-autocomplete="list"
+          maxLength={100}
+          pattern="[a-zA-Z0-9\s-_]*"
           aria-activedescendant={
             activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined
           }

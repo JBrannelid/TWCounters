@@ -5,7 +5,6 @@ import { UnitImage } from '../ui/UnitImage';
 import { Edit, Trash2, Plus, ChevronDown } from 'lucide-react';
 import { VideoIndicator } from '../ui/VideoIndicator';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DefenseService } from '@/services/defenseService';
 
 interface DefenseCardProps {
   defense: Squad | Fleet;
@@ -30,16 +29,25 @@ export const DefenseCard: React.FC<DefenseCardProps> = ({
   const [counters, setCounters] = React.useState<Counter[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  console.log('DefenseCard rendered with:', {
+    defenseId: defense.id,
+    defenseName: defense.name,
+    isAdmin,
+    hasEditHandler: !!onEdit,
+    hasDeleteHandler: !!onDelete,
+    hasAddCounterHandler: !!onAddCounter
+  });
+
   const handleEditDefense = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log('Edit button clicked for defense:', defense);
+    console.log('🔍 DefenseCard edit clicked:', defense);
     try {
       onEdit(defense);
     } catch (error) {
       console.error('Error in handleEditDefense:', error);
     }
   };
-  
+
   // Load counters when defense changes or when expanded
   React.useEffect(() => {
     const loadCounters = async () => {
@@ -80,12 +88,29 @@ export const DefenseCard: React.FC<DefenseCardProps> = ({
   }, [defense.id, isExpanded]);
 
   const handleEditCounter = async (e: React.MouseEvent, counter: Counter) => {
+    e.preventDefault();
     e.stopPropagation();
+    
+    console.log('DefenseCard: Starting counter edit with:', counter);
     try {
-      console.log('Editing counter:', counter);
-      await onEditCounter(counter);
+      if (onEditCounter) {
+        const completeCounter = {
+          ...counter,
+          targetSquad: defense,
+          id: counter.id,
+          counterType: counter.counterType,
+          description: counter.description,
+          counterSquad: counter.counterSquad,
+          video_url: counter.video_url,
+          twOmicronRequired: counter.twOmicronRequired,
+          twOmicronComment: counter.twOmicronComment
+        };
+        
+        console.log('DefenseCard: Sending complete counter data:', completeCounter);
+        await onEditCounter(completeCounter);
+      }
     } catch (error) {
-      console.error('Error editing counter:', error);
+      console.error('Error in handleEditCounter:', error);
     }
   };
 
@@ -97,9 +122,9 @@ export const DefenseCard: React.FC<DefenseCardProps> = ({
   };
 
   return (
-    <div className="bg-space-dark border border-white/10 rounded-lg p-4">
-      {/* Defense Header */}
-      <div className="flex justify-between items-start mb-4">
+<div className="bg-space-dark border border-white/10 rounded-lg p-4 relative">  
+{/* Defense Header */}
+      <div className="flex justify-between items-start mb-4 relative">
         <div className="flex-1">
           <h3 className="text-lg font-orbitron text-white">{defense.name}</h3>
           
@@ -151,6 +176,7 @@ export const DefenseCard: React.FC<DefenseCardProps> = ({
               </>
             )}
           </div>
+          
           {/* Alignment badge */}
           <div className="mt-2">
             <span className={`px-2 py-1 rounded-full text-xs ${
@@ -161,34 +187,43 @@ export const DefenseCard: React.FC<DefenseCardProps> = ({
               {defense.alignment === 'light' ? 'Light Side' : 'Dark Side'}
             </span>
           </div>
-        </div>        
-        {/* Admin Actions */}
-        {isAdmin && (
-        <div className="flex gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEditDefense(e);
-            }}
-            className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg"
-            aria-label="Edit defense"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (window.confirm('Are you sure you want to delete this defense?')) {
-                onDelete(defense);
-              }
-            }}
-            className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-            aria-label="Delete defense"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
         </div>
-        )}
+
+        {/* Admin Controls */}
+{/* Admin Controls */}
+{isAdmin && (
+  <div className="absolute top-4 right-4 flex gap-2 z-50 bg-black/50 p-1 rounded-lg">
+    <button
+      onClick={handleEditDefense}
+      className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg"
+      aria-label="Edit defense"
+    >
+      <Edit className="w-4 h-4" />
+    </button>
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        if (window.confirm('Are you sure you want to delete this defense?')) {
+          onDelete(defense);
+        }
+      }}
+      className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
+      aria-label="Delete defense"
+    >
+      <Trash2 className="w-4 h-4" />
+    </button>
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onAddCounter(defense);
+      }}
+      className="p-2 text-green-400 hover:bg-green-500/20 rounded-lg"
+      aria-label="Add counter"
+    >
+      <Plus className="w-4 h-4" />
+    </button>
+  </div>
+)}
       </div>
 
       {/* Counters Section */}
@@ -249,8 +284,8 @@ export const DefenseCard: React.FC<DefenseCardProps> = ({
 
                   <p className="mt-2 text-white/70">{counter.description}</p>
 
-                    {/* Counter Squad/Fleet Preview */}
-                    <div className="mt-4 flex flex-wrap gap-2">
+                  {/* Counter Squad/Fleet Preview */}
+                  <div className="mt-4 flex flex-wrap gap-2">
                     {counter.counterSquad && 'leader' in counter.counterSquad ? (
                       <>
                         {counter.counterSquad.leader && (
@@ -297,21 +332,6 @@ export const DefenseCard: React.FC<DefenseCardProps> = ({
                   </div>
                 </div>
               ))}
-
-              {/* Add Counter Button */}
-              {isAdmin && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddCounter(defense);
-                  }}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2 
-                         bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Counter
-                </button>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -319,3 +339,5 @@ export const DefenseCard: React.FC<DefenseCardProps> = ({
     </div>
   );
 };
+
+export default DefenseCard;

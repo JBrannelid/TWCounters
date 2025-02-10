@@ -29,6 +29,18 @@ export const DefenseGrid: React.FC<DefenseGridProps> = ({
 }) => {
   // console.log('DefenseGrid rendering with items:', items); // Debug logging
 
+  const handleDefenseEdit = useCallback((defense: Squad | Fleet) => {
+    // this function is called when a defense is edited
+    onEdit(defense);
+  }, [onEdit]);
+
+  const handleEditCounter = useCallback(async (counter: Counter) => {
+    console.log('DefenseGrid: Received counter for edit:', counter);
+    if (onEditCounter) {
+        await onEditCounter(counter);
+    }
+}, [onEditCounter]);
+
   const loadCounters = useCallback(async (defenseId: string, type: 'squad' | 'fleet') => {
     try {
       const counters = await DefenseService.getCountersForDefense(defenseId, type);
@@ -72,7 +84,7 @@ export const DefenseGrid: React.FC<DefenseGridProps> = ({
         <DefenseCard
           key={item.id}
           defense={item}
-          onEdit={onEdit}
+          onEdit={handleDefenseEdit} 
           onDelete={onDelete}
           onAddCounter={onAddCounter}
           onEditCounter={onEditCounter}

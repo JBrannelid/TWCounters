@@ -60,6 +60,8 @@ export interface Squad extends BaseUnit, BaseDocument {
   leader: Character | null;
   description?: string;
   twOmicronRequired?: boolean;
+  twOmicronComment?: string;
+  modRequirements?: ModRequirement[];
 }
 
 // fleet types
@@ -131,11 +133,11 @@ export type FilterKey = keyof Filters;
 // mod requirement types for counters
 export interface ModRequirement {
   character: string;
-  sets: string[];
   stats: {
     primary?: string[];
     secondary?: string[];
   };
+  sets?: string[];
   speed?: {
     min?: number;
     recommended?: number;
@@ -203,5 +205,5 @@ export interface ChangeHistory {
   };
 }
 
-// User types omicron data
+// User types for authentication
 export type CounterInput = Omit<Counter, "id">;

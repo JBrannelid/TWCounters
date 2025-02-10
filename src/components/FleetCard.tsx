@@ -13,6 +13,8 @@ interface FleetCardProps {
   onSelect: () => void;
   counters: Counter[];
   isAdmin?: boolean;
+  onEdit?: (fleet: Fleet) => void;  
+  onDelete?: (fleet: Fleet) => void; 
   onDeleteCounter?: (id: string) => void;
   onViewDetails?: () => void;
   isFiltered?: boolean;
@@ -26,6 +28,8 @@ export const FleetCard = memo<FleetCardProps>(({
   onSelect,
   counters,
   isAdmin,
+  onEdit,           
+  onDelete,         
   onDeleteCounter,
   onEditCounter,
   isFiltered = false,
@@ -131,31 +135,66 @@ export const FleetCard = memo<FleetCardProps>(({
             }`}
           >
             <div className="relative p-4">
-               {/* Header section */}
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-orbitron text-white flex items-center gap-2">
-                    <Ship className="w-5 h-5 text-blue-400" />
-                    {fleet.name}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-2">
-                     <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                       fleet.alignment === 'light'
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-400/20'
-                        : 'bg-red-500/20 text-red-400 border border-red-400/20'
-                    }`}>
-                    {fleet.alignment === 'light' ? 'Light Side' : 'Dark Side'}
-                  </span>
+                {/* Header section */}
+                <div className="flex flex-col gap-2 mb-4">
+                  {/* Rad 1: Squad namn */}
+                  <div className="flex items-center justify-between mb-4"> 
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-orbitron text-white">{fleet.name}</h3>
+                    </div>
+                    <motion.div
+                      animate={{ rotate: isSelected ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </motion.div>
+                  </div>
+
+                  {/* Rad 2: Admin Controls */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit?.(fleet);
+                        }}
+                        className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm('Are you sure you want to delete this fleet?')) {
+                            onDelete?.(fleet);
+                          }
+                        }}
+                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      {onAddCounter && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddCounter(fleet);
+                          }}
+                          className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors"
+                          aria-label="Add counter"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {/* Rad 3: Badges */}
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs ${fleet.alignment === 'light' ? 'bg-blue-500/20 text-blue-400 border border-blue-400/20' : 'bg-red-500/20 text-red-400 border border-red-400/20'}`}>
+                      {fleet.alignment === 'light' ? 'Light Side' : 'Dark Side'}
+                    </span>
                   </div>
                 </div>
-                <motion.div
-                  animate={{ rotate: isSelected ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg"
-                >
-                  <ChevronDown className="w-4 h-4" />
-                </motion.div>
-              </div>
               {/* Fleet preview */}
               <div className="flex flex-wrap items-center gap-2">
                 {fleet.capitalShip && (
@@ -386,23 +425,6 @@ export const FleetCard = memo<FleetCardProps>(({
             </div>
           )}
         </AnimatePresence>
-
-        {isAdmin && onAddCounter && !isSelected && (
-          <div className="mt-4">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddCounter(fleet);
-              }}
-              className="flex items-center gap-2 px-4 py-2 w-full justify-center
-                          rounded-lg bg-green-500/20 text-green-400 
-                          hover:bg-green-500/30 transition-all"
-              >
-              <Plus className="w-4 h-4" />
-              Add Counter
-            </button>
-          </div>
-        )}
       </div>
     </ErrorBoundary>
   );

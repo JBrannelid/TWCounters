@@ -2,103 +2,146 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Cloud, RefreshCw, Clock, AlertTriangle,
-  Download, Upload, CheckCircle 
+  CheckCircle, Database 
 } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
-import { FirebaseSync } from '@/services/firebaseSync';
+import { FirebaseService } from '@/services/firebaseService';
 import { LoadingIndicator } from '../ui/LoadingIndicator';
+import { useFirebase } from '@/contexts/FirebaseContext';
 
 export const SyncManager: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [syncHistory, setSyncHistory] = useState<Array<{
-    date: Date;
-    success: boolean;
-    details?: string;
-  }>>([]);
-  const [showHistory, setShowHistory] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [syncStats, setSyncStats] = useState({
+    squads: 0,
+    fleets: 0,
+    counters: 0,
+    lastUpdated: null as Date | null
+  });
+  const { isOnline } = useFirebase();
 
+  // Load initial sync stats
   useEffect(() => {
-    // Load last sync time from localStorage or server
-    const lastSyncTime = localStorage.getItem('lastSyncTime');
-    if (lastSyncTime) {
-      setLastSync(new Date(lastSyncTime));
-    }
+    const loadSyncStats = async () => {
+      try {
+        const data = await FirebaseService.syncAllData();
+        setSyncStats({
+          squads: data.squads.length,
+          fleets: data.fleets.length,
+          counters: data.counters.length,
+          lastUpdated: new Date()
+        });
+      } catch (error) {
+        console.error('Error loading sync stats:', error);
+      }
+    };
 
-    // upcoming logic for loading sync history
-    loadSyncHistory();
+    loadSyncStats();
   }, []);
 
-  const loadSyncHistory = async () => {
-    // upcoming logic for loading sync history
-  };
-
+  // Sync Now functionality
   const handleSync = async () => {
+    if (!isOnline) {
+      setError('Cannot sync while offline');
+      return;
+    }
+
     setIsSyncing(true);
     setError(null);
-
     try {
-      await FirebaseSync.syncAll();
+      // Force sync all data from Firebase
+      const data = await FirebaseService.syncAllData();
       
-      const now = new Date();
-      setLastSync(now);
-      localStorage.setItem('lastSyncTime', now.toISOString());
-      
-      setSyncHistory(prev => [{
-        date: now,
-        success: true
-      }, ...prev].slice(0, 10)); // Keep last 10 records
+      // Update sync statistics
+      setSyncStats({
+        squads: data.squads.length,
+        fleets: data.fleets.length,
+        counters: data.counters.length,
+        lastUpdated: new Date()
+      });
 
+      setLastSync(new Date());
+      setSuccess('Sync completed successfully');
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Sync failed';
-      setError(errorMessage);
-      setSyncHistory(prev => [{
-        date: new Date(),
-        success: false,
-        details: errorMessage
-      }, ...prev].slice(0, 10));
+      setError(err instanceof Error ? err.message : 'Sync failed');
     } finally {
       setIsSyncing(false);
     }
   };
 
-  const handleBackup = async () => {
-     // upcoming logic for backup
-  };
-
-  const handleRestore = async () => {
-    // upcoming logic restore
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-orbitron text-white flex items-center gap-2">
-          <Cloud className="w-6 h-6" />
-          Sync Management
-        </h2>
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-orbitron text-white">Sync Management</h2>
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm">
+          <Database className="w-4 h-4" />
+           Protected Level: Admin Access
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Sync Status Card */}
-        <GlassCard variant="darker" className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-white">Current Status</h3>
-            {lastSync && (
-              <div className="flex items-center gap-2 text-sm text-white/60">
-                <Clock className="w-4 h-4" />
-                Last sync: {lastSync.toLocaleString()}
-              </div>
-            )}
-          </div>
+      {!isOnline && (
+        <Alert>
+          <AlertTitle>Offline Mode</AlertTitle>
+          <AlertDescription>
+            You are currently offline. Sync operations are not available.
+          </AlertDescription>
+        </Alert>
+      )}
 
-          <div className="space-y-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertTriangle className="w-4 h-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {success && (
+        <Alert>
+          <CheckCircle className="w-4 h-4 text-green-400" />
+          <AlertTitle>Success</AlertTitle>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Current Status Card */}
+        <GlassCard variant="dark" className="p-6">
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-white">Current Status</h3>
+              {lastSync && (
+                <div className="flex items-center gap-2 text-sm text-white/60">
+                  <Clock className="w-4 h-4" />
+                  Last sync: {lastSync.toLocaleString()}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 bg-white/5 rounded-lg">
+                <div className="text-sm text-white/60">Squads</div>
+                <div className="text-xl font-medium text-white">{syncStats.squads}</div>
+              </div>
+              <div className="p-4 bg-white/5 rounded-lg">
+                <div className="text-sm text-white/60">Fleets</div>
+                <div className="text-xl font-medium text-white">{syncStats.fleets}</div>
+              </div>
+              <div className="p-4 bg-white/5 rounded-lg">
+                <div className="text-sm text-white/60">Counters</div>
+                <div className="text-xl font-medium text-white">{syncStats.counters}</div>
+              </div>
+            </div>
+
             <button
               onClick={handleSync}
-              disabled={isSyncing}
+              disabled={!isOnline || isSyncing}
               className="flex items-center justify-center gap-2 w-full px-4 py-2 
                        bg-blue-500 text-white rounded-lg hover:bg-blue-600 
                        disabled:opacity-50 disabled:cursor-not-allowed"
@@ -106,124 +149,45 @@ export const SyncManager: React.FC = () => {
               <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
               {isSyncing ? 'Syncing...' : 'Sync Now'}
             </button>
-
-            <button
-              onClick={() => setShowHistory(true)}
-              className="flex items-center justify-center gap-2 w-full px-4 py-2 
-                       bg-white/5 text-white rounded-lg hover:bg-white/10"
-            >
-              <Clock className="w-4 h-4" />
-              View Sync History
-            </button>
           </div>
         </GlassCard>
 
-        {/* Backup & Restore Card */}
-        <GlassCard variant="darker" className="p-6">
-          <h3 className="text-lg font-medium text-white mb-6">Backup & Restore</h3>
+        {/* Sync Status Card */}
+        <GlassCard variant="dark" className="p-6">
+          <div className="flex flex-col space-y-4">
+            <h3 className="text-lg font-medium text-white">Real-time Status</h3>
+            
+            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-lg">
+              <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`} />
+              <div>
+                <div className="font-medium text-white">
+                  {isOnline ? 'Connected' : 'Offline'}
+                </div>
+                <div className="text-sm text-white/60">
+                  {isOnline 
+                    ? 'Real-time sync is active' 
+                    : 'Waiting for connection...'}
+                </div>
+              </div>
+            </div>
 
-          <div className="space-y-4">
-            <button
-              onClick={handleBackup}
-              className="flex items-center justify-center gap-2 w-full px-4 py-2 
-                       bg-white/5 text-white rounded-lg hover:bg-white/10"
-            >
-              <Download className="w-4 h-4" />
-              Create Backup
-            </button>
-
-            <button
-              onClick={handleRestore}
-              className="flex items-center justify-center gap-2 w-full px-4 py-2 
-                       bg-white/5 text-white rounded-lg hover:bg-white/10"
-            >
-              <Upload className="w-4 h-4" />
-              Restore from Backup
-            </button>
+            {syncStats.lastUpdated && (
+              <div className="p-4 bg-white/5 rounded-lg">
+                <div className="text-sm text-white/60">Last Updated</div>
+                <div className="text-white">
+                  {syncStats.lastUpdated.toLocaleString()}
+                </div>
+              </div>
+            )}
           </div>
         </GlassCard>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="w-4 h-4" />
-          <AlertTitle>Sync Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      {isSyncing && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <LoadingIndicator size="lg" message="Syncing data..." />
+        </div>
       )}
-
-      {/* Sync History Modal */}
-      <AnimatePresence>
-        {showHistory && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 
-                     flex items-center justify-center p-4"
-            onClick={() => setShowHistory(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="bg-space-darker p-6 rounded-lg max-w-2xl w-full 
-                       border border-white/10"
-              onClick={e => e.stopPropagation()}
-            >
-              <h3 className="text-xl font-medium text-white mb-6">Sync History</h3>
-
-              <div className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                {syncHistory.map((record, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg border ${
-                      record.success
-                        ? 'bg-green-500/10 border-green-500/20'
-                        : 'bg-red-500/10 border-red-500/20'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {record.success ? (
-                          <CheckCircle className="w-4 h-4 text-green-400" />
-                        ) : (
-                          <AlertTriangle className="w-4 h-4 text-red-400" />
-                        )}
-                        <span className={`text-sm ${
-                          record.success ? 'text-green-400' : 'text-red-400'
-                        }`}>
-                          {record.success ? 'Sync Successful' : 'Sync Failed'}
-                        </span>
-                      </div>
-                      <span className="text-sm text-white/60">
-                        {record.date.toLocaleString()}
-                      </span>
-                    </div>
-                    {record.details && (
-                      <p className="mt-2 text-sm text-white/60">
-                        {record.details}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex justify-end mt-6">
-                <button
-                  onClick={() => setShowHistory(false)}
-                  className="px-4 py-2 bg-white/10 text-white rounded-lg 
-                           hover:bg-white/20"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
-
-export default SyncManager;

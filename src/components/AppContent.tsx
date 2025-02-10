@@ -307,6 +307,32 @@ const AdminDashboards = lazy(() =>
         }
       }, []);
 
+      const handleAddCounter = useCallback((defense: Squad | Fleet) => {
+        if (!isOnline) {
+          setError('Cannot add counter while offline');
+          return;
+        }
+        setSelectedDefense(defense);
+        setShowCounterEditor(true);
+      }, [isOnline]);
+      
+      const handleEditDefense = useCallback(async (defense: Squad | Fleet) => {
+        if (!isOnline) {
+          setError('Cannot edit while offline');
+          return;
+        }
+        try {
+          if ('leader' in defense) {
+            await FirebaseService.addOrUpdateSquad(defense as Squad);
+          } else {
+            await FirebaseService.addOrUpdateFleet(defense as Fleet);
+          }
+        } catch (error) {
+          console.error('Error editing defense:', error);
+          setError(error instanceof Error ? error.message : 'Failed to edit defense');
+        }
+      }, [isOnline]);
+      
     // Filter the units based on current filters
     const filteredSquads = activeView === 'squads' ? filterUnits(squads, filters) as Squad[] : [];
     const filteredFleets = activeView === 'fleets' ? filterUnits(fleets, filters) as Fleet[] : [];
@@ -479,6 +505,10 @@ const handleEditCounter = async (counter: Counter) => {
         }
       }
     };
+
+    const getCountersWrapper = useCallback((id: string, type: 'squad' | 'fleet' = 'squad') => {
+      return getCounters(id, type);
+    }, [getCounters]);
   
     const adminHandlers = {
       onUpdateSquad: async (squad: Squad) => {
@@ -754,15 +784,17 @@ const handleEditCounter = async (counter: Counter) => {
                         >
                         {activeView === 'squads' ? (
                           <SquadList
-                            squads={squads}
-                            filteredSquads={filteredSquads}
-                            selectedSquadId={selectedId}
-                            onSelectSquad={setSelectedId}
-                            getCounters={getCounters}
-                            isAdmin={isAdmin}
-                            onDeleteCounter={handleDeleteCounter}
-                            onEditCounter={handleEditCounter}
-                            filters={filters}
+                          squads={squads}
+                          filteredSquads={filteredSquads}
+                          selectedSquadId={selectedId}
+                          onSelectSquad={setSelectedId}
+                          getCounters={(id) => getCountersWrapper(id, 'squad')}
+                          isAdmin={isAdmin}
+                          onDeleteCounter={handleDeleteCounter}
+                          onEditCounter={handleEditCounter}
+                          filters={filters}
+                          onEdit={handleEditDefense}
+                          onAddCounter={handleAddCounter}
                           />
                         ) : (
                           <FleetList
@@ -770,11 +802,13 @@ const handleEditCounter = async (counter: Counter) => {
                             filteredFleets={filteredFleets}
                             selectedFleetId={selectedId}
                             onSelectFleet={setSelectedId}
-                            getCounters={getCounters}
+                            getCounters={(id) => getCountersWrapper(id, 'fleet')}
                             isAdmin={isAdmin}
                             onDeleteCounter={handleDeleteCounter}
                             onEditCounter={handleEditCounter}
                             filters={filters}
+                            onEdit={handleEditDefense}
+                            onAddCounter={handleAddCounter}
                           />
                         )}
                         </motion.div>
@@ -810,13 +844,23 @@ const handleEditCounter = async (counter: Counter) => {
                 </div>
               }>
               <AdminDashboards
-                squads={squads}
-                fleets={fleets}
-                counters={counters}
-                isAdmin={isAdmin} 
-                onLogout={handleAdminLogout}
-                {...adminHandlers}
-              />
+                        squads={squads}
+                        fleets={fleets}
+                        counters={counters}
+                        isAdmin={isAdmin}
+                        availableCharacters={Object.values(characters)}
+                        availableShips={Object.values(ships)}
+                        onUpdateSquad={adminHandlers.onUpdateSquad}
+                        onDeleteSquad={adminHandlers.onDeleteSquad}
+                        onUpdateFleet={adminHandlers.onUpdateFleet}
+                        onDeleteFleet={adminHandlers.onDeleteFleet}
+                        onAddCounter={adminHandlers.onAddCounter}
+                        onUpdateCounter={adminHandlers.onUpdateCounter}
+                        onDeleteCounter={adminHandlers.onDeleteCounter}
+                        onLogout={handleAdminLogout}
+                        isLoading={isLoading} onEdit={function (defense: Squad | Fleet): Promise<void> {
+                          throw new Error('Function not implemented.');
+                        } }              />
               </ErrorBoundary>
             </Suspense>
               )}
