@@ -3,9 +3,9 @@ import { Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Squad, Fleet } from '@/types';
 import { UnitImage } from './ui/UnitImage';
+import { validateAndSanitizeFormField } from '@/lib/security/formValidation';
 import { sanitizeInput, sanitizeSearchQuery } from '@/lib/security/Sanitizer';
 
-// SearchBar component that allows searching for squads and fleets with suggestions and keyboard navigation support 
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
@@ -29,29 +29,50 @@ export const SearchBar = memo<SearchBarProps>(({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [lastValidValue, setLastValidValue] = useState(value);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // Safe Sanitize input on change
+  // safe search query value after validation and sanitization and keep last valid value
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedValue = sanitizeInput(e.target.value);
-    onChange(sanitizedValue);
+    const validation = validateAndSanitizeFormField(e.target.value, 'search', {
+      maxLength: 100,
+      isSearch: true,
+      allowHTML: false
+    });
+
+    if (validation.isValid) {
+      // Safe search query value after validation and sanitization 
+      const sanitizedQuery = sanitizeSearchQuery(validation.sanitizedValue);
+      setLastValidValue(sanitizedQuery);
+      setValidationError(null);
+      onChange(sanitizedQuery);
+    } else {
+      setValidationError(validation.error || 'Invalid search input');
+      // keep last valid value
+      e.target.value = lastValidValue;
+    }
   };
 
-  // Filter suggestions based on search value and limit to 30
+  // Filtrera suggestions base on search query
   const filteredSuggestions = useMemo(() => {
-    const sanitizedValue = sanitizeInput(value.trim());
+    const sanitizedValue = sanitizeSearchQuery(value.trim().toLowerCase());
     if (sanitizedValue === '') {
       return suggestions.slice(0, 30);
     }
     return suggestions
-      .filter(item => item.name.toLowerCase().includes(sanitizedValue.toLowerCase()))
+      .filter(item => item.name.toLowerCase().includes(sanitizedValue))
       .slice(0, 4);
   }, [suggestions, value]);
-  // Keyboard navigation
+
+  // Safe keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    switch (e.key) {
+    // Prevent XSS attack via keyboard events
+    const safeKey = sanitizeInput(e.key);
+    
+    switch (safeKey) {
       case 'ArrowDown':
         e.preventDefault();
         setActiveIndex(prev => 
@@ -75,6 +96,19 @@ export const SearchBar = memo<SearchBarProps>(({
         break;
     }
   }, [filteredSuggestions, activeIndex, onSelectSuggestion]);
+
+  // Scroll active suggestion into view
+  useEffect(() => {
+    if (activeIndex >= 0 && suggestionsRef.current) {
+      const activeElement = suggestionsRef.current.children[activeIndex] as HTMLElement;
+      if (activeElement) {
+        activeElement.scrollIntoView({
+          block: 'nearest',
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [activeIndex]);
 
   // Scroll active suggestion into view
   useEffect(() => {
@@ -124,15 +158,19 @@ export const SearchBar = memo<SearchBarProps>(({
             setIsFocused(true);
             onFocus?.();
           }}
-          className="w-full pl-10 pr-10 py-2 bg-white/5 border border-white/10 rounded-lg 
-                   text-white placeholder-white/40 focus:outline-none focus:ring-2 
-                   focus:ring-blue-400/50 focus:border-transparent font-titillium"
+          className={`w-full pl-10 pr-10 py-2 bg-white/5 border 
+                     ${validationError ? 'border-red-500' : 'border-white/10'} 
+                     rounded-lg text-white placeholder-white/40 focus:outline-none 
+                     focus:ring-2 focus:ring-blue-400/50 focus:border-transparent 
+                     font-titillium`}
           placeholder={placeholder}
           aria-label="Search"
           role="searchbox"
           aria-autocomplete="list"
           maxLength={100}
           pattern="[a-zA-Z0-9\s-_]*"
+          aria-invalid={!!validationError}
+          aria-errormessage={validationError ? 'search-error' : undefined}
           aria-activedescendant={
             activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined
           }
@@ -154,6 +192,16 @@ export const SearchBar = memo<SearchBarProps>(({
           >
             <X className="w-4 h-4" aria-hidden="true" />
           </button>
+        )}
+
+        {validationError && (
+          <div 
+            id="search-error"
+            className="absolute -bottom-6 left-0 text-sm text-red-400"
+            role="alert"
+          >
+            {validationError}
+          </div>
         )}
       </div>
 

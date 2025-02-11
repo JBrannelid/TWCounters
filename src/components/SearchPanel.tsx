@@ -1,8 +1,10 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useCallback } from 'react';
 import { Users, Ship, Settings } from 'lucide-react';
 import { Filters } from '@/types';
+import { validateAndSanitizeFormField } from '@/lib/security/formValidation';
+import { sanitizeInput } from '@/lib/security/Sanitizer';
+import { ErrorBoundary } from 'react-error-boundary';
 
-// SearchPanel component to display the search bar and view selection buttons 
 interface SearchPanelProps {
   activeView: 'squads' | 'fleets';
   onViewChange: (view: 'squads' | 'fleets') => void;
@@ -18,15 +20,43 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   filters,
   children
 }) => {
-  // Check if any filter is active
-  const hasActiveFilters = 
-    filters.alignment !== null || 
-    filters.showTWOmicronOnly || 
-    filters.showHardCounters || 
-    filters.excludeGL ||        
-    Boolean(filters.searchTerm);
+  // Secure view type validation
+  const isValidView = (view: string): view is 'squads' | 'fleets' => {
+    return ['squads', 'fleets'].includes(view);
+  };
 
-  // Define the base styles for the buttons and the active/inactive classes
+  // Secure handling of view changes with validation
+  const handleViewChange = useCallback((view: 'squads' | 'fleets') => {
+    // Validate the view type
+    const validation = validateAndSanitizeFormField(view, 'view', {
+      required: true,
+      allowHTML: false
+    });
+
+    if (validation.isValid && isValidView(validation.sanitizedValue)) {
+      onViewChange(validation.sanitizedValue);
+    } else {
+      console.error('Invalid view type:', view);
+    }
+  }, [onViewChange]);
+
+  // Check if any filter is active with secure value checking
+  const hasActiveFilters = useCallback(() => {
+    try {
+      return Boolean(
+        sanitizeInput(String(filters.alignment)) !== 'null' || 
+        filters.showTWOmicronOnly || 
+        filters.showHardCounters || 
+        filters.excludeGL ||        
+        Boolean(sanitizeInput(filters.searchTerm))
+      );
+    } catch (error) {
+      console.error('Error checking active filters:', error);
+      return false;
+    }
+  }, [filters]);
+
+  // Define secure button base styles
   const buttonBaseClass = `
     flex-1 sm:flex-auto 
     flex items-center justify-center gap-2 
@@ -36,8 +66,8 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
     focus:ring-offset-space-darker
   `;
 
-  const activeClass = 'bg-blue-500 text-white'; // Active button styles 
-  const inactiveClass = 'bg-white/5 text-white hover:bg-white/10'; // Inactive button styles
+  const activeClass = 'bg-blue-500 text-white';
+  const inactiveClass = 'bg-white/5 text-white hover:bg-white/10';
 
   return (
     <div 
@@ -46,12 +76,17 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
       role="search"
       aria-label="Territory Wars search panel"
     >
-      {/* Search Container */}
-      <div className="w-full relative" style={{ zIndex: 1000 }}>
+      {/* Search Container with proper ARIA roles */}
+      <div 
+        className="w-full relative" 
+        style={{ zIndex: 1000 }}
+        role="searchbox"
+        aria-label="Search container"
+      >
         {children}
       </div>
 
-      {/* Buttons Container */}
+      {/* Buttons Container with secure event handling */}
       <div 
         className="flex flex-wrap gap-2" 
         style={{ position: 'relative', zIndex: 50 }}
@@ -59,7 +94,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
         aria-label="View selection"
       >
         <button
-          onClick={() => onViewChange('squads')}
+          onClick={() => handleViewChange('squads')}
           className={`${buttonBaseClass} ${
             activeView === 'squads' ? activeClass : inactiveClass
           }`}
@@ -67,13 +102,18 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
           aria-selected={activeView === 'squads'}
           aria-controls="squads-panel"
           id="squads-tab"
+          data-testid="squads-tab"
         >
-          <Users className="w-5 h-5" aria-hidden="true" />
+          <Users 
+            className="w-5 h-5" 
+            aria-hidden="true"
+            role="img"
+          />
           <span className="whitespace-nowrap">Squads</span>
         </button>
 
         <button
-          onClick={() => onViewChange('fleets')}
+          onClick={() => handleViewChange('fleets')}
           className={`${buttonBaseClass} ${
             activeView === 'fleets' ? activeClass : inactiveClass
           }`}
@@ -81,21 +121,31 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
           aria-selected={activeView === 'fleets'}
           aria-controls="fleets-panel"
           id="fleets-tab"
+          data-testid="fleets-tab"
         >
-          <Ship className="w-5 h-5" aria-hidden="true" />
+          <Ship 
+            className="w-5 h-5" 
+            aria-hidden="true"
+            role="img"
+          />
           <span className="whitespace-nowrap">Fleets</span>
         </button>
 
         <button
           onClick={onOptionsClick}
           className={`${buttonBaseClass} ${
-            hasActiveFilters ? activeClass : inactiveClass
+            hasActiveFilters() ? activeClass : inactiveClass
           }`}
           aria-expanded={filters.alignment !== null || filters.showTWOmicronOnly}
           aria-haspopup="dialog"
           aria-label="Filter options"
+          data-testid="filter-options"
         >
-          <Settings className="w-5 h-5" aria-hidden="true" />
+          <Settings 
+            className="w-5 h-5" 
+            aria-hidden="true"
+            role="img"
+          />
           <span className="whitespace-nowrap">Filters</span>
         </button>
       </div>
@@ -118,5 +168,20 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
         Fleet search content
       </div>
     </div>
+  );
+};
+
+// Error boundary wrapper for the SearchPanel component
+export const SecureSearchPanel: React.FC<SearchPanelProps> = (props) => {
+  return (
+    <ErrorBoundary
+      fallback={
+        <div className="text-red-400 p-4">
+          Error loading search panel. Please try refreshing the page.
+        </div>
+      }
+    >
+      <SearchPanel {...props} />
+    </ErrorBoundary>
   );
 };

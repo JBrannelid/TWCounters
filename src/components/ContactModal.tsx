@@ -2,9 +2,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Coffee, Database } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createFocusTrap } from 'focus-trap';
+import { validateAndSanitizeFormField } from '@/lib/security/formValidation';
+import { sanitizeInput } from '@/lib/security/Sanitizer';
 
-// ContactModal component that displays a contact form in a modal dialog
-// The form is submitted to a Netlify API endpoint for email notifications
 interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,6 +13,44 @@ interface ContactModalProps {
 export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+    // Validera och sanitera input
+    const handleInputChange = (
+      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+      const { name, value } = e.target;
+      
+      // Validera och sanitera input
+      const validation = validateAndSanitizeFormField(value, name, {
+        required: true,
+        minLength: name === 'message' ? 10 : 2,
+        maxLength: name === 'message' ? 1000 : 100,
+        isUrl: false,
+        allowHTML: false
+      });
+  
+      // Uppdatera formdata med saniterat värde
+      setFormData(prev => ({
+        ...prev,
+        [name]: validation.sanitizedValue
+      }));
+  
+      // Uppdatera eventuella fel
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: validation.error || ''
+      }));
+    };
 
   // Handle Escape key
   useEffect(() => {
@@ -46,26 +84,55 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
     event.preventDefault();
     setFormStatus('sending');
     setErrorMessage('');
-  
+
+    // Validera alla fält innan submission
+    const nameValidation = validateAndSanitizeFormField(formData.name, 'name', { 
+      required: true, 
+      minLength: 2 
+    });
+    const emailValidation = validateAndSanitizeFormField(formData.email, 'email', { 
+      required: true, 
+      minLength: 5 
+    });
+    const messageValidation = validateAndSanitizeFormField(formData.message, 'message', { 
+      required: true, 
+      minLength: 10 
+    });
+
+    // Kontrollera om några valideringsfel finns
+    if (!nameValidation.isValid || !emailValidation.isValid || !messageValidation.isValid) {
+      setFormStatus('error');
+      setErrorMessage('Please fix the form errors before submitting');
+      return;
+    }
+
     try {
       const form = event.target as HTMLFormElement;
       const formData = new FormData(form);
-  
+
+      // Sanitera all form data innan submission
+      const sanitizedData = new FormData();
+      for (const [key, value] of formData.entries()) {
+        if (typeof value === 'string') {
+          sanitizedData.append(key, sanitizeInput(value));
+        }
+      }
+
       if (process.env.NODE_ENV === 'development') {
         await new Promise(resolve => setTimeout(resolve, 1000));
         setFormStatus('sent');
         form.reset();
         return;
       }
-  
+
       const response = await fetch('/', {
         method: 'POST',
         headers: { 
           "Content-Type": "application/x-www-form-urlencoded" 
         },
-        body: new URLSearchParams(formData as any).toString()
+        body: new URLSearchParams(sanitizedData as any).toString()
       });
-  
+
       if (response.ok) {
         setFormStatus('sent');
         form.reset();
