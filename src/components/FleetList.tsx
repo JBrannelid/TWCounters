@@ -42,24 +42,33 @@ interface FleetListProps {
     }
   };
 
-  const renderedFleets = useMemo(
-    () =>
-      filteredFleets.map((fleet) => (
+  const renderedFleets = useMemo(() => {
+    return filteredFleets.map((fleet, index) => {
+      return (
         <motion.div
           key={fleet.id}
-          className={`w-full max-w-md ${selectedFleetId === fleet.id ? 'expanded-card' : ''}`}
+          className={`card-wrapper ${selectedFleetId === fleet.id ? 'expanded-card' : ''}`}
           layout
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          style={{
+          style={{ 
             gridColumn: `span ${selectedFleetId === fleet.id ? 1 : 1}`,
-            zIndex: selectedFleetId === fleet.id ? 50 : 1,
+            zIndex: selectedFleetId === fleet.id ? 50 : 1
           }}
-          role="listitem"
+          role="gridcell"
           aria-selected={selectedFleetId === fleet.id}
           aria-label={`Fleet ${fleet.name}`}
+          tabIndex={0}
+          aria-rowindex={index + 1}
+          aria-colindex={Math.floor(index % 3) + 1}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleFleetSelect(fleet.id);
+            }
+          }}
         >
           <FleetCard
             key={fleet.id}
@@ -72,13 +81,24 @@ interface FleetListProps {
             onDeleteCounter={onDeleteCounter}
             onEditCounter={onEditCounter}
             onEdit={onEdit}
-            onDelete={onDelete}  
-            onAddCounter={onAddCounter} 
+            onDelete={onDelete}
+            onAddCounter={onAddCounter}
           />
         </motion.div>
-      )),
-      [filteredFleets, selectedFleetId, getCounters, isAdmin, onDeleteCounter, onEditCounter, onEdit] 
-  );
+      );
+    });
+  }, [
+    filteredFleets,
+    selectedFleetId,
+    getCounters,
+    isAdmin,
+    onDeleteCounter,
+    onEditCounter,
+    onEdit,
+    onDelete,
+    onAddCounter,
+    handleFleetSelect
+  ]);
   // if there are no fleets, show a message to the user
   if (!fleets || fleets.length === 0) {
     return (
@@ -109,32 +129,52 @@ interface FleetListProps {
           className="flex flex-col items-center justify-center p-8"
           role="alert"
           aria-live="assertive"
+          aria-atomic="true"
         >
-          <div className="p-6 bg-red-500/10 rounded-lg border border-red-500/20 max-w-md w-full">
-            <h3 className="text-lg font-medium text-red-400 mb-2">Failed to load fleets</h3>
-            <p className="text-sm text-red-400/80 mb-4">Please try refreshing the page</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30"
+          <div 
+            className="p-6 bg-red-500/10 rounded-lg border border-red-500/20 max-w-md w-full"
+            role="status"
+            aria-labelledby="error-heading"
+            aria-describedby="error-description"
+          >
+            <h3 
+              id="error-heading"
+              className="text-lg font-medium text-red-400 mb-2"
             >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </button>
+              Failed to load fleets
+            </h3>
+            <p 
+              id="error-description"
+              className="text-sm text-red-400/80 mb-4"
+            >
+              Please try refreshing the page
+            </p>
+            <button
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30"
+            aria-label="Refresh page"
+            type="button"
+          >
+            <RefreshCw className="w-4 h-4" aria-hidden="true" />
+            <span>Refresh</span>
+          </button>
           </div>
         </div>
       }
     >
       <div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative"
-        role="list"
+        role="grid"
         aria-label="Fleet list"
+        aria-rowcount={filteredFleets.length}
+        aria-colcount={window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1}
+        aria-live="polite"
       >
-        <AnimatePresence mode="popLayout">{renderedFleets}</AnimatePresence>
+      <div role="row" className="contents">
+        <AnimatePresence mode="popLayout">
+          {renderedFleets}
+        </AnimatePresence>
       </div>
-    </ErrorBoundary>
-  );
-};
-function getCountersForUnit(id: string, counters: any, arg2: string, filters: any): Counter[] {
-  throw new Error('Function not implemented.');
-}
-
+    </div>
+  </ErrorBoundary>
+)};

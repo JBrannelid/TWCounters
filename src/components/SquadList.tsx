@@ -43,7 +43,7 @@ export const SquadList: React.FC<SquadListProps> = ({
   };
 
   const renderedSquads = useMemo(() => {
-    return filteredSquads.map((squad) => {
+    return filteredSquads.map((squad, index) => {  
       const counters = getCounters(squad.id);
   
       return (
@@ -59,10 +59,12 @@ export const SquadList: React.FC<SquadListProps> = ({
             gridColumn: `span ${selectedSquadId === squad.id ? 1 : 1}`,
             zIndex: selectedSquadId === squad.id ? 50 : 1
           }}
-          role="listitem"
+          role="gridcell"
           aria-selected={selectedSquadId === squad.id}
           aria-label={`Squad ${squad.name}`}
           tabIndex={0}
+          aria-rowindex={index + 1}
+          aria-colindex={Math.floor(index % 3) + 1}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -136,20 +138,24 @@ export const SquadList: React.FC<SquadListProps> = ({
             >
               <RefreshCw className="w-4 h-4" />
               Refresh
-            </button>
+              </button>
           </div>
         </div>
       }
     >
-      <div 
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative"
-        role="list"
-        aria-label="Squad list"
-      >
+    <div 
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative"
+      role="grid"
+      aria-label="Squad list"
+      aria-rowcount={filteredSquads.length}
+      aria-colcount={window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1}
+    >
+      <div role="row" className="contents">
         <AnimatePresence mode="popLayout">
           {renderedSquads}
         </AnimatePresence>
       </div>
+    </div>
     </ErrorBoundary>
   );
 };

@@ -103,7 +103,7 @@ export default defineConfig(({ mode }) => {
       assetsDir: 'assets',
       cssCodeSplit: true,
       cssMinify: true,
-      sourcemap: !isProduction,
+      sourcemap: true, 
       minify: isProduction ? 'esbuild' : false,
       target: 'es2020',
       rollupOptions: {
@@ -127,9 +127,7 @@ export default defineConfig(({ mode }) => {
           chunkFileNames: 'assets/[name]-[hash].js',
           entryFileNames: 'assets/[name]-[hash].js',
           assetFileNames: (assetInfo) => {
-            if (!assetInfo?.name) {
-              return 'assets/[hash][extname]';
-            }
+            if (!assetInfo?.name) return 'assets/[hash][extname]';
             
             const name = assetInfo.name;
             const ext = name.split('.').pop();
@@ -162,13 +160,14 @@ export default defineConfig(({ mode }) => {
       headers: {
         'Content-Security-Policy': generateCSPString(nonce),
         'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
+        'X-Frame-Options': 'ALLOW-FROM https://swgoh-tw-guide.firebaseapp.com',
         'Cross-Origin-Resource-Policy': 'same-origin',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
-        'Cache-Control': 'public, max-age=31536000, immutable',
         'Permissions-Policy': "camera=(), microphone=(), geolocation=()",
         'X-XSS-Protection': '1; mode=block',
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'Service-Worker-Allowed': '/',
+        'Cache-Control': 'public, max-age=31536000, immutable'
       }
     }
   };

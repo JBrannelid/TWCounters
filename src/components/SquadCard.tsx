@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef } from 'react';
+import { memo, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Trash2, ChevronDown, Plus, Edit } from 'lucide-react';
 import { Squad, Counter, Filters, Fleet } from '@/types';
@@ -89,6 +89,51 @@ export const SquadCard = memo<SquadCardProps>(({
     return filterCounters(counters, filters);
 }, [counters, filters]);
 
+const handleSquadSelect = useCallback(() => {
+  if (!isSelected) {
+    onSelect();
+  }
+}, [isSelected, onSelect]);
+
+const handleEditSquad = useCallback((e: React.MouseEvent) => {
+  e.stopPropagation();
+  onEdit?.(squad);
+}, [onEdit, squad]);
+
+const handleDeleteSquad = useCallback((e: React.MouseEvent) => {
+  e.stopPropagation();
+  if (window.confirm('Are you sure you want to delete this squad?')) {
+    onDelete?.(squad);
+  }
+}, [onDelete, squad]);
+
+const handleAddSquadCounter = useCallback((e: React.MouseEvent) => {
+  e.stopPropagation();
+  onAddCounter?.(squad);
+}, [onAddCounter, squad]);
+
+const handleEditSquadCounter = useCallback((e: React.MouseEvent, counter: Counter) => {
+  e.stopPropagation();
+  if (onEditCounter) {
+    onEditCounter(counter);
+  }
+}, [onEditCounter]);
+
+const cardTitle = (
+  <h2 className="text-xl font-orbitron text-white">
+    {squad.name}
+  </h2>
+);
+
+const sectionHeadings = (
+  <>
+    <h3 className="text-lg font-bold text-white/80 mb-3">Squad Leader</h3>
+    <h3 className="text-lg font-bold text-white/80 mb-3">Squad Members</h3>
+    <h3 className="text-lg font-bold text-white/80 mb-3">Requirements</h3>
+    <h3 className="text-lg font-bold text-white/80">Counters</h3>
+  </>
+);
+
 return (
   <ErrorBoundary 
     fallback={
@@ -100,7 +145,7 @@ return (
     <div className={`relative ${isSelected ? 'z-50' : 'z-0'}`}>
       <motion.div
         layout
-        onClick={() => !isSelected && onSelect()}
+        onClick={handleSquadSelect}
         className="w-full"
       >
         <GlassCard
@@ -118,7 +163,7 @@ return (
             <div className="flex items-center justify-between mb-4"> 
             <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-400" />
-                <h3 className="text-xl font-orbitron text-white">{squad.name}</h3>
+                <h2 className="text-xl font-orbitron text-white">{squad.name}</h2>
               </div>
               <motion.div
                 animate={{ rotate: isSelected ? 180 : 0 }}
@@ -133,31 +178,20 @@ return (
             {isAdmin && (
               <div className="flex gap-3 mb-4"> 
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit?.(squad);
-                  }}
+                  onClick={handleEditSquad}
                   className="text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (window.confirm('Are you sure you want to delete this squad?')) {
-                      onDelete?.(squad);
-                    }
-                  }}
+                  onClick={handleDeleteSquad}
                   className="text-red-400 hover:text-red-300 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
                 {onAddCounter && (
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddCounter(squad);
-                    }}
+                    onClick={handleAddSquadCounter}
                     className="text-green-400 hover:text-green-300 transition-colors"
                     aria-label="Add counter"
                   >
@@ -243,7 +277,7 @@ return (
                   <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
                     {/* Squad Leader */}
                     <div className="mb-6">
-                      <h4 className="text-sm font-bold text-white/80 mb-3">Squad Leader</h4>
+                      <h3 className="text-sm font-bold text-white/80 mb-3">Squad Leader</h3>
                       {squad.leader && (
                         <div className="flex items-center gap-3">
                           <UnitImage
@@ -264,7 +298,7 @@ return (
 
                     {/* Squad Members */}
                     <div className="mb-6">
-                      <h4 className="text-sm font-bold text-white/80 mb-3">Squad Members</h4>
+                      <h3 className="text-sm font-bold text-white/80 mb-3">Squad Members</h3>
                       <div className="grid grid-cols-2 gap-4">
                         {squad.characters.map((char) => (
                           <div key={char.id} className="flex items-center gap-3">
@@ -291,7 +325,7 @@ return (
                           ? 'bg-blue-500/10 border-blue-500/20'
                           : 'bg-red-500/10 border-red-500/20'
                       }`}>
-                        <h4 className="text-sm font-medium text-purple-400 mb-1">Requirements</h4>
+                        <h3 className="text-sm font-medium text-purple-400 mb-1">Requirements</h3>
                         <p className="text-sm text-white/70">Territory Wars Omicron ability required</p>
                       </div>
                     )}
@@ -299,7 +333,7 @@ return (
                     {/* Squad Description if available */}
                     {squad.description && (
                       <div className="mb-6 p-4 bg-white/5 rounded-lg border border-white/10">
-                        <h4 className="text-sm font-medium text-purple-400 mb-1">Description</h4>
+                        <h3 className="text-sm font-medium text-purple-400 mb-1">Description</h3>
                         <p className="text-sm text-white/70">{squad.description}</p>
                       </div>
                     )}
@@ -307,7 +341,7 @@ return (
                     {/* Counters */}
                     {counters.length > 0 && (
                       <div className="space-y-4">
-                        <h4 className="text-lg font-medium text-white">Counters</h4>
+                        <h3 className="text-lg font-medium text-white">Counters</h3>
                         <div className="space-y-3">
                           {counters.map((counter) => (
                             <div
@@ -339,12 +373,7 @@ return (
                                 {isAdmin && (
                                   <div className="flex gap-2">
                                     <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (onEditCounter) {
-                                          onEditCounter(counter);
-                                        }
-                                      }}
+                                      onClick={(e) => handleEditSquadCounter(e, counter)}
                                       className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg"
                                       aria-label="Edit counter"
                                     >

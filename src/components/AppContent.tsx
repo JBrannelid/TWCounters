@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { Helmet } from 'react-helmet-async'; // Importera Helmet
+import { Helmet } from 'react-helmet-async'; 
 import { Squad, Fleet, Counter, Filters, FilterKey } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HeroSection } from '@/components/layouts/HeroSection';
@@ -755,7 +755,7 @@ const handleEditCounter = async (counter: Counter) => {
                           // ceep the search term in the input field
                           setSearchTerm(searchTerm);
                         }}
-                        placeholder={`Search ${activeView === 'squads' ? 'teams' : 'fleets'}...`}
+                        placeholder={`Search ${activeView === 'squads' ? 'squads' : 'fleets'}...`}
                       />
                     </SearchPanel>
                   </HeroSection>

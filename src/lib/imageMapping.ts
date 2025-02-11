@@ -374,7 +374,7 @@ export function getImageFileName(id: string, type: string): string {
   }
   
   const normalizedId = normalizeId(id);
-  logDebug(`Normalized ID: ${normalizedId} from ${id}`);
+  // logDebug(`Normalized ID: ${normalizedId} from ${id}`);
   
   // Check if the type is ship or character and get the mappings
   const mappings = type.includes('ship') ? shipMappings : characterMappings;
@@ -383,8 +383,8 @@ export function getImageFileName(id: string, type: string): string {
   const fileName = mappings[normalizedId as keyof typeof mappings];
   
   if (!fileName) {
-    logDebug(`No mapping found for ID: ${id}, normalized: ${normalizedId}, type: ${type}`);
-    logDebug('Available mappings:', Object.keys(mappings));
+    // logDebug(`No mapping found for ID: ${id}, normalized: ${normalizedId}, type: ${type}`);
+    // logDebug('Available mappings:', Object.keys(mappings));
     return normalizedId; // Fallback till normaliserat ID
   }
   

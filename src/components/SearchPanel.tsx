@@ -72,7 +72,6 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   return (
     <div 
       className="w-full space-y-4 max-w-4xl mx-auto" 
-      style={{ position: 'relative', zIndex: 100 }}
       role="search"
       aria-label="Territory Wars search panel"
     >
@@ -86,10 +85,9 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
         {children}
       </div>
 
-      {/* Buttons Container with secure event handling */}
+      {/* Navigation Buttons */}
       <div 
         className="flex flex-wrap gap-2" 
-        style={{ position: 'relative', zIndex: 50 }}
         role="tablist"
         aria-label="View selection"
       >
@@ -100,16 +98,11 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
           }`}
           role="tab"
           aria-selected={activeView === 'squads'}
-          aria-controls="squads-panel"
+          aria-controls="squads-view"
           id="squads-tab"
-          data-testid="squads-tab"
         >
-          <Users 
-            className="w-5 h-5" 
-            aria-hidden="true"
-            role="img"
-          />
-          <span className="whitespace-nowrap">Squads</span>
+          <Users className="w-5 h-5" aria-hidden="true" />
+          <span>Squads</span>
         </button>
 
         <button
@@ -119,16 +112,11 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
           }`}
           role="tab"
           aria-selected={activeView === 'fleets'}
-          aria-controls="fleets-panel"
+          aria-controls="fleets-view"
           id="fleets-tab"
-          data-testid="fleets-tab"
         >
-          <Ship 
-            className="w-5 h-5" 
-            aria-hidden="true"
-            role="img"
-          />
-          <span className="whitespace-nowrap">Fleets</span>
+          <Ship className="w-5 h-5" aria-hidden="true" />
+          <span>Fleets</span>
         </button>
 
         <button
@@ -136,37 +124,19 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
           className={`${buttonBaseClass} ${
             hasActiveFilters() ? activeClass : inactiveClass
           }`}
-          aria-expanded={filters.alignment !== null || filters.showTWOmicronOnly}
+          aria-expanded={hasActiveFilters()}
+          aria-controls="filter-menu"
           aria-haspopup="dialog"
-          aria-label="Filter options"
-          data-testid="filter-options"
+          type="button"
         >
-          <Settings 
-            className="w-5 h-5" 
-            aria-hidden="true"
-            role="img"
-          />
-          <span className="whitespace-nowrap">Filters</span>
+        <Settings className="w-5 h-5" aria-hidden="true" />
+        <span>Filters</span>
         </button>
       </div>
 
       {/* Hidden but semantically present panels for ARIA */}
-      <div 
-        role="tabpanel" 
-        id="squads-panel" 
-        aria-labelledby="squads-tab"
-        className="sr-only"
-      >
-        Squad search content
-      </div>
-      <div 
-        role="tabpanel" 
-        id="fleets-panel" 
-        aria-labelledby="fleets-tab"
-        className="sr-only"
-      >
-        Fleet search content
-      </div>
+      <div id="squads-view" role="tabpanel" aria-labelledby="squads-tab" hidden={activeView !== 'squads'} />
+      <div id="fleets-view" role="tabpanel" aria-labelledby="fleets-tab" hidden={activeView !== 'fleets'} />
     </div>
   );
 };

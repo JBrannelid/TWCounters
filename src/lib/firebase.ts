@@ -20,6 +20,7 @@ import {
   connectStorageEmulator 
 } from 'firebase/storage';
 import { getAnalytics, Analytics, isSupported } from 'firebase/analytics';
+import { connectionManager } from '@/services/firebaseConnectionManager';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -31,7 +32,7 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || null 
 };
 
-// Validate environment variables for Firebase configuration 
+// Validate environment variables
 if (!firebaseConfig.apiKey) throw new Error('Firebase API Key is missing');
 if (!firebaseConfig.authDomain) throw new Error('Firebase Auth Domain is missing');
 if (!firebaseConfig.projectId) throw new Error('Firebase Project ID is missing');
@@ -39,7 +40,6 @@ if (!firebaseConfig.storageBucket) throw new Error('Firebase Storage Bucket is m
 if (!firebaseConfig.messagingSenderId) throw new Error('Firebase Messaging Sender ID is missing');
 if (!firebaseConfig.appId) throw new Error('Firebase App ID is missing');
 
-// Firebase client class to manage Firebase services and initialization 
 class FirebaseClient {
   private static instance: FirebaseClient;
   private app: FirebaseApp;
@@ -51,7 +51,6 @@ class FirebaseClient {
   private initError: Error | null = null;
   private initializationPromise: Promise<void>;
 
-  // Private constructor to initialize Firebase services
   private constructor() {
     this.app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
@@ -64,31 +63,72 @@ class FirebaseClient {
       experimentalAutoDetectLongPolling: true
     });    
     
+    // Initialize connection manager with the app instance
+    connectionManager.initialize(this.app);
+    
     this._auth = getAuth(this.app);
     this._storage = getStorage(this.app);
     
-    // Lazy initialize analytics only in production
+    // Initialize script loading with improved error handling with API scripts
+    this.loadScript('https://apis.google.com/js/api.js')
+      .then(() => console.log('Google API script loaded successfully'))
+      .catch((error) => console.warn('Google API script load warning:', error));
+    
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
       this.initializeAnalytics();
     }
 
     this.initializationPromise = this.initialize();
 
-    // Initialize script loading with improved error handling with API scripts
-    this.loadScript('https://apis.google.com/js/api.js') // Load Google API script
-      .then(() => console.log('Google API script loaded successfully')) // Log success
-      .catch((error) => console.warn('Google API script load warning:', error)); // Log error
-
     if (process.env.NODE_ENV === 'development') {
       this.connectToEmulators();
     }
+
+    // Setup page visibility handling for bfcache
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          // Prepare for bfcache
+          this.prepareForBFCache();
+        }
+      });
+    }
   }
 
-  // Initialize Firebase analytics if supported by the browser 
+  // Keep the loadScript method
+  private loadScript(src: string, nonce?: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      if (nonce) script.nonce = nonce;
+
+      const timeoutId = setTimeout(() => {
+        reject(new Error(`Script load timeout: ${src}`));
+      }, 10000);
+
+      script.onload = () => {
+        clearTimeout(timeoutId);
+        resolve();
+      };
+      script.onerror = (error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+
   private async initializeAnalytics(): Promise<void> {
     try {
-      const analyticsSupported = await isSupported(); // Check if analytics is supported by the browser
-      if (analyticsSupported) { // Initialize analytics if supported
+      const analyticsSupported = await isSupported();
+      if (analyticsSupported) {
         this._analytics = getAnalytics(this.app);
         AnalyticsService.initialize(this.app);
       }
@@ -97,40 +137,16 @@ class FirebaseClient {
     }
   }
 
-  // Load a script with improved error handling and timeout support 
-  private loadScript(src: string, nonce?: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (document.querySelector(`script[src="${src}"]`)) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script'); // Create a new script element
-      script.src = src; // Set the source URL for the script
-      script.async = true; // Set the script to load asynchronously
-      if (nonce) script.nonce = nonce; // Set the nonce attribute if provided
-
-      const timeoutId = setTimeout(() => {
-        reject(new Error(`Script load timeout: ${src}`));
-      }, 10000); // 10 second timeout
-
-      script.onload = () => { // Resolve the promise when the script loads successfully
-        clearTimeout(timeoutId);
-        resolve();
-      };
-      script.onerror = (error) => { // Reject the promise if the script fails to load
-        clearTimeout(timeoutId);
-        reject(error);
-      };
-
-      document.head.appendChild(script); // Append the script to the document head
-    });
+  private prepareForBFCache(): void {
+    // Cleanup any resources that shouldn't be frozen
+    if (this._analytics) {
+      // Clean up analytics
+      this._analytics = null;
+    }
   }
 
-  // Initialize Firebase services and setup persistence 
   private async initialize(): Promise<void> {
     try {
-      // Setup local persistence and auth state monitoring 
       await this.setupPersistence();
       this.setupAuthStateMonitoring();
       this.initialized = true;
@@ -140,15 +156,12 @@ class FirebaseClient {
     }
   }
 
-  // Setup local persistence for Firestore and log any warnings
   private async setupPersistence(): Promise<void> {
     try {
-      // Check if IndexedDB is available in the browser 
       if (!window.indexedDB) {
-        console.warn('Persistence may not be fully supported in this browser (IndexedDB not available)');
+        console.warn('Persistence may not be fully supported in this browser');
         return;
       }
-      //console.debug('Local persistence configured through initializeFirestore');
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.warn('Persistence setup warning:', error.message);
@@ -156,12 +169,11 @@ class FirebaseClient {
     }
   }
 
-  // Setup auth state monitoring to log user sign-in and sign-out events
   private setupAuthStateMonitoring(): void {
     onAuthStateChanged(
-      this._auth, // Auth instance to monitor for state changes 
+      this._auth,
       (user) => {
-        if (user) { // Log user sign-in and sign-out events 
+        if (user) {
           console.debug('Auth state: signed in');
         } else {
           console.debug('Auth state: signed out');
@@ -173,12 +185,14 @@ class FirebaseClient {
     );
   }
 
-  // Connect to Firebase emulators for local development 
   private connectToEmulators(): void {
-    if (import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true') { // Check if emulators are enabled and connect to local instances
+    if (import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true') {
       try {
         connectAuthEmulator(this._auth, 'http://localhost:9099', { disableWarnings: true });
-        connectFirestoreEmulator(this._db, 'localhost', 8080);
+        const db = connectionManager.getFirestore();
+        if (db) {
+          connectFirestoreEmulator(db, 'localhost', 8080);
+        }
         connectStorageEmulator(this._storage, 'localhost', 9199);
         console.log('Connected to Firebase emulators');
       } catch (error) {
@@ -187,7 +201,6 @@ class FirebaseClient {
     }
   }
 
-  // Singleton instance management for Firebase client
   public static getInstance(): FirebaseClient {
     if (!FirebaseClient.instance) {
       FirebaseClient.instance = new FirebaseClient();
@@ -195,7 +208,6 @@ class FirebaseClient {
     return FirebaseClient.instance;
   }
 
-  // Getters for Firebase services and initialization status
   public get auth(): Auth {
     if (!this.initialized && this.initError) throw this.initError;
     return this._auth;
@@ -237,21 +249,17 @@ class FirebaseClient {
   }
 }
 
-// Create and export singleton instance
 const firebaseClient = FirebaseClient.getInstance();
 
-// Export service instances
 export const auth = firebaseClient.auth;
 export const db = firebaseClient.db;
 export const storage = firebaseClient.storage;
 
-// Export helper functions
 export const ensureFirebaseInitialized = () => firebaseClient.waitForInitialization();
 export const reconnectFirebase = () => firebaseClient.reconnect();
 
 export default firebaseClient;
 
-// Safely export analytics
 export const getFirebaseAnalytics = (): Analytics | null => {
   try {
     return firebaseClient.isAnalyticsAvailable ? firebaseClient.analytics : null;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Search, Ship, Users } from 'lucide-react';
 import { BattleType, Filters } from '../types';
 import { validateAndSanitizeFormField } from '@/lib/security/formValidation';
@@ -21,8 +21,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   showFilterMenu,
   setShowFilterMenu,
 }) => {
-  // Secure handling of battle type changes with input validation
-  const handleBattleTypeChange = (type: BattleType) => {
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // Secure handling of battle type changes with input validation
+    const handleBattleTypeChange = (type: BattleType) => {
     // Validate the battle type value
     const validation = validateAndSanitizeFormField(type, 'battleType', {
       required: true,
@@ -49,11 +51,25 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       // Additional security by sanitizing the search query
       const sanitizedQuery = sanitizeSearchQuery(validation.sanitizedValue);
       onFilterChange('searchTerm', sanitizedQuery);
+      setShowSuggestions(Boolean(sanitizedQuery));
     } else {
       // If validation fails, clear the search term
       onFilterChange('searchTerm', '');
+      setShowSuggestions(false);
       console.error('Invalid search input:', validation.error);
     }
+  };
+
+  const handleSearchFocus = () => {
+    setShowSuggestions(Boolean(filters.searchTerm));
+    onSearchFocus();
+  };
+
+  const handleSearchBlur = () => {
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
+    onSearchBlur();
   };
 
   // Secure filter menu toggle with input sanitization
@@ -70,7 +86,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <div className="flex-1 relative">
           <div className="relative">
             <input
-              type="text"
+              type="search"
               placeholder="Search squads..."
               value={filters.searchTerm}
               onChange={handleSearchChange}
@@ -83,8 +99,12 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               maxLength={100}
               pattern="[a-zA-Z0-9\s-_]*"
               aria-label="Search squads or fleets"
+              role="searchbox"
+              aria-expanded={showSuggestions}
+              aria-controls="search-suggestions"
+              aria-owns="search-suggestions"
             />
-            <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" aria-hidden="true" />
           </div>
         </div>
         
@@ -114,7 +134,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             aria-pressed={filters.battleType === 'fleet'}
             role="switch"
           >
-            <Ship className="w-5 h-5" />
+            <Ship className="w-5 h-5" aria-hidden="true" />
             <span>Fleets</span>
           </button>
           

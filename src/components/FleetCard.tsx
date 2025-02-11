@@ -69,6 +69,36 @@ export const FleetCard = memo<FleetCardProps>(({
     }
   };
 
+  const handleFleetSelect = useCallback(() => {
+    if (!isSelected) {
+      onSelect();
+    }
+  }, [isSelected, onSelect]);
+  
+  const handleEditFleet = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.(fleet);
+  }, [onEdit, fleet]);
+  
+  const handleDeleteFleet = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to delete this fleet?')) {
+      onDelete?.(fleet);
+    }
+  }, [onDelete, fleet]);
+  
+  const handleAddFleetCounter = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddCounter?.(fleet);
+  }, [onAddCounter, fleet]);
+  
+  const handleEditFleetCounter = useCallback((e: React.MouseEvent, counter: Counter) => {
+    e.stopPropagation();
+    if (onEditCounter) {
+      onEditCounter(counter);
+    }
+  }, [onEditCounter]);
+
   const handleClickOutside = (e: React.MouseEvent | React.TouchEvent) => {
     const contentElement = contentRef.current;
     const target = e.target as Node;
@@ -104,13 +134,28 @@ export const FleetCard = memo<FleetCardProps>(({
     return isTargetFleet || isCounterFleet || isTargetCapitalShip;
   });
 
-  useEffect(() => {
-    console.log('FleetCard received props:', {
-      isAdmin,
-      hasEditCounter: Boolean(onEditCounter),
-      hasDeleteCounter: Boolean(onDeleteCounter)
-    });
-  }, [isAdmin, onEditCounter, onDeleteCounter]);
+  // useEffect(() => {
+  //   console.log('FleetCard received props:', {
+  //     isAdmin,
+  //     hasEditCounter: Boolean(onEditCounter),
+  //     hasDeleteCounter: Boolean(onDeleteCounter)
+  //   });
+  // }, [isAdmin, onEditCounter, onDeleteCounter]);
+
+  const cardTitle = (
+    <h2 className="text-xl font-orbitron text-white">
+      {fleet.name}
+    </h2>
+  );
+  
+  const sectionHeadings = (
+    <>
+      <h3 className="text-lg font-bold text-white/80 mb-3">Squad Leader</h3>
+      <h3 className="text-lg font-bold text-white/80 mb-3">Squad Members</h3>
+      <h3 className="text-lg font-bold text-white/80 mb-3">Requirements</h3>
+      <h3 className="text-lg font-bold text-white/80">Counters</h3>
+    </>
+  );  
   
   return (
     <ErrorBoundary 
@@ -123,7 +168,7 @@ export const FleetCard = memo<FleetCardProps>(({
       <div className={`relative ${isSelected ? 'z-50' : 'z-0'}`}>
         <motion.div
           layout
-          onClick={() => !isSelected && onSelect()}
+          onClick={handleFleetSelect}
           className="w-full"
         >
           <GlassCard
@@ -140,7 +185,7 @@ export const FleetCard = memo<FleetCardProps>(({
                   {/* Rad 1: Squad namn */}
                   <div className="flex items-center justify-between mb-4"> 
                     <div className="flex items-center gap-2">
-                      <h3 className="text-xl font-orbitron text-white">{fleet.name}</h3>
+                      <h2 className="text-xl font-orbitron text-white">{fleet.name}</h2>
                     </div>
                     <motion.div
                       animate={{ rotate: isSelected ? 180 : 0 }}
@@ -155,31 +200,20 @@ export const FleetCard = memo<FleetCardProps>(({
                   {isAdmin && (
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit?.(fleet);
-                        }}
+                        onClick={handleEditFleet}
                         className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (window.confirm('Are you sure you want to delete this fleet?')) {
-                            onDelete?.(fleet);
-                          }
-                        }}
+                        onClick={handleDeleteFleet}
                         className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                       {onAddCounter && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onAddCounter(fleet);
-                          }}
+                          onClick={handleAddFleetCounter}
                           className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors"
                           aria-label="Add counter"
                         >
@@ -255,7 +289,7 @@ export const FleetCard = memo<FleetCardProps>(({
                      <div className="p-6 overflow-y-auto max-h-[calc(80vh-3rem)] custom-scrollbar">
                      {/* Capital Ship */}
                           <div className="mb-6">
-                            <h4 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h4>
+                            <h3 className="text-sm font-bold text-white/80 mb-3">Capital Ship</h3>
                               {fleet.capitalShip && (
                                 <div className="flex items-center gap-3">
                                   <UnitImage
@@ -275,7 +309,7 @@ export const FleetCard = memo<FleetCardProps>(({
                               </div>
                           {/* Starting Lineup */}
                           <div className="mb-6">
-                            <h4 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h4>
+                            <h3 className="text-sm font-bold text-white/80 mb-3">Starting Lineup</h3>
                             <div className="grid grid-cols-2 gap-4">
                               {fleet.startingLineup.map((ship) => (
                                 <div key={ship.id} className="flex items-center gap-3">
@@ -297,7 +331,7 @@ export const FleetCard = memo<FleetCardProps>(({
                           {/* Reinforcements */}
                           {fleet.reinforcements.length > 0 && (
                             <div className="mb-6">
-                              <h4 className="text-sm font-bold text-white/80 mb-3">Reinforcements</h4>
+                              <h3 className="text-sm font-bold text-white/80 mb-3">Reinforcements</h3>
                                 {fleet.reinforcements.map((ship, index) => (
                                   <div key={ship.id} className="flex items-center gap-3">
                                     <div className="relative">
@@ -327,9 +361,9 @@ export const FleetCard = memo<FleetCardProps>(({
                                 ? 'bg-blue-500/10 border-blue-500/20'
                                 : 'bg-red-500/10 border-red-500/20'
                             }`}>
-                              <h4 className={`text-sm font-medium mb-1 ${
+                              <h3 className={`text-sm font-medium mb-1 ${
                                 fleet.alignment === 'light' ? 'text-blue-400' : 'text-red-400'
-                              }`}>Call Order</h4>
+                              }`}>Call Order</h3>
                               <p className="text-sm text-white/70">{fleet.callOrder}</p>
                             </div>
                           )}
@@ -337,7 +371,7 @@ export const FleetCard = memo<FleetCardProps>(({
                           {/* Counters */}
                           {fleetCounters.length > 0 && (
                             <div className="space-y-4">
-                              <h4 className="text-lg font-medium text-white">Counters</h4>
+                              <h3 className="text-lg font-medium text-white">Counters</h3>
                               <div className="space-y-3">
                                 {fleetCounters.map((counter) => (
                                   <div
@@ -365,7 +399,7 @@ export const FleetCard = memo<FleetCardProps>(({
                                       {isAdmin && (
                                     <div className="flex gap-2">
                                       <button
-                                        onClick={(e) => handleEditCounter(e, counter)}
+                                        onClick={(e) => handleEditFleetCounter(e, counter)}
                                         className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg"
                                         aria-label="Edit counter"
                                       >
