@@ -8,7 +8,8 @@ const ALLOWED_SCHEMES = ['http:', 'https:'];
 const FIREBASE_DOMAINS = [
   'firebaseinstallations.googleapis.com',
   'firestore.googleapis.com',
-  'firebase.googleapis.com'
+  'firebase.googleapis.com',
+  'firebasestorage.googleapis.com'
 ];
 
 // Cache times in seconds
@@ -67,46 +68,23 @@ self.addEventListener('activate', event => {
 
 // Handle Firebase requests with caching
 async function handleFirebaseRequest(request) {
-  const cache = await caches.open(FIREBASE_CACHE);
-  const cachedResponse = await cache.match(request);
+  // Don't cache Firebase authentication requests
+  if (request.url.includes('auth')) {
+    return fetch(request);
+  }
   
   try {
-    // Always try network first for Firebase requests
     const response = await fetch(request);
     if (response.ok) {
-      // Add proper cache headers
-      const headers = new Headers(response.headers);
-      headers.set('Cache-Control', `public, max-age=${CACHE_TIMES.firebase}`);
-      
-      const modifiedResponse = new Response(
-        await response.clone().blob(),
-        {
-          status: response.status,
-          statusText: response.statusText,
-          headers: headers
-        }
-      );
-
-      // Store in cache
-      cache.put(request, modifiedResponse.clone());
       return response;
     }
-    
-    // If network request failed but we have a cached version, return it
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    
-    // If everything failed, throw to trigger offline handling
-    throw new Error('Network response was not ok and no cache available');
+    throw new Error('Network response was not ok');
   } catch (error) {
-    console.warn('Firebase request failed:', error);
-    // Return cached response if available
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    // Return offline page as last resort
-    return caches.match('/offline.html');
+    console.error('Firebase request failed:', error);
+    return new Response(JSON.stringify({ error: 'Failed to connect to Firebase' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
 
