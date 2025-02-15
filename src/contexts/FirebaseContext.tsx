@@ -16,7 +16,7 @@ interface FirebaseContextType {
 
 const FirebaseContext = createContext<FirebaseContextType | null>(null);
 
-// Seperate FirebaseClient from FirebaseProvider
+// Separate FirebaseClient from FirebaseProvider
 export class FirebaseClient {
   private _auth: Auth;
   private _db: Firestore;
@@ -24,6 +24,7 @@ export class FirebaseClient {
   private static instance: FirebaseClient;
 
   private constructor() {
+    console.log('Creating new FirebaseClient instance');
     this._auth = auth;
     this._db = db;
     this._storage = storage;
@@ -31,6 +32,7 @@ export class FirebaseClient {
 
   public static getInstance(): FirebaseClient {
     if (!FirebaseClient.instance) {
+      console.log('Initializing new FirebaseClient singleton');
       FirebaseClient.instance = new FirebaseClient();
     }
     return FirebaseClient.instance;
@@ -43,48 +45,74 @@ export class FirebaseClient {
 
 export const firebaseClient = FirebaseClient.getInstance();
 
-// separate FirebaseProvider from FirebaseContext
 export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('FirebaseProvider rendering');
   const [isInitialized, setIsInitialized] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [initStartTime] = useState(Date.now());
 
   // Initialize Firebase
   useEffect(() => {
     const initialize = async () => {
+      console.log('Starting Firebase initialization');
       try {
-        setIsLoading(true); // Set loading to true
+        setIsLoading(true);
         setError(null);
-        await ensureFirebaseInitialized();
-        
-        const firestoreTimeout = new Promise((_, reject) => { // Set a timeout for the firestore connection
-          setTimeout(() => reject(new Error('Firestore connection timeout')), 10000);
+
+        // Set a timeout for initialization
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Firebase initialization timeout after 30 seconds'));
+          }, 30000);
         });
 
-        // Wait for the firestore connection to be established
+        // Try to initialize Firebase with timeout
         await Promise.race([
-          FirebaseService.syncAllData(),
-          firestoreTimeout
+          ensureFirebaseInitialized(),
+          timeoutPromise
         ]);
 
-        setIsInitialized(true); // Set isInitialized to true if the connection is successful
+        console.log('Firebase initialized successfully');
+        setIsInitialized(true);
+
+        // Test connection with a simple query
+        try {
+          await FirebaseService.syncAllData();
+          console.log('Initial data sync successful');
+        } catch (syncError) {
+          console.error('Initial data sync failed:', syncError);
+          throw syncError;
+        }
+
       } catch (err) {
-        console.error('Error in initialize:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+        console.error('Firebase initialization failed:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown initialization error';
+        setError(`Failed to initialize Firebase: ${errorMessage}`);
+        setIsInitialized(false);
       } finally {
         setIsLoading(false);
+        const initTime = Date.now() - initStartTime;
+        console.log(`Firebase initialization took ${initTime}ms`);
       }
     };
 
-    initialize(); // call the initialize function when the component mounts
-  }, [retryCount]); // Retry (when the retry function is called)
+    initialize();
+  }, [retryCount, initStartTime]);
 
-  // Event listener to check if the user is online or offline
+  // Network status monitoring
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    const handleOnline = () => {
+      console.log('Network status: Online');
+      setIsOnline(true);
+    };
+
+    const handleOffline = () => {
+      console.log('Network status: Offline');
+      setIsOnline(false);
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -96,7 +124,8 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const retry = async () => {
-    setRetryCount(prev => prev + 1); // Increment the retry count to trigger a retry in the useEffect hook above  
+    console.log('Retrying Firebase initialization');
+    setRetryCount(prev => prev + 1);
   };
 
   const contextValue = {
@@ -107,35 +136,41 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     retry
   };
 
-  if (isLoading && !error) {
-    // Show a loading indicator while initializing Firebase when loading the website
+  // Loading state
+  if (isLoading) {
+    console.log('FirebaseProvider in loading state');
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-space-darker">
         <div className="text-center">
           <LoadingIndicator size="lg" className="mb-4" />
-          <p className="text-white/60">Initializing...</p>
+          <p className="text-white/60">
+            {`Initializing Firebase${retryCount > 0 ? ` (Attempt ${retryCount + 1})` : ''}...`}
+          </p>
         </div>
       </div>
     );
   }
 
-  if (error) { // Show an error message if there is an error during initialization of Firebase
+  // Error state
+  if (error) {
+    console.log('FirebaseProvider in error state:', error);
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-space-darker">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto p-6">
           <div className="text-red-400 text-xl mb-4">{error}</div>
           <button
             onClick={retry}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
-            Retry
+            Retry Connection
           </button>
         </div>
       </div>
     );
   }
 
-  // If everything is initialized successfully, return the FirebaseContext.Provider
+  // Render children when initialized
+  console.log('FirebaseProvider rendering children, initialized:', isInitialized);
   return (
     <FirebaseContext.Provider value={contextValue}>
       <div className="relative">
@@ -150,7 +185,6 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
-// Custom hook to use the Firebase context in components 
 export function useFirebase() {
   const context = useContext(FirebaseContext);
   if (!context) {

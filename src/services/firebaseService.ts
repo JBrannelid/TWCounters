@@ -489,25 +489,49 @@ static async getCounters(): Promise<Counter[]> {
     return docSnap.exists();
   }
 
-  // syncronize all data from firestore to local storage and return it as an object with timestamp
-  static async syncAllData() {
-    try {
-      const [squads, fleets, counters] = await Promise.all([
-        this.getSquads(),
-        this.getFleets(),
-        this.getCounters()
-      ]);
-
-      return {
-        squads,
-        fleets,
-        counters,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('Error syncing data:', error);
-      throw new Error('Failed to sync data');
+  static async syncAllData(retryAttempts = 3) {
+    let lastError;
+    
+    for (let attempt = 0; attempt < retryAttempts; attempt++) {
+      try {
+        if (attempt > 0) {
+          // Add exponential backoff delay between retries
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        }
+  
+        const [squads, fleets, counters] = await Promise.all([
+          this.getSquads().catch(error => {
+            console.error('Error fetching squads:', error);
+            return [];
+          }),
+          this.getFleets().catch(error => {
+            console.error('Error fetching fleets:', error);
+            return [];
+          }),
+          this.getCounters().catch(error => {
+            console.error('Error fetching counters:', error);
+            return [];
+          })
+        ]);
+  
+        return {
+          squads,
+          fleets,
+          counters,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        console.error(`Sync attempt ${attempt + 1} failed:`, error);
+        lastError = error;
+        
+        // If this is the last attempt, throw the error
+        if (attempt === retryAttempts - 1) {
+          throw new Error(`Failed to sync data after ${retryAttempts} attempts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
     }
+  
+    throw lastError;
   }
 
   private static async getCurrentUserId(): Promise<string> {

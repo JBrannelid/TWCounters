@@ -118,51 +118,86 @@ const AdminDashboards = lazy(() =>
       searchTerm: ''
     });
       
-    // Load coockie banner
-    useEffect(() => {
-    const hasConsent = localStorage.getItem('cookie_consent_state');
-    if (!hasConsent) {
-        // force show cookie banner if no consent has been given 
-        const cookieBanner = document.querySelector('[data-cookiebanner]');
-        if (cookieBanner) {
-        (cookieBanner as HTMLElement).style.display = 'block';
-        }
-    }
-    }, []);
-
-    const handleCookiePolicyClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        navigate('/cookie-policy');
-      };
-    
     // Load initial data
     useEffect(() => {
       const initializeApp = async () => {
+        console.log('Starting AppContent initialization');
         setIsLoading(true);
         setError(null);
         
         try {
-          // await firebase initialization before proceeding
+          // First ensure Firebase is initialized
+          console.log('Waiting for Firebase initialization...');
           await ensureFirebaseInitialized();
+          console.log('Firebase initialized successfully');
           
-          // collect all data from Firebase and update state
-          const { squads = [], fleets = [], counters = [] } = await FirebaseService.syncAllData();
+          // Then sync data with retry logic
+          const maxRetries = 3;
+          let currentAttempt = 0;
           
-          setSquads(squads);
-          setFleets(fleets);
-          setCounters(counters);
-          setHasUnsavedChanges(false);
+          const attemptSync = async () => {
+            try {
+              console.log(`Attempting to sync data (attempt ${currentAttempt + 1}/${maxRetries})`);
+              const data = await FirebaseService.syncAllData();
+              console.log('Data sync successful:', {
+                squadsCount: data.squads.length,
+                fleetsCount: data.fleets.length,
+                countersCount: data.counters.length
+              });
+              
+              setSquads(data.squads);
+              setFleets(data.fleets);
+              setCounters(data.counters);
+              setHasUnsavedChanges(false);
+              return true;
+            } catch (error) {
+              console.error(`Sync attempt ${currentAttempt + 1} failed:`, error);
+              currentAttempt++;
+              
+              if (currentAttempt < maxRetries) {
+                const delay = Math.pow(2, currentAttempt) * 1000;
+                console.log(`Waiting ${delay}ms before next attempt...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return attemptSync();
+              }
+              
+              throw error;
+            }
+          };
+    
+          await attemptSync();
+          console.log('AppContent initialization complete');
+          
         } catch (error) {
-          console.error('Failed to initialize app:', error);
-          setError('Failed to load application data. Please try again.');
+          console.error('AppContent initialization failed:', error);
+          setError(
+            'Failed to load application data. Please check your internet connection and try again.'
+          );
         } finally {
           setIsLoading(false);
         }
       };
-  
+    
       initializeApp();
     }, []);
 
+    // Load coockie banner
+    useEffect(() => {
+      const hasConsent = localStorage.getItem('cookie_consent_state');
+      if (!hasConsent) {
+          // force show cookie banner if no consent has been given 
+          const cookieBanner = document.querySelector('[data-cookiebanner]');
+          if (cookieBanner) {
+          (cookieBanner as HTMLElement).style.display = 'block';
+          }
+      }
+      }, []);
+  
+      const handleCookiePolicyClick = (e: React.MouseEvent) => {
+          e.preventDefault();
+          navigate('/cookie-policy');
+        };
+      
     useEffect(() => {
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'hidden') {

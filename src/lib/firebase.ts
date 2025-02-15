@@ -42,60 +42,74 @@ if (!firebaseConfig.appId) throw new Error('Firebase App ID is missing');
 
 class FirebaseClient {
   private static instance: FirebaseClient;
-  private app: FirebaseApp;
-  private _auth: Auth;
-  private _db: Firestore;
-  private _storage: FirebaseStorage;
+  private app!: FirebaseApp;
+  private _auth!: Auth;
+  private _db!: Firestore;
+  private _storage!: FirebaseStorage;
   private _analytics: Analytics | null = null;
   private initialized: boolean = false;
   private initError: Error | null = null;
   private initializationPromise: Promise<void>;
 
   private constructor() {
-    this.app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-
-    // Initialize Firestore with optimized settings
-    this._db = initializeFirestore(this.app, {
-      localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
-        cacheSizeBytes: CACHE_SIZE_UNLIMITED
-      }),
-      experimentalAutoDetectLongPolling: true
-    });    
+    console.log('Starting FirebaseClient initialization');
     
-    // Initialize connection manager with the app instance
-    connectionManager.initialize(this.app);
-    
-    this._auth = getAuth(this.app);
-    this._storage = getStorage(this.app);
-    
-    // Initialize script loading with improved error handling with API scripts
-    this.loadScript('https://apis.google.com/js/api.js')
-      .then(() => console.log('Google API script loaded successfully'))
-      .catch((error) => console.warn('Google API script load warning:', error));
-    
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-      this.initializeAnalytics();
-    }
+    try {
+      // Basic Firebase initialization
+      this.app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+      console.log('Firebase app initialized');
 
-    this.initializationPromise = this.initialize();
+      // Initialize core services
+      this._db = initializeFirestore(this.app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+          cacheSizeBytes: CACHE_SIZE_UNLIMITED
+        }),
+        experimentalAutoDetectLongPolling: true
+      });    
+      console.log('Firestore initialized successfully');
 
-    if (process.env.NODE_ENV === 'development') {
-      this.connectToEmulators();
-    }
+      this._auth = getAuth(this.app);
+      this._storage = getStorage(this.app);
 
-    // Setup page visibility handling for bfcache
-    if (typeof document !== 'undefined') {
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          // Prepare for bfcache
-          this.prepareForBFCache();
-        }
+      // Initialize connection manager
+      connectionManager.initialize(this.app);
+      console.log('Connection manager initialized');
+
+      // Initialize rest of the services
+      this.initializationPromise = this.initialize().then(() => {
+        this.initialized = true;
+        console.log('Firebase client fully initialized');
+      }).catch(error => {
+        this.initError = error as Error;
+        console.error('Firebase initialization failed:', error);
+        throw error;
       });
+
+      // Development specific setup
+      if (process.env.NODE_ENV === 'development') {
+        this.connectToEmulators();
+      }
+
+      // Production specific setup
+      if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+        this.initializeAnalytics();
+        this.loadScript('https://apis.google.com/js/api.js')
+          .then(() => console.log('Google API script loaded successfully'))
+          .catch((error) => console.warn('Google API script load warning:', error));
+      }
+
+      // Setup bfcache handling
+      if (typeof document !== 'undefined') {
+        this.setupBFCacheSupport();
+      }
+
+    } catch (error) {
+      console.error('Critical error during Firebase initialization:', error);
+      this.initError = error as Error;
+      throw error;
     }
   }
-
-  
 
   private loadScript(src: string, nonce?: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -142,25 +156,20 @@ class FirebaseClient {
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
-          // Prepare for bfcache
           this.prepareForBFCache();
         } else if (document.visibilityState === 'visible') {
-          // Restore from bfcache
           this.restoreFromBFCache();
         }
       });
 
-      // Handle page transitions
       window.addEventListener('pagehide', (event) => {
         if (event.persisted) {
-          // Page might enter bfcache
           this.prepareForBFCache();
         }
       });
 
       window.addEventListener('pageshow', (event) => {
         if (event.persisted) {
-          // Page was restored from bfcache
           this.restoreFromBFCache();
         }
       });
@@ -168,25 +177,20 @@ class FirebaseClient {
   }
 
   private prepareForBFCache(): void {
-    // Clean up resources before page is frozen
     if (this._analytics) {
       this._analytics = null;
     }
-    
-    // Close WebSocket connections
     connectionManager.closeAllConnections();
   }
 
   private async restoreFromBFCache(): Promise<void> {
     try {
-      // Reinitialize necessary services
       await this.initializeAnalytics();
       await connectionManager.reestablishConnections();
     } catch (error) {
       console.warn('Error restoring from bfcache:', error);
     }
   }
-
 
   private setupWebSocketHandling(): void {
     const originalWebSocket = window.WebSocket;
@@ -200,12 +204,13 @@ class FirebaseClient {
   
   private async initialize(): Promise<void> {
     try {
+      console.log('Starting detailed initialization...');
       this.setupWebSocketHandling();
       await this.setupPersistence();
       this.setupAuthStateMonitoring();
-      this.initialized = true;
+      console.log('Detailed initialization complete');
     } catch (error) {
-      this.initError = error as Error;
+      console.error('Detailed initialization failed:', error);
       throw error;
     }
   }

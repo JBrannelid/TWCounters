@@ -84,7 +84,7 @@ export default defineConfig(({ mode }) => {
           style-src 'self' 'unsafe-inline';
           img-src 'self' data: blob: https://firebasestorage.googleapis.com;
           font-src 'self' data: https://fonts.gstatic.com;
-          connect-src 'self' ws://localhost:5174 ws://192.168.68.105:5174 https://*.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com https://region1.google-analytics.com;
+          connect-src 'self' ws://localhost:* ws://192.168.68.105:* wss://*.firebaseio.com https://*.googleapis.com https://*.firebaseio.com https://region1.google-analytics.com;
           frame-src 'self' https://apis.google.com https://swgoh-tw-guide.firebaseapp.com;
           base-uri 'self';
           form-action 'self';
