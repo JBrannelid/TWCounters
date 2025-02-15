@@ -78,7 +78,17 @@ export default defineConfig(({ mode }) => {
       port: 5174,
       strictPort: true,
       headers: {
-        'Content-Security-Policy': generateCSPString(nonce),
+        'Content-Security-Policy': `
+          default-src 'self';
+          script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://www.googletagmanager.com https://apis.google.com;
+          style-src 'self' 'unsafe-inline';
+          img-src 'self' data: blob: https://firebasestorage.googleapis.com;
+          font-src 'self' data: https://fonts.gstatic.com;
+          connect-src 'self' ws://localhost:5174 ws://192.168.68.105:5174 https://*.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com https://region1.google-analytics.com;
+          frame-src 'self' https://apis.google.com https://swgoh-tw-guide.firebaseapp.com;
+          base-uri 'self';
+          form-action 'self';
+        `.replace(/\s+/g, ' ').trim(),
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'ALLOW-FROM https://swgoh-tw-guide.firebaseapp.com',
         'Cross-Origin-Resource-Policy': 'same-origin',

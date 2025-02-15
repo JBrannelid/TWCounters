@@ -3,9 +3,7 @@ import { Squad, Fleet, Counter, Character, Ship } from '@/types';
 import { DefenseGrid } from './DefenseGrid';
 import { AdminLayout } from './AdminLayout';
 import { LoadingIndicator } from '../ui/LoadingIndicator';
-import { Plus } from 'lucide-react';
 import { CounterEditor } from '@/components/Counter/CounterEditor';
-import { DefenseEditor } from './DefenseEditor';
 
 interface AdminDashboardsProps {
   squads: Squad[];

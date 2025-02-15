@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Ship, PlusCircle, Settings, Menu, X, BarChart2, Database, RefreshCw } from 'lucide-react';
+import { Shield, Ship, Settings, Menu, X, BarChart2, Database, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminLayoutProps {

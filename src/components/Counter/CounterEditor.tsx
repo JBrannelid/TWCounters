@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Squad, Fleet, Counter, Character, Ship } from '@/types';
-import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle, Plus } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { UnitSelector } from '../UnitSelector';
 import { VideoGuide } from '../VideoGuide';
 import { UnitImage } from '../ui/UnitImage';
-import { DefenseService } from '@/services/defenseService';
+// import { DefenseService } from '@/services/defenseService';
+// import { motion, AnimatePresence } from 'framer-motion';
 
 interface CounterEditorProps {
   targetDefense: Squad | Fleet;
@@ -135,7 +135,7 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
           };
         }
       } else {
-        // Skapa ny counter
+        // create new counter
         if (isFleet) {
           const fleetUnits = selectedUnits as Ship[];
           counterData = {

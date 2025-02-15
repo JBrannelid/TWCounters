@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Analytics, logEvent } from 'firebase/analytics';
 import { CookieManager } from '@/components/CookieConsent/CookieManager';
 import { CookieConsentData } from '@/components/CookieConsent/CookieConsentTypes';
-import firebaseClient from '@/lib/firebase'; 
 import { getFirebaseAnalytics } from '@/lib/firebase';
+// import firebaseClient from '@/lib/firebase'; 
 
 // Define the context type for the cookie consent 
 interface CookieContextType {

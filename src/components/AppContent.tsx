@@ -24,6 +24,7 @@ import { AnalyticsService } from '@/services/analyticsService';
 import { CookieScanService } from '@/services/CookieScanService';
 import { filterCounters } from './Utils/counterUtils';
 import { characters, ships } from '@/data/initialData';
+import { connectionManager } from '@/services/firebaseConnectionManager';
 
 const AdminDashboards = lazy(() => 
     import('@/components/adminmenu/AdminDashboards').then(module => ({
@@ -161,6 +162,21 @@ const AdminDashboards = lazy(() =>
   
       initializeApp();
     }, []);
+
+    useEffect(() => {
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+          connectionManager.closeAllConnections();
+        } else if (document.visibilityState === 'visible') {
+          connectionManager.reestablishConnections();
+        }
+      };
+    
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
+    }, []);
         
       // Dynamic title and meta information via Helmet 
       const getTitle = () => {
@@ -195,20 +211,20 @@ const AdminDashboards = lazy(() =>
         );
       }
 
-      const getAvailableUnits = useCallback(() => {
-        const squadUnits = squads.flatMap(squad => [
-          squad.leader,
-          ...squad.characters
-        ].filter(Boolean));
+      // const getAvailableUnits = useCallback(() => {
+      //   const squadUnits = squads.flatMap(squad => [
+      //     squad.leader,
+      //     ...squad.characters
+      //   ].filter(Boolean));
       
-        const fleetUnits = fleets.flatMap(fleet => [
-          fleet.capitalShip,
-          ...fleet.startingLineup,
-          ...fleet.reinforcements
-        ].filter(Boolean));
+      //   const fleetUnits = fleets.flatMap(fleet => [
+      //     fleet.capitalShip,
+      //     ...fleet.startingLineup,
+      //     ...fleet.reinforcements
+      //   ].filter(Boolean));
       
-        return activeView === 'squads' ? squadUnits : fleetUnits;
-      }, [squads, fleets, activeView]);
+      //   return activeView === 'squads' ? squadUnits : fleetUnits;
+      // }, [squads, fleets, activeView]);
     
       useEffect(() => {
         try {
@@ -704,9 +720,9 @@ const handleEditCounter = async (counter: Counter) => {
       );
     }
   
-    function getCountersForUnit(id: string, arg1: string): Counter[] {
-      throw new Error('Function not implemented.');
-    }
+    // function getCountersForUnit(id: string, arg1: string): Counter[] {
+    //   throw new Error('Function not implemented.');
+    // }
 
     return (
         <Layout isAdmin={isAdmin} onLogout={handleAdminLogout} onAdminClick={onAdminClick}>

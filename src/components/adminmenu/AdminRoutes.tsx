@@ -1,5 +1,4 @@
 /**
- * AdminRoutes.tsx
  * Main component for handling admin routes and functionality.
  * This file contains the dashboard, squad list, and fleet list components,
  * as well as the main routing logic for the admin section.
@@ -8,7 +7,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
-import { DefenseGrid } from './DefenseGrid';
 import { FirebaseService } from '@/services/firebaseService';
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { SyncManager } from './SyncManager';
@@ -18,23 +16,23 @@ import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { Plus, AlertTriangle } from 'lucide-react';
 import { DefenseEditor } from './DefenseEditor';
 import { CounterEditor } from '@/components/Counter/CounterEditor';
-import { characters, capital_ships, ships as regular_ships, ships } from '@/data/initialData';
+import { characters, capital_ships, ships as regular_ships} from '@/data/initialData';
 import { Squad, Fleet, Counter, Character, Ship, Filters } from '@/types';
 import { useFirebase } from '@/contexts/FirebaseContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { SquadList } from '@/components/SquadList';
 import { FleetList } from '@/components/FleetList';
-import { useAuth } from '@/contexts/AuthContext';
+// import { useAuth } from '@/contexts/AuthContext';
 
-const MasterAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isMasterAdmin } = useAuth();
+// const MasterAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+//   const { isMasterAdmin } = useAuth();
   
-  if (!isMasterAdmin) {
-    return <Navigate to="/admin" replace />;
-  }
+//   if (!isMasterAdmin) {
+//     return <Navigate to="/admin" replace />;
+//   }
   
-  return <>{children}</>;
-};  
+//   return <>{children}</>;
+// };  
 
 // Dashboard Component - Handles the main admin dashboard view
 const Dashboard: React.FC<{

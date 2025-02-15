@@ -9,7 +9,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onLogout }) => {
   return (
     <div className="flex items-center gap-2">
       <button
-        onClick={() => {/* Add settings handler */}}
+        onClick={() => {}}
         className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg"
         aria-label="Settings"
       >

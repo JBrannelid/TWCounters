@@ -1,6 +1,6 @@
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ship, Trash2, ChevronDown, Plus, Edit } from 'lucide-react';
+import { Trash2, ChevronDown, Plus, Edit } from 'lucide-react';
 import { Fleet, Counter } from '@/types';
 import { GlassCard } from './ui/GlassCard';
 import { UnitImage } from './ui/UnitImage';
@@ -142,20 +142,20 @@ export const FleetCard = memo<FleetCardProps>(({
   //   });
   // }, [isAdmin, onEditCounter, onDeleteCounter]);
 
-  const cardTitle = (
-    <h2 className="text-xl font-orbitron text-white">
-      {fleet.name}
-    </h2>
-  );
+  // const cardTitle = (
+  //   <h2 className="text-xl font-orbitron text-white">
+  //     {fleet.name}
+  //   </h2>
+  // );
   
-  const sectionHeadings = (
-    <>
-      <h3 className="text-lg font-bold text-white/80 mb-3">Squad Leader</h3>
-      <h3 className="text-lg font-bold text-white/80 mb-3">Squad Members</h3>
-      <h3 className="text-lg font-bold text-white/80 mb-3">Requirements</h3>
-      <h3 className="text-lg font-bold text-white/80">Counters</h3>
-    </>
-  );  
+  // const sectionHeadings = (
+  //   <>
+  //     <h3 className="text-lg font-bold text-white/80 mb-3">Squad Leader</h3>
+  //     <h3 className="text-lg font-bold text-white/80 mb-3">Squad Members</h3>
+  //     <h3 className="text-lg font-bold text-white/80 mb-3">Requirements</h3>
+  //     <h3 className="text-lg font-bold text-white/80">Counters</h3>
+  //   </>
+  // );  
   
   return (
     <ErrorBoundary 

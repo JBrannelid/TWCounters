@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Settings, Moon, Sun, Globe, Bell,
+  Settings, Moon, Sun, 
   Save, AlertTriangle, CheckCircle 
 } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
@@ -22,7 +22,7 @@ interface AppSettings {
 }
 
 export const SettingsManager: React.FC = () => {
-  const { theme: currentTheme, toggleTheme } = useTheme();
+  // const { theme: currentTheme, toggleTheme } = useTheme();
   const [settings, setSettings] = useState<AppSettings>({
     theme: 'system',
     language: 'en',

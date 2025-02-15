@@ -32,7 +32,7 @@ export const MainRoutes: React.FC = () => {
       <Route 
         path="/cookie-policy" 
         element={
-          <Suspense fallback={<LoadingIndicator size="lg" />}>
+          <Suspense fallback={<LoadingIndicator size="lg"  message="Loading..."/>}>
             <CookiePolicy />
           </Suspense>
         } 

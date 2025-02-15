@@ -125,14 +125,14 @@ const cardTitle = (
   </h2>
 );
 
-const sectionHeadings = (
-  <>
-    <h3 className="text-lg font-bold text-white/80 mb-3">Squad Leader</h3>
-    <h3 className="text-lg font-bold text-white/80 mb-3">Squad Members</h3>
-    <h3 className="text-lg font-bold text-white/80 mb-3">Requirements</h3>
-    <h3 className="text-lg font-bold text-white/80">Counters</h3>
-  </>
-);
+// const sectionHeadings = (
+//   <>
+//     <h3 className="text-lg font-bold text-white/80 mb-3">Squad Leader</h3>
+//     <h3 className="text-lg font-bold text-white/80 mb-3">Squad Members</h3>
+//     <h3 className="text-lg font-bold text-white/80 mb-3">Requirements</h3>
+//     <h3 className="text-lg font-bold text-white/80">Counters</h3>
+//   </>
+// );
 
 return (
   <ErrorBoundary 

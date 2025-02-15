@@ -1,14 +1,14 @@
 import React, { FC } from 'react';
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 
 interface HeroSectionProps {
   children?: React.ReactNode;
 }
 
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
+// const fadeIn = {
+//   hidden: { opacity: 0, y: 20 },
+//   visible: { opacity: 1, y: 0 },
+// };
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ children }) => {
   return (

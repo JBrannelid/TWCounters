@@ -60,17 +60,17 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     }
   };
 
-  const handleSearchFocus = () => {
-    setShowSuggestions(Boolean(filters.searchTerm));
-    onSearchFocus();
-  };
+  // const handleSearchFocus = () => {
+  //   setShowSuggestions(Boolean(filters.searchTerm));
+  //   onSearchFocus();
+  // };
 
-  const handleSearchBlur = () => {
-    setTimeout(() => {
-      setShowSuggestions(false);
-    }, 200);
-    onSearchBlur();
-  };
+  // const handleSearchBlur = () => {
+  //   setTimeout(() => {
+  //     setShowSuggestions(false);
+  //   }, 200);
+  //   onSearchBlur();
+  // };
 
   // Secure filter menu toggle with input sanitization
   const handleFilterMenuToggle = () => {

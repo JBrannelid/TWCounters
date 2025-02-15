@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Ship, RefreshCw } from 'lucide-react';
 import { Squad, Fleet, Counter, Filters } from '@/types';

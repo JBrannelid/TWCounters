@@ -18,6 +18,10 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const preloadAdminDashboard = () => {
+    const preloadPromise = import('@/components/adminmenu/AdminDashboards');
+    return preloadPromise;
+  };
 
   return (
     <div className="sticky top-0 z-50 w-full">
@@ -56,6 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={onAdminClick}
+                  onMouseEnter={preloadAdminDashboard}
                   className="header-button bg-blue-500/20 hover:bg-blue-500/30 text-blue-400"
                   aria-label="Admin Settings"
                 >

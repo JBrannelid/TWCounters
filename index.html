@@ -4,7 +4,16 @@
     <!-- Preload importent fonts -->
     <link rel="preload" href="/fonts/Orbitron-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
     <link rel="preload" href="/fonts/TitilliumWeb-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
-    <!-- <link rel="preload" href="/src/main.tsx" as="script" /> -->
+
+    <!-- Resource hints for third-party connections -->
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://apis.google.com" crossorigin />
+    <link rel="preconnect" href="https://swgoh-tw-guide.firebaseapp.com" crossorigin />
+    <link rel="preconnect" href="https://firebaseapp.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.googleapis.com" />
+    <link rel="dns-prefetch" href="https://apis.google.com" />
+    <link rel="dns-prefetch" href="https://swgoh-tw-guide.firebaseapp.com" />
+    <link rel="dns-prefetch" href="https://firebaseapp.com" />
 
     <title>SWGOH Territory Wars Best Counter Tool | TW Counters Tool</title>
 
@@ -75,11 +84,11 @@
     style-src 'self' 'unsafe-inline';
     img-src 'self' data: blob: https://firebasestorage.googleapis.com;
     font-src 'self' data: https://fonts.gstatic.com;
-    connect-src 'self' https://*.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com;
+    connect-src 'self' ws://localhost:5174 ws://192.168.68.105:5174 https://*.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com https://region1.google-analytics.com;
     frame-src 'self' https://apis.google.com https://swgoh-tw-guide.firebaseapp.com;
     base-uri 'self';
     form-action 'self';
-  ">  
+">
   </head>
 
   <body>

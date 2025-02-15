@@ -95,7 +95,8 @@ class FirebaseClient {
     }
   }
 
-  // Keep the loadScript method
+  
+
   private loadScript(src: string, nonce?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       if (document.querySelector(`script[src="${src}"]`)) {
@@ -137,16 +138,69 @@ class FirebaseClient {
     }
   }
 
-  private prepareForBFCache(): void {
-    // Cleanup any resources that shouldn't be frozen
-    if (this._analytics) {
-      // Clean up analytics
-      this._analytics = null;
+  private setupBFCacheSupport(): void {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          // Prepare for bfcache
+          this.prepareForBFCache();
+        } else if (document.visibilityState === 'visible') {
+          // Restore from bfcache
+          this.restoreFromBFCache();
+        }
+      });
+
+      // Handle page transitions
+      window.addEventListener('pagehide', (event) => {
+        if (event.persisted) {
+          // Page might enter bfcache
+          this.prepareForBFCache();
+        }
+      });
+
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+          // Page was restored from bfcache
+          this.restoreFromBFCache();
+        }
+      });
     }
   }
 
+  private prepareForBFCache(): void {
+    // Clean up resources before page is frozen
+    if (this._analytics) {
+      this._analytics = null;
+    }
+    
+    // Close WebSocket connections
+    connectionManager.closeAllConnections();
+  }
+
+  private async restoreFromBFCache(): Promise<void> {
+    try {
+      // Reinitialize necessary services
+      await this.initializeAnalytics();
+      await connectionManager.reestablishConnections();
+    } catch (error) {
+      console.warn('Error restoring from bfcache:', error);
+    }
+  }
+
+
+  private setupWebSocketHandling(): void {
+    const originalWebSocket = window.WebSocket;
+    window.WebSocket = class extends originalWebSocket {
+      constructor(url: string | URL, protocols?: string | string[]) {
+        super(url, protocols);
+        connectionManager.trackWebSocket(this);
+      }
+    };
+  }
+  
   private async initialize(): Promise<void> {
     try {
+      this.setupWebSocketHandling();
       await this.setupPersistence();
       this.setupAuthStateMonitoring();
       this.initialized = true;

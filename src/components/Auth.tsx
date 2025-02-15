@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { validateAndSanitizeFormField } from '@/lib/security/formValidation';
 import { sanitizeInput } from '@/lib/security/Sanitizer';
-import { createFocusTrap } from 'focus-trap';
+// import { createFocusTrap } from 'focus-trap';
 
 interface AuthProps {
   onLogin: (success: boolean) => void;

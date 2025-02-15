@@ -1,5 +1,3 @@
-// Skapa en ny fil: src/lib/formValidation.ts
-
 import { sanitizeInput, sanitizeHTML, sanitizeUrl, sanitizeSearchQuery } from './Sanitizer';
 
 export interface ValidationResult {
@@ -29,7 +27,7 @@ export function validateAndSanitizeFormField(
     isSearch = false
   } = options;
 
-  // Hantera tomt värde
+  // handle empty values
   if (!value) {
     if (required) {
       return {
@@ -44,7 +42,7 @@ export function validateAndSanitizeFormField(
     };
   }
 
-  // Välj rätt sanitering baserat på fälttyp
+  // clean input based on type of field and options provided (if any) 
   let sanitizedValue = '';
   if (isUrl) {
     sanitizedValue = sanitizeUrl(value);
@@ -56,7 +54,7 @@ export function validateAndSanitizeFormField(
     sanitizedValue = sanitizeInput(value);
   }
 
-  // Validera längd
+  // validate length
   if (sanitizedValue.length < minLength) {
     return {
       isValid: false,
@@ -73,7 +71,7 @@ export function validateAndSanitizeFormField(
     };
   }
 
-  // URL-specifik validering
+  // URL-specific validation
   if (isUrl && !sanitizedValue && value) {
     return {
       isValid: false,

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Cloud, RefreshCw, Clock, AlertTriangle,
+  RefreshCw, Clock, AlertTriangle,
   CheckCircle, Database 
 } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
@@ -9,6 +8,7 @@ import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 import { FirebaseService } from '@/services/firebaseService';
 import { LoadingIndicator } from '../ui/LoadingIndicator';
 import { useFirebase } from '@/contexts/FirebaseContext';
+// import { motion, AnimatePresence } from 'framer-motion';
 
 export const SyncManager: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);

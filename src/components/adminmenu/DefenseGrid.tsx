@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { Squad, Fleet, Counter } from '@/types';
 import { DefenseCard } from './DefenseCard';
-import { DefenseErrorBoundary } from './DefenseErrorBoundary';
-import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingIndicator } from '../ui/LoadingIndicator';
 import { DefenseService } from '@/services/defenseService';
+// import { DefenseErrorBoundary } from './DefenseErrorBoundary';
+// import { motion, AnimatePresence } from 'framer-motion';
 
 interface DefenseGridProps {
   items: (Squad | Fleet)[];

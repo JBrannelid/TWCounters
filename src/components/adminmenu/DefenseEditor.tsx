@@ -3,9 +3,9 @@ import { Squad, Fleet, Character, Ship, ModRequirement } from '@/types';
 import { UnitSelector } from '../UnitSelector';
 import { UnitImage } from '../ui/UnitImage';
 import { X, Plus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { GlassCard } from '../ui/GlassCard';
+import { motion } from 'framer-motion';
 import { sanitizeInput, sanitizeHTML } from '@/lib/security/Sanitizer';
+// import { GlassCard } from '../ui/GlassCard';
 
 interface DefenseEditorProps {
   type: 'squad' | 'fleet';

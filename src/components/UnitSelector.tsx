@@ -48,12 +48,12 @@ export function UnitSelector<T extends Ship | Character>({
       if (type === 'ship') {
         const ship = unit as Ship;
         
-        // Om det är counter context, inkludera capital ships
+        // include capital ships if in counter context
         if (isCounterContext) {
           return matchesSearch && ship.isCapital; // Allow all ships, including capital ships
         }
 
-        // Om selectionType är 'capital', inkludera kapitalfartyg
+        // include only ships that match the selection type (leader, member, reinforcement)
         if (selectionType === 'capital') {
           return matchesSearch && ship.isCapital;
         }
@@ -77,10 +77,8 @@ export function UnitSelector<T extends Ship | Character>({
     console.log('Available Units:', availableUnits);
   }, [availableUnits]);
 
-// I UnitSelector.tsx
 const handleSelect = useCallback((unit: T) => {
   onSelect(unit);
-  // Låt parent komponenten hantera stängning
 }, [onSelect]);
 
   return (

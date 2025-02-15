@@ -1,4 +1,4 @@
-import { Character, Counter, Filters, Squad } from '@/types';
+import { Counter, Filters, Squad } from '@/types';
 
 export function filterCounters(counters: Counter[], filters: Filters): Counter[] {
   return counters.filter(counter => {
@@ -12,13 +12,13 @@ export function filterCounters(counters: Counter[], filters: Filters): Counter[]
       if (counter.counterSquad.type === 'squad') {
         const squad = counter.counterSquad as Squad;
 
-        // Kolla om ledaren är en GL
+        // check if the leader is a GL
         if (squad.leader?.isGalacticLegend) {
           //console.log(`Excluding counter due to GL leader: ${squad.leader.name}`);
           return false;
         }
 
-        // Kolla om någon medlem är en GL
+        // check if any member is a GL
         const hasGLMember = squad.characters?.some(
           (member) => member?.isGalacticLegend
         );
@@ -35,7 +35,7 @@ export function filterCounters(counters: Counter[], filters: Filters): Counter[]
       }
     }
 
-    return true; // Counter är giltig
+    return true; // Counter is valid
   });
 }
 
