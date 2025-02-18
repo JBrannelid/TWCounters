@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Squad, Fleet, Counter, Character, Ship } from '@/types';
-import { X, AlertTriangle, Plus } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
-import { UnitSelector } from '../UnitSelector';
-import { VideoGuide } from '../VideoGuide';
-import { UnitImage } from '../ui/UnitImage';
+import React, { useState, useEffect, useMemo } from "react";
+import { Squad, Fleet, Counter, Character, Ship } from "@/types";
+import { X, AlertTriangle, Plus } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
+import { UnitSelector } from "../UnitSelector";
+import { VideoGuide } from "../VideoGuide";
+import { UnitImage } from "../ui/UnitImage";
 // import { DefenseService } from '@/services/defenseService';
 // import { motion, AnimatePresence } from 'framer-motion';
 
@@ -24,114 +24,119 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
   onSave,
   onCancel,
   onDelete,
-  availableUnits
+  availableUnits,
 }) => {
   useEffect(() => {
-    console.log('CounterEditor mounted with props:', {
-        targetDefense,
-        existingCounter,
-        hasAvailableUnits: availableUnits?.length
+    console.log("CounterEditor mounted with props:", {
+      targetDefense,
+      existingCounter,
+      hasAvailableUnits: availableUnits?.length,
     });
-}, [targetDefense, existingCounter, availableUnits]);
+  }, [targetDefense, existingCounter, availableUnits]);
 
-  const isFleet = targetDefense.type === 'fleet';
-  const [selectedUnits, setSelectedUnits] = useState<(Character | Ship)[]>(() => {
-    if (!existingCounter?.counterSquad) return [];
+  const isFleet = targetDefense.type === "fleet";
+  const [selectedUnits, setSelectedUnits] = useState<(Character | Ship)[]>(
+    () => {
+      if (!existingCounter?.counterSquad) return [];
 
-    try {
-        if (targetDefense.type === 'squad') {
-            const squad = existingCounter.counterSquad as Squad;
-            return [squad.leader, ...(squad.characters || [])]
-                .filter((unit): unit is Character => unit !== null);
+      try {
+        if (targetDefense.type === "squad") {
+          const squad = existingCounter.counterSquad as Squad;
+          return [squad.leader, ...(squad.characters || [])].filter(
+            (unit): unit is Character => unit !== null
+          );
         } else {
-            const fleet = existingCounter.counterSquad as Fleet;
-            return [
-                fleet.capitalShip,
-                ...fleet.startingLineup,
-                ...fleet.reinforcements
-            ].filter((unit): unit is Ship => unit !== null);
+          const fleet = existingCounter.counterSquad as Fleet;
+          return [
+            fleet.capitalShip,
+            ...fleet.startingLineup,
+            ...fleet.reinforcements,
+          ].filter((unit): unit is Ship => unit !== null);
         }
-    } catch (error) {
-        console.error('Error initializing units:', error);
+      } catch (error) {
+        console.error("Error initializing units:", error);
         return [];
+      }
     }
-});
-
-  const [counterType, setCounterType] = useState<'hard' | 'soft' | 'risky'>(
-    existingCounter?.counterType || 'hard'
   );
-  const [description, setDescription] = useState(existingCounter?.description || '');
+
+  const [counterType, setCounterType] = useState<"hard" | "soft" | "risky">(
+    existingCounter?.counterType || "hard"
+  );
+  const [description, setDescription] = useState(
+    existingCounter?.description || ""
+  );
   const [error, setError] = useState<string | null>(null);
   const [showSelector, setShowSelector] = useState(false);
-  const [selectorMode, setSelectorMode] = useState<'capital' | 'starting' | 'reinforcement' | 'leader' | 'member'>(
-      isFleet ? 'capital' : 'leader'
-  );
+  const [selectorMode, setSelectorMode] = useState<
+    "capital" | "starting" | "reinforcement" | "leader" | "member"
+  >(isFleet ? "capital" : "leader");
   const [saving, setSaving] = useState(false);
   const [twOmicron, setTwOmicron] = useState({
-      required: existingCounter?.twOmicronRequired || false,
-      comment: existingCounter?.twOmicronComment || ''
+    required: existingCounter?.twOmicronRequired || false,
+    comment: existingCounter?.twOmicronComment || "",
   });
-  const [videoUrl, setVideoUrl] = useState(existingCounter?.video_url || '');
+  const [videoUrl, setVideoUrl] = useState(existingCounter?.video_url || "");
 
   const handleSave = async () => {
     try {
       setSaving(true);
-      
+
       if (selectedUnits.length === 0) {
-        setError('Please select counter units');
+        setError("Please select counter units");
         setSaving(false);
         return;
       }
-  
-      if (!description.trim()) {
-        setError('Please provide a description');
-        setSaving(false);
-        return;
-      }
-  
+
+      // if (!description.trim()) {
+      //   setError("Please provide a description");
+      //   setSaving(false);
+      //   return;
+      // }
+
       let counterData: Counter;
-      
+
       // Base counter data
       const baseCounter = {
         id: existingCounter?.id || `counter-${Date.now()}`,
         counterType,
-        description: description.trim(),
+        description: description.trim() || "", // Provide empty string as default
         video_url: videoUrl || undefined,
         strategy: existingCounter?.strategy || [],
         lastUpdated: Date.now(),
-        targetSquad: targetDefense, 
+        targetSquad: targetDefense,
         counterSquad: {},
-        requirements: existingCounter?.requirements || [], 
+        requirements: existingCounter?.requirements || [],
       };
-  
+
       if (existingCounter) {
-        console.log('Updating existing counter:', existingCounter.id);
-        
+        console.log("Updating existing counter:", existingCounter.id);
+
         if (isFleet) {
           const fleetUnits = selectedUnits as Ship[];
           counterData = {
             ...baseCounter,
             counterSquad: {
               id: existingCounter.counterSquad.id,
-              type: 'fleet',
+              type: "fleet",
               name: `Counter for ${targetDefense.name}`,
               alignment: targetDefense.alignment,
               capitalShip: fleetUnits[0],
               startingLineup: fleetUnits.slice(1, 4),
               reinforcements: fleetUnits.slice(4),
-            } as Fleet
+            } as Fleet,
           };
         } else {
           counterData = {
             ...baseCounter,
             counterSquad: {
               id: existingCounter.counterSquad.id,
-              type: 'squad',
+              type: "squad",
               name: `Counter for ${targetDefense.name}`,
               alignment: targetDefense.alignment,
               leader: selectedUnits[0] as Character,
               characters: selectedUnits.slice(1) as Character[],
-            } as Squad
+            } as Squad,
           };
         }
       } else {
@@ -142,39 +147,85 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
             ...baseCounter,
             counterSquad: {
               id: `fleet-${Date.now()}`,
-              type: 'fleet',
+              type: "fleet",
               name: `Counter for ${targetDefense.name}`,
               alignment: targetDefense.alignment,
               capitalShip: fleetUnits[0],
               startingLineup: fleetUnits.slice(1, 4),
               reinforcements: fleetUnits.slice(4),
-            } as Fleet
+            } as Fleet,
           };
         } else {
           counterData = {
             ...baseCounter,
             counterSquad: {
               id: `squad-${Date.now()}`,
-              type: 'squad',
+              type: "squad",
               name: `Counter for ${targetDefense.name}`,
               alignment: targetDefense.alignment,
               leader: selectedUnits[0] as Character,
               characters: selectedUnits.slice(1) as Character[],
-            } as Squad
+            } as Squad,
           };
         }
       }
-  
-      console.log('Saving counter data:', counterData);
+
+      console.log("Saving counter data:", counterData);
       await onSave(counterData);
       onCancel();
     } catch (error) {
-      console.error('Error saving counter:', error);
-      setError(error instanceof Error ? error.message : 'Failed to save counter');
+      console.error("Error saving counter:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to save counter"
+      );
     } finally {
       setSaving(false);
     }
   };
+
+  const filteredAvailableUnits = useMemo(() => {
+    const isFleet = "capitalShip" in targetDefense;
+
+    if (!isFleet) {
+      const selectedIds = new Set(selectedUnits.map((unit) => unit.id));
+
+      const hasGL = selectedUnits.some(
+        (unit) => "isGalacticLegend" in unit && unit.isGalacticLegend
+      );
+
+      return (availableUnits as Character[]).filter((unit) => {
+        if (selectedIds.has(unit.id)) {
+          return false;
+        }
+
+        if (hasGL && "isGalacticLegend" in unit && unit.isGalacticLegend) {
+          return false;
+        }
+
+        return true;
+      });
+    }
+
+    // För fleets, filtrera baserat på speciella regler
+    const selectedIds = new Set(selectedUnits.map((unit) => unit.id));
+    return availableUnits.filter((unit) => {
+      const ship = unit as Ship;
+
+      // Om enheten redan är vald eller vi nått maxgränsen, filtrera bort den
+      if (selectedIds.has(ship.id) || selectedUnits.length >= 9) {
+        return false;
+      }
+
+      // Om det är första valet (ingen vald än)
+      if (selectedUnits.length === 0) {
+        // Visa ENDAST capital ships för första valet
+        return ship.isCapital;
+      }
+
+      // För alla efterföljande val, visa alla skepp UTOM capital ships
+      return !ship.isCapital;
+    });
+  }, [availableUnits, selectedUnits, targetDefense]);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 overflow-y-auto">
@@ -183,7 +234,7 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
           {/* Header */}
           <div className="sticky top-0 z-10 flex justify-between items-center p-4 border-b border-white/10 bg-space-darker">
             <h2 className="text-xl font-bold text-white">
-              {existingCounter ? 'Edit Counter' : 'Add Counter'}
+              {existingCounter ? "Edit Counter" : "Add Counter"}
             </h2>
             <button
               onClick={onCancel}
@@ -204,7 +255,9 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
 
             {/* Target Defense Preview */}
             <div>
-              <h3 className="text-lg font-medium text-white mb-4">Target {isFleet ? 'Fleet' : 'Squad'}</h3>
+              <h3 className="text-lg font-medium text-white mb-4">
+                Target {isFleet ? "Fleet" : "Squad"}
+              </h3>
               <div className="flex items-center gap-2">
                 {isFleet ? (
                   <>
@@ -256,20 +309,22 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
 
             {/* Counter Type */}
             <div>
-              <h3 className="text-sm font-medium text-white mb-2">Counter Type</h3>
+              <h3 className="text-sm font-medium text-white mb-2">
+                Counter Type
+              </h3>
               <div className="flex flex-wrap gap-3">
-                {(['hard', 'soft', 'risky'] as const).map((type) => (
+                {(["hard", "soft", "risky"] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => setCounterType(type)}
                     className={`px-4 py-2 rounded-lg capitalize ${
                       counterType === type
-                        ? type === 'hard'
-                          ? 'bg-green-500/20 text-green-400'
-                          : type === 'soft'
-                          ? 'bg-yellow-500/20 text-yellow-400'
-                          : 'bg-red-500/20 text-red-400'
-                        : 'bg-white/5 text-white/60'
+                        ? type === "hard"
+                          ? "bg-green-500/20 text-green-400"
+                          : type === "soft"
+                          ? "bg-yellow-500/20 text-yellow-400"
+                          : "bg-red-500/20 text-red-400"
+                        : "bg-white/5 text-white/60"
                     }`}
                   >
                     {type}
@@ -280,20 +335,36 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
 
             {/* Counter Units */}
             <div>
-              <h3 className="text-sm font-medium text-white mb-2">Counter Units</h3>
+              <h3 className="text-sm font-medium text-white mb-2">
+                Counter Units
+              </h3>
               <div className="flex flex-wrap gap-4">
                 {selectedUnits.map((unit, index) => (
                   <div key={unit.id} className="relative">
                     <UnitImage
                       id={unit.id}
                       name={unit.name}
-                      type={isFleet ? (index === 0 ? 'capital-ship' : 'ship') : (index === 0 ? 'squad-leader' : 'squad-member')}
+                      type={
+                        isFleet
+                          ? index === 0
+                            ? "capital-ship"
+                            : "ship"
+                          : index === 0
+                          ? "squad-leader"
+                          : "squad-member"
+                      }
                       size="md"
-                      className={index === 0 ? 'border-2 border-blue-400' : 'border-2 border-white/20'}
+                      className={
+                        index === 0
+                          ? "border-2 border-blue-400"
+                          : "border-2 border-white/20"
+                      }
                     />
                     <button
                       onClick={() => {
-                        setSelectedUnits(units => units.filter((_, i) => i !== index));
+                        setSelectedUnits((units) =>
+                          units.filter((_, i) => i !== index)
+                        );
                       }}
                       className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full 
                                flex items-center justify-center hover:bg-red-600"
@@ -302,17 +373,37 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
                     </button>
                   </div>
                 ))}
+                {/* Maximum limit warnings */}
+                {((isFleet && selectedUnits.length >= 9) ||
+                  (!isFleet && selectedUnits.length >= 5)) && (
+                  <div className="text-sm text-yellow-400 mt-2">
+                    <h4>
+                      Maximum number reached <br />({isFleet ? "9/9" : "5/5"})
+                    </h4>
+                  </div>
+                )}
                 {/* Add Unit Button */}
                 <button
                   onClick={() => {
-                    setSelectorMode(isFleet ? 
-                      (selectedUnits.length === 0 ? 'capital' : 
-                       selectedUnits.length <= 3 ? 'starting' : 'reinforcement') :
-                      (selectedUnits.length === 0 ? 'leader' : 'member'));
+                    setSelectorMode(
+                      isFleet
+                        ? selectedUnits.length === 0
+                          ? "capital"
+                          : selectedUnits.length <= 3
+                          ? "starting"
+                          : "reinforcement"
+                        : selectedUnits.length === 0
+                        ? "leader"
+                        : "member"
+                    );
                     setShowSelector(true);
                   }}
-                  className="w-16 h-16 rounded-lg border-2 border-dashed border-white/20 
-                           flex items-center justify-center hover:border-white/40"
+                  disabled={!isFleet && selectedUnits.length >= 5}
+                  className={`w-16 h-16 rounded-lg border-2 border-dashed ${
+                    !isFleet && selectedUnits.length >= 5
+                      ? "border-gray-500/20 cursor-not-allowed"
+                      : "border-white/20 hover:border-white/40"
+                  } flex items-center justify-center`}
                 >
                   <Plus className="w-4 h-4 text-white/40" />
                 </button>
@@ -341,10 +432,18 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
                     type="checkbox"
                     id="twOmicron"
                     checked={twOmicron.required}
-                    onChange={(e) => setTwOmicron(prev => ({...prev, required: e.target.checked}))}
+                    onChange={(e) =>
+                      setTwOmicron((prev) => ({
+                        ...prev,
+                        required: e.target.checked,
+                      }))
+                    }
                     className="w-4 h-4 rounded border-white/10 bg-white/5 text-blue-500"
                   />
-                  <label htmlFor="twOmicron" className="ml-2 text-sm text-white">
+                  <label
+                    htmlFor="twOmicron"
+                    className="ml-2 text-sm text-white"
+                  >
                     Requires Territory Wars Omicron
                   </label>
                 </div>
@@ -352,7 +451,12 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
                   <input
                     type="text"
                     value={twOmicron.comment}
-                    onChange={(e) => setTwOmicron(prev => ({...prev, comment: e.target.value}))}
+                    onChange={(e) =>
+                      setTwOmicron((prev) => ({
+                        ...prev,
+                        comment: e.target.value,
+                      }))
+                    }
                     placeholder="Additional omicron details..."
                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
                   />
@@ -381,34 +485,42 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 pt-4">
-                {existingCounter && onDelete && (
-                    <button
-                        onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this counter?')) {
-                                onDelete(existingCounter.id);
-                            }
-                        }}
-                        className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
-                        disabled={saving}
-                    >
-                        Delete Counter
-                    </button>
-                )}
+              {existingCounter && onDelete && (
                 <button
-                    onClick={onCancel}
-                    className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
-                    disabled={saving}
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        "Are you sure you want to delete this counter?"
+                      )
+                    ) {
+                      onDelete(existingCounter.id);
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                  disabled={saving}
                 >
-                    Cancel
+                  Delete Counter
                 </button>
-                <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 
+              )}
+              <button
+                onClick={onCancel}
+                className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
+                disabled={saving}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 
                             disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {saving ? 'Saving...' : (existingCounter ? 'Update Counter' : 'Save Counter')}
-                </button>
+              >
+                {saving
+                  ? "Saving..."
+                  : existingCounter
+                  ? "Update Counter"
+                  : "Save Counter"}
+              </button>
             </div>
           </div>
         </div>
@@ -417,14 +529,21 @@ export const CounterEditor: React.FC<CounterEditorProps> = ({
       {/* Unit Selector Modal */}
       {showSelector && (
         <UnitSelector
-          type={isFleet ? 'ship' : 'character'}
+          type={isFleet ? "ship" : "character"}
           isOpen={showSelector}
           onClose={() => setShowSelector(false)}
           onSelect={(unit) => {
-            setSelectedUnits(prev => [...prev, unit]);
+            setSelectedUnits((prev) => {
+              // Kontrollera om det är en squad och om gränsen är nådd
+              if (!isFleet && prev.length >= 5) {
+                setError("Maximum 5 characters allowed in a counter squad");
+                return prev;
+              }
+              return [...prev, unit];
+            });
             setShowSelector(false);
           }}
-          availableUnits={availableUnits}
+          availableUnits={filteredAvailableUnits}
           alignment={targetDefense.alignment}
           selectionType={selectorMode}
         />

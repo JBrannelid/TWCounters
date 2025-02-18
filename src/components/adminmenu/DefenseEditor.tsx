@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Squad, Fleet, Character, Ship, ModRequirement } from '@/types';
-import { UnitSelector } from '../UnitSelector';
-import { UnitImage } from '../ui/UnitImage';
-import { X, Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { sanitizeInput, sanitizeHTML } from '@/lib/security/Sanitizer';
+import React, { useState, useEffect, useMemo } from "react";
+import { Squad, Fleet, Character, Ship, ModRequirement } from "@/types";
+import { UnitSelector } from "../UnitSelector";
+import { UnitImage } from "../ui/UnitImage";
+import { X, Plus } from "lucide-react";
+import { motion } from "framer-motion";
+import { sanitizeInput, sanitizeHTML } from "@/lib/security/Sanitizer";
 // import { GlassCard } from '../ui/GlassCard';
 
 interface DefenseEditorProps {
-  type: 'squad' | 'fleet';
+  type: "squad" | "fleet";
   initialData?: Squad | Fleet;
   onSave: (defense: Squad | Fleet) => Promise<void>;
   onCancel: () => void;
@@ -20,38 +20,48 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
   initialData,
   onSave,
   onCancel,
-  availableUnits
+  availableUnits,
 }) => {
   // State management
-  const [name, setName] = useState(initialData?.name || '');
-  const [alignment, setAlignment] = useState(initialData?.alignment || 'light');
-  const [selectedUnits, setSelectedUnits] = useState<(Character | Ship)[]>(() => {
-    if (!initialData) return [];
-    
-    if (type === 'squad') {
-      const squad = initialData as Squad;
-      return [squad.leader, ...squad.characters].filter((unit): unit is Character => unit !== null);
-    } else {
-      const fleet = initialData as Fleet;
-      return [
-        fleet.capitalShip,
-        ...fleet.startingLineup,
-        ...fleet.reinforcements
-      ].filter((unit): unit is Ship => unit !== null);
+  const [name, setName] = useState(initialData?.name || "");
+  const [alignment, setAlignment] = useState(initialData?.alignment || "light");
+  const [selectedUnits, setSelectedUnits] = useState<(Character | Ship)[]>(
+    () => {
+      if (!initialData) return [];
+
+      if (type === "squad") {
+        const squad = initialData as Squad;
+        return [squad.leader, ...squad.characters].filter(
+          (unit): unit is Character => unit !== null
+        );
+      } else {
+        const fleet = initialData as Fleet;
+        return [
+          fleet.capitalShip,
+          ...fleet.startingLineup,
+          ...fleet.reinforcements,
+        ].filter((unit): unit is Ship => unit !== null);
+      }
     }
-  });
+  );
   const [showUnitSelector, setShowUnitSelector] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [selectorMode, setSelectorMode] = useState<'leader' | 'member' | 'capital' | 'starting' | 'reinforcement'>(
-    type === 'squad' ? 'leader' : 'capital'
-  );
+  const [selectorMode, setSelectorMode] = useState<
+    "leader" | "member" | "capital" | "starting" | "reinforcement"
+  >(type === "squad" ? "leader" : "capital");
   const [twOmicron, setTwOmicron] = useState({
-    required: type === 'squad' ? (initialData as Squad)?.twOmicronRequired || false : false,
-    comment: type === 'squad' ? (initialData as Squad)?.twOmicronComment || '' : ''
+    required:
+      type === "squad"
+        ? (initialData as Squad)?.twOmicronRequired || false
+        : false,
+    comment:
+      type === "squad" ? (initialData as Squad)?.twOmicronComment || "" : "",
   });
-  
-  const [description, setDescription] = useState(initialData?.description || '');
+
+  const [description, setDescription] = useState(
+    initialData?.description || ""
+  );
   // const [modRequirements, setModRequirements] = useState<ModRequirement[]>(
   //   (initialData as Squad)?.modRequirements || []
   // );
@@ -61,66 +71,120 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
     if (initialData) {
       setName(initialData.name);
       setAlignment(initialData.alignment);
-      
-      if (type === 'squad') {
+
+      if (type === "squad") {
         const squad = initialData as Squad;
-        setSelectedUnits([squad.leader, ...squad.characters].filter((unit): unit is Character => unit !== null));
+        setSelectedUnits(
+          [squad.leader, ...squad.characters].filter(
+            (unit): unit is Character => unit !== null
+          )
+        );
       } else {
         const fleet = initialData as Fleet;
-        setSelectedUnits([
-          fleet.capitalShip,
-          ...fleet.startingLineup,
-          ...fleet.reinforcements
-        ].filter((unit): unit is Ship => unit !== null));
+        setSelectedUnits(
+          [
+            fleet.capitalShip,
+            ...fleet.startingLineup,
+            ...fleet.reinforcements,
+          ].filter((unit): unit is Ship => unit !== null)
+        );
       }
     }
   }, [initialData, type]);
 
+  // Filtered unit from unitselector
+  const filteredAvailableUnits = useMemo(() => {
+    if (type === "squad") {
+      const selectedIds = new Set(selectedUnits.map((unit) => unit.id));
 
-  // Handle save button with sanitization to prevent XSS-attacks 
+      // Check if we have any GL in lineup
+      const hasGL = selectedUnits.some(
+        (unit) => "isGalacticLegend" in unit && unit.isGalacticLegend
+      );
+
+      return (availableUnits as Character[]).filter((unit) => {
+        if (selectedIds.has(unit.id)) {
+          return false;
+        }
+
+        if (hasGL && "isGalacticLegend" in unit && unit.isGalacticLegend) {
+          return false;
+        }
+
+        return true;
+      });
+    }
+
+    const selectedIds = new Set(selectedUnits.map((unit) => unit.id));
+    return availableUnits.filter((unit) => {
+      const ship = unit as Ship;
+
+      // Om enheten redan är vald eller vi nått maxgränsen, filtrera bort den
+      if (selectedIds.has(ship.id) || selectedUnits.length >= 8) {
+        return false;
+      }
+
+      // Om det är första valet (ingen vald än)
+      if (selectedUnits.length === 0) {
+        // Visa ENDAST capital ships för första valet
+        return ship.isCapital;
+      }
+
+      // För alla efterföljande val, visa alla skepp UTOM capital ships
+      return !ship.isCapital;
+    });
+  }, [availableUnits, selectedUnits, type]);
+
+  // Handle save button with sanitization to prevent XSS-attacks
   const handleSave = async () => {
     setError(null);
     setIsSaving(true);
-  
+
     try {
       if (!sanitizeInput(name.trim())) {
-        throw new Error('Name is required');
+        throw new Error("Name is required");
       }
-  
+
       if (selectedUnits.length === 0) {
-        throw new Error('At least one unit is required');
+        throw new Error("At least one unit is required");
       }
-  
+
       let defense: Squad | Fleet;
-      
-      if (type === 'squad') {
+
+      if (type === "squad") {
         defense = {
           id: initialData?.id || `squad-${Date.now()}`,
-          type: 'squad',
+          type: "squad",
           name: sanitizeInput(name.trim()),
           alignment,
           leader: selectedUnits[0] as Character,
           characters: selectedUnits.slice(1) as Character[],
           twOmicronRequired: twOmicron.required,
-          twOmicronComment: twOmicron.required ? sanitizeInput(twOmicron.comment) : undefined,
-          description: description.trim() ? sanitizeHTML(description.trim()) : undefined,
+          twOmicronComment: twOmicron.required
+            ? sanitizeInput(twOmicron.comment)
+            : "",
+          description: description.trim()
+            ? sanitizeHTML(description.trim())
+            : "",
         } as Squad;
       } else {
         defense = {
           id: initialData?.id || `fleet-${Date.now()}`,
-          type: 'fleet',
+          type: "fleet",
           name: sanitizeInput(name.trim()),
           alignment,
           capitalShip: selectedUnits[0] as Ship,
           startingLineup: selectedUnits.slice(1, 4) as Ship[],
           reinforcements: selectedUnits.slice(4) as Ship[],
-          description: description.trim() ? sanitizeHTML(description.trim()) : undefined
+          description: description.trim()
+            ? sanitizeHTML(description.trim())
+            : "",
         } as Fleet;
       }
-  
+
       await onSave(defense);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to save');
+      setError(error instanceof Error ? error.message : "Failed to save");
     } finally {
       setIsSaving(false);
     }
@@ -129,45 +193,52 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
   const handleUnitSelect = (unit: Character | Ship) => {
     if (!unit) return;
 
-    setSelectedUnits(prev => {
-      if (type === 'squad') {
+    setSelectedUnits((prev) => {
+      if (type === "squad") {
+        // Kontrollera maxgränsen för squad
+        if (prev.length >= 5) {
+          setError("Maximum 5 characters allowed in a squad");
+          return prev;
+        }
+
         if (prev.length === 0) {
           return [unit];
         }
         return [...prev, unit];
       }
-      
+
+      // Fleet-logiken förblir oförändrad
       const ship = unit as Ship;
       if (prev.length === 0) {
         if (!ship.isCapital) {
-          setError('First ship must be a capital ship');
+          setError("First ship must be a capital ship");
           return prev;
         }
         return [ship];
       }
       return [...prev, ship];
     });
-    
+
     setShowUnitSelector(false);
   };
 
   // Helper functions for UI
   const getUnitRole = (index: number): string => {
-    if (type === 'squad') {
-      return index === 0 ? 'Leader' : `Member ${index}`;
+    if (type === "squad") {
+      return index === 0 ? "Leader" : `Member ${index}`;
     } else {
-      if (index === 0) return 'Capital Ship';
+      if (index === 0) return "Capital Ship";
       if (index <= 3) return `Starting Ship ${index}`;
       return `Reinforcement ${index - 3}`;
     }
   };
 
   return (
-      <div className="bg-space-darker rounded-lg border border-white/10 p-3 sm:p-6 max-w-2xl w-full mx-2 sm:mx-4 overflow-y-auto max-h-[90vh] sm:max-h-[80vh]">
+    <div className="bg-space-darker rounded-lg border border-white/10 p-3 sm:p-6 max-w-2xl w-full mx-2 sm:mx-4 overflow-y-auto max-h-[90vh] sm:max-h-[80vh]">
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <h2 className="text-xl font-orbitron text-white">
-          {initialData ? 'Edit' : 'New'} {type === 'squad' ? 'Squad' : 'Fleet'}
+          {initialData ? "Edit" : "New"} {type === "squad" ? "Squad" : "Fleet"}
         </h2>
         <button
           onClick={onCancel}
@@ -193,7 +264,10 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
       <div className="space-y-6">
         {/* Name input */}
         <div>
-          <label htmlFor="defense-name" className="block text-sm font-medium text-white mb-2">
+          <label
+            htmlFor="defense-name"
+            className="block text-sm font-medium text-white mb-2"
+          >
             Name
           </label>
           <input
@@ -213,24 +287,24 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
           </label>
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => setAlignment('light')}
+              onClick={() => setAlignment("light")}
               className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg transition-colors ${
-                alignment === 'light'
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-400/20'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10'
+                alignment === "light"
+                  ? "bg-blue-500/20 text-blue-400 border border-blue-400/20"
+                  : "bg-white/5 text-white/60 hover:bg-white/10"
               }`}
-              aria-pressed={alignment === 'light'}
+              aria-pressed={alignment === "light"}
             >
               Light Side
             </button>
             <button
-              onClick={() => setAlignment('dark')}
+              onClick={() => setAlignment("dark")}
               className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg transition-colors ${
-                alignment === 'dark'
-                  ? 'bg-red-500/20 text-red-400 border border-red-400/20'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10'
+                alignment === "dark"
+                  ? "bg-red-500/20 text-red-400 border border-red-400/20"
+                  : "bg-white/5 text-white/60 hover:bg-white/10"
               }`}
-              aria-pressed={alignment === 'dark'}
+              aria-pressed={alignment === "dark"}
             >
               Dark Side
             </button>
@@ -238,29 +312,36 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
         </div>
 
         {/* TW omni, description and mod selector */}
-        {type === 'squad' && (
+        {type === "squad" && (
           <div className="space-y-4">
             <div className="flex items-center">
               <input
                 type="checkbox"
                 id="twOmicron"
                 checked={twOmicron.required}
-                onChange={(e) => setTwOmicron(prev => ({...prev, required: e.target.checked}))}
+                onChange={(e) =>
+                  setTwOmicron((prev) => ({
+                    ...prev,
+                    required: e.target.checked,
+                  }))
+                }
                 className="w-4 h-4 rounded border-white/10 bg-white/5 text-blue-500"
               />
               <label htmlFor="twOmicron" className="ml-2 text-sm text-white">
                 Requires Territory Wars Omicron
               </label>
             </div>
-            
+
             {twOmicron.required && (
               <input
                 type="text"
                 value={twOmicron.comment}
-                onChange={(e) => setTwOmicron(prev => ({...prev, comment: e.target.value}))}
+                onChange={(e) =>
+                  setTwOmicron((prev) => ({ ...prev, comment: e.target.value }))
+                }
                 placeholder="Additional omicron details..."
                 className="w-full px-2 sm:px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm sm:text-base"
-                />
+              />
             )}
           </div>
         )}
@@ -278,7 +359,7 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
           />
         </div>
 
-      {/* {type === 'squad' && (
+        {/* {type === 'squad' && (
         <div className="space-y-2">
           <label className="block text-sm font-medium text-white">
             Mod Requirements
@@ -314,28 +395,40 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
         {/* Selected units */}
         <div>
           <label className="block text-sm font-medium text-white mb-2">
-            {type === 'squad' ? 'Squad Members' : 'Ships'}
+            {type === "squad" ? "Squad Members" : "Ships"}
           </label>
           <div className="flex flex-wrap gap-4">
-           {selectedUnits.map((unit, index) => (
+            {selectedUnits.map((unit, index) => (
               <div key={unit.id} className="relative">
                 <UnitImage
                   id={unit.id}
                   name={unit.name}
-                  type={type === 'squad' 
-                    ? (index === 0 ? 'squad-leader' : 'squad-member')
-                    : (index === 0 ? 'capital-ship' : 'ship')}
+                  type={
+                    type === "squad"
+                      ? index === 0
+                        ? "squad-leader"
+                        : "squad-member"
+                      : index === 0
+                      ? "capital-ship"
+                      : "ship"
+                  }
                   size="md"
-                  className={index === 0 ? 'border-2 border-blue-400' : 'border-2 border-white/20'}
-                  isLeader={type === 'squad' && index === 0}
-                  isCapital={type === 'fleet' && index === 0}
+                  className={
+                    index === 0
+                      ? "border-2 border-blue-400"
+                      : "border-2 border-white/20"
+                  }
+                  isLeader={type === "squad" && index === 0}
+                  isCapital={type === "fleet" && index === 0}
                 />
                 <div className="absolute -bottom-4 sm:-bottom-6 left-1/2 transform -translate-x-1/2 text-[10px] sm:text-xs bg-black/90 px-1 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap">
                   {getUnitRole(index)}
                 </div>
                 <button
                   onClick={() => {
-                    setSelectedUnits(units => units.filter((_, i) => i !== index));
+                    setSelectedUnits((units) =>
+                      units.filter((_, i) => i !== index)
+                    );
                   }}
                   className="absolute -top-1 -right-1 w-[20px] h-[20px] bg-red-500 rounded-full 
                           flex items-center justify-center hover:bg-red-600"
@@ -346,27 +439,53 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
               </div>
             ))}
 
+            {/* Maximum limit warning */}
+            {selectedUnits.length >= (type === "squad" ? 5 : 9) && (
+              <div className="text-sm text-yellow-400 mt-2">
+                <h4>
+                  Maximum number reached <br />(
+                  {type === "squad" ? "5/5" : "9/9"})
+                </h4>
+              </div>
+            )}
+
             {/* Add unit button */}
             <button
               onClick={() => {
-                setSelectorMode(type === 'squad'
-                  ? (selectedUnits.length === 0 ? 'leader' : 'member')
-                  : (selectedUnits.length === 0 ? 'capital'
-                     : selectedUnits.length <= 3 ? 'starting'
-                     : 'reinforcement'));
+                setSelectorMode(
+                  type === "squad"
+                    ? selectedUnits.length === 0
+                      ? "leader"
+                      : "member"
+                    : selectedUnits.length === 0
+                    ? "capital"
+                    : selectedUnits.length <= 3
+                    ? "starting"
+                    : "reinforcement"
+                );
                 setShowUnitSelector(true);
               }}
-              className="w-16 h-16 rounded-lg border-2 border-dashed border-white/20 
-                     flex items-center justify-center hover:border-white/40"
+              disabled={selectedUnits.length >= (type === "squad" ? 5 : 9)}
+              className={`w-16 h-16 rounded-lg border-2 border-dashed ${
+                selectedUnits.length >= (type === "squad" ? 5 : 9)
+                  ? "border-gray-500/20 cursor-not-allowed"
+                  : "border-white/20 hover:border-white/40"
+              } flex items-center justify-center`}
             >
-              <Plus className="w-4 h-4 text-white/40" />
+              <Plus
+                className={`w-4 h-4 ${
+                  selectedUnits.length >= (type === "squad" ? 5 : 9)
+                    ? "text-gray-500/40"
+                    : "text-white/40"
+                }`}
+              />
             </button>
           </div>
         </div>
 
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4">
-        <button
+          <button
             onClick={onCancel}
             className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 
                    transition-colors w-full sm:w-auto"
@@ -380,7 +499,7 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
                    disabled:opacity-50 disabled:cursor-not-allowed transition-colors
                    w-full sm:w-auto"
           >
-            {isSaving ? 'Saving...' : (initialData ? 'Update' : 'Save')}
+            {isSaving ? "Saving..." : initialData ? "Update" : "Save"}
           </button>
         </div>
       </div>
@@ -388,11 +507,11 @@ export const DefenseEditor: React.FC<DefenseEditorProps> = ({
       {/* Unit Selector Modal */}
       {showUnitSelector && (
         <UnitSelector
-          type={type === 'squad' ? 'character' : 'ship'}
+          type={type === "squad" ? "character" : "ship"}
           isOpen={showUnitSelector}
           onClose={() => setShowUnitSelector(false)}
           onSelect={handleUnitSelect}
-          availableUnits={availableUnits}
+          availableUnits={filteredAvailableUnits}
           alignment={alignment}
           selectionType={selectorMode}
         />
